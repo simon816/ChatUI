@@ -1,0 +1,16 @@
+[{
+    "modid": "tabbedchat",
+    "name": "Tabbed Chat",
+    "description": "",
+    "version": "0.0.1",
+    "mcversion": "1.8.9",
+    "url": "https://github.com/simon816/TabbedChat",
+    "authors": ["Simon816"],
+    "requiredMods": [
+        "SpongeAPI@[4.0,5.0)"
+    ],
+    "dependencies": [
+    ],
+    "useDependencyInformation": true
+}]
+    

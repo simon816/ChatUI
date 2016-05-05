@@ -1,0 +1,48 @@
+
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-20160116.192356-17'
+    }
+}
+apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
+
+version = "0.0.1"
+
+group = "com.simon816.minecraft"
+
+archivesBaseName = "TabbedChat"
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'sponge'
+        url = 'http://repo.spongepowered.org/maven'
+    }
+    maven {
+        name = 'forge'
+        url = 'http://files.minecraftforge.net/maven'
+    }
+}
+
+minecraft {
+    version = "1855"
+    runDir = "run"
+    mappings = "stable_22"
+}
+
+dependencies {
+    compile 'org.spongepowered:spongeapi:4.0.0'
+    compile 'org.spongepowered:spongeforge:1.8.9-1855-4.1.0-BETA-1312:dev'
+}
