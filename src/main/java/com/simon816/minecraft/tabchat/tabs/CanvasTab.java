@@ -2,6 +2,7 @@ package com.simon816.minecraft.tabchat.tabs;
 
 import com.google.common.collect.Lists;
 import com.simon816.minecraft.tabchat.PlayerChatView;
+import com.simon816.minecraft.tabchat.PlayerContext;
 import com.simon816.minecraft.tabchat.TabbedChat;
 import com.simon816.minecraft.tabchat.util.TextUtils;
 import gnu.trove.map.hash.TIntCharHashMap;
@@ -39,7 +40,7 @@ public class CanvasTab extends Tab {
     }
 
     @Override
-    public Text draw(int height) {
+    public Text draw(PlayerContext ctx) {
         Text.Builder builder = Text.builder();
         // Tests
         if (this.layers.isEmpty()) {
@@ -49,7 +50,7 @@ public class CanvasTab extends Tab {
             drawCircle(30, 7, 6, TextColors.GREEN);
             drawString("Test", 0, 5, TextColors.GOLD);
         }
-        DrawContext context = new DrawContext(height);
+        DrawContext context = new DrawContext(ctx.width, ctx.height);
         for (Layer layer : this.layers) {
             layer.draw(context);
         }
@@ -72,7 +73,7 @@ public class CanvasTab extends Tab {
         this.layers.add(new StringLayer(string, x, y, color));
     }
 
-    interface Layer {
+    private interface Layer {
 
         void draw(DrawContext ctx);
     }
@@ -190,11 +191,14 @@ public class CanvasTab extends Tab {
 
     private static class DrawContext {
 
-        private Line[] lines;
+        private final Line[] lines;
+        private final int width;
+
         private PixelMetadata currentData = Line.DEFAULT_DATA;
 
-        public DrawContext(int height) {
+        public DrawContext(int width, int height) {
             this.lines = new Line[height];
+            this.width = width;
         }
 
         public Text.Builder[] render() {
@@ -223,7 +227,7 @@ public class CanvasTab extends Tab {
                 return;
             }
             if (this.lines[y] == null) {
-                this.lines[y] = new Line();
+                this.lines[y] = new Line(this.width);
             }
             this.lines[y].setData(x, c, data);
         }
@@ -271,22 +275,27 @@ public class CanvasTab extends Tab {
 
             private static final PixelMetadata DEFAULT_DATA = new PixelMetadata(TextColors.BLACK);
             private static final char EMPTY_CHAR = '\u2063';
+            private static final int CELL_WIDTH = 9;
+
             private final TIntCharHashMap characters = new TIntCharHashMap();
             private final TIntObjectHashMap<PixelMetadata> metadata = new TIntObjectHashMap<>();
-            private int max;
 
-            public Line() {
+            private final int maxIndex;
+            private int currentMax;
+
+            public Line(int width) {
+                this.maxIndex = (width / CELL_WIDTH) - 1;
             }
 
             public void setData(int index, char c, PixelMetadata data) {
-                if (index < 0 || index > 34) {
+                if (index < 0 || index > this.maxIndex) {
                     return;
                 }
                 PixelMetadata existing = this.metadata.get(index);
                 if (existing != null && existing.locked) {
                     return;
                 }
-                this.max = Math.max(this.max, index);
+                this.currentMax = Math.max(this.currentMax, index);
                 this.metadata.put(index, data == null ? DEFAULT_DATA : data);
                 this.characters.put(index, c);
             }
@@ -295,7 +304,7 @@ public class CanvasTab extends Tab {
                 StringBuilder string = new StringBuilder();
                 Text.Builder rootBuilder = Text.builder();
                 PixelMetadata prevData = null;
-                for (int i = 0; i <= this.max; i++) {
+                for (int i = 0; i <= this.currentMax; i++) {
                     PixelMetadata data = this.metadata.get(i);
                     char c = this.characters.get(i);
                     if (data == null) {
@@ -311,8 +320,8 @@ public class CanvasTab extends Tab {
                         prevData = data;
                     }
                     string.append(c);
-                    int w = c == EMPTY_CHAR ? 9 : (int) TextUtils.getWidth(c, false);
-                    for (int j = w; j < 9; j++) {
+                    int w = c == EMPTY_CHAR ? CELL_WIDTH : (int) TextUtils.getWidth(c, false);
+                    for (int j = w; j < CELL_WIDTH; j++) {
                         string.append('\u205a');
                     }
                 }

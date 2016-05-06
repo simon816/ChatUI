@@ -1,5 +1,6 @@
 package com.simon816.minecraft.tabchat.tabs;
 
+import com.simon816.minecraft.tabchat.PlayerContext;
 import org.spongepowered.api.text.LiteralText;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
@@ -11,9 +12,9 @@ public class SettingsTab extends Tab {
     private static final Text TITLE = Text.of("Settings");
 
     @Override
-    public Text draw(int height) {
+    public Text draw(PlayerContext ctx) {
         LiteralText.Builder builder = Text.builder("\n");
-        for (int i = 0; i < height - 1; i++) {
+        for (int i = 0; i < ctx.height - 1; i++) {
             if (i == 2) {
                 builder.append(Text.of("Boolean: ", TextColors.GREEN, TextStyles.BOLD, "True", TextStyles.RESET, " ", TextColors.RED, "False\n"));
             } else if (i == 4) {

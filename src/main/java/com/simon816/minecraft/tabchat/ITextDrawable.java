@@ -4,5 +4,5 @@ import org.spongepowered.api.text.Text;
 
 public interface ITextDrawable {
 
-    Text draw(int height);
+    Text draw(PlayerContext ctx);
 }

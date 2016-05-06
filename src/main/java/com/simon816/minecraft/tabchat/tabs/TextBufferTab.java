@@ -1,8 +1,8 @@
 package com.simon816.minecraft.tabchat.tabs;
 
 import com.google.common.collect.Lists;
+import com.simon816.minecraft.tabchat.PlayerContext;
 import com.simon816.minecraft.tabchat.util.TextUtils;
-import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
@@ -13,13 +13,8 @@ public abstract class TextBufferTab extends BufferedTab {
     private static final int MAX_BUFFER_SIZE = 100;
 
     private final List<Text> buffer = Lists.newArrayList();
-    private final Player player;
     private int unread = 0;
     private boolean countUnread = true;
-
-    public TextBufferTab(Player player) {
-        this.player = player;
-    }
 
     @Override
     public void appendMessage(Text message) {
@@ -51,12 +46,12 @@ public abstract class TextBufferTab extends BufferedTab {
     }
 
     @Override
-    public Text draw(final int height) {
+    public Text draw(PlayerContext ctx) {
         Text.Builder builder = Text.builder();
-        int remainingHeight = height;
+        int remainingHeight = ctx.height;
         bufferLoop: for (int i = 0; i < this.buffer.size(); i++) {
             Text message = this.buffer.get(i);
-            List<Text> lines = TextUtils.splitLines(message, 320, this.player.isChatColorsEnabled());
+            List<Text> lines = TextUtils.splitLines(message, 320, ctx.player.isChatColorsEnabled());
             for (Text line : lines) {
                 if (--remainingHeight < 0) {
                     break bufferLoop;

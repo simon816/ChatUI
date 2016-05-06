@@ -1,6 +1,7 @@
 package com.simon816.minecraft.tabchat.tabs;
 
 import com.simon816.minecraft.tabchat.PlayerChatView;
+import com.simon816.minecraft.tabchat.PlayerContext;
 import com.simon816.minecraft.tabchat.TabbedChat;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
@@ -16,7 +17,7 @@ public class NewTab extends Tab {
     }
 
     @Override
-    public Text draw(int height) {
+    public Text draw(PlayerContext ctx) {
         Text.Builder builder = Text.builder();
         builder.append(Text.of("What would you like to do?\n\n"));
         builder.append(Text.builder("* Open Settings\n").onClick(TextActions.executeCallback(src -> {
@@ -40,7 +41,7 @@ public class NewTab extends Tab {
                     view.update();
                 }))
                 .build());
-        for (int i = 0; i < height - 5; i++) {
+        for (int i = 0; i < ctx.height - 5; i++) {
             builder.append(Text.NEW_LINE);
         }
         return builder.build();

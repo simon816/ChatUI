@@ -13,7 +13,9 @@ import java.util.Optional;
 public class PlayerChatView {
 
     public static final int PLAYER_BUFFER_HEIGHT = 20;
-    private final Player player;
+    public static final int PLAYER_BUFFER_WIDTH = 320;
+
+    private final PlayerContext playerContext;
     private final Window window;
     private final TextBufferTab globalTab;
     boolean isUpdating;
@@ -22,9 +24,9 @@ public class PlayerChatView {
     private final MessagePipeline outgoingPipeline = new MessagePipeline();
 
     public PlayerChatView(Player player) {
-        this.player = player;
+        this.playerContext = new PlayerContext(player, PLAYER_BUFFER_WIDTH, PLAYER_BUFFER_HEIGHT);
         this.window = new Window();
-        this.window.addTab(this.globalTab = new GlobalTab(player), true);
+        this.window.addTab(this.globalTab = new GlobalTab(), true);
 
         this.outgoingPipeline.addHandler((message, sender) -> {
             this.globalTab.appendMessage(message);
@@ -38,7 +40,7 @@ public class PlayerChatView {
     }
 
     public Player getPlayer() {
-        return this.player;
+        return this.playerContext.player;
     }
 
     public Window getWindow() {
@@ -47,7 +49,7 @@ public class PlayerChatView {
 
     public void update() {
         this.isUpdating = true;
-        this.player.sendMessage(this.window.draw(PLAYER_BUFFER_HEIGHT));
+        this.playerContext.player.sendMessage(this.window.draw(this.playerContext));
         this.isUpdating = false;
     }
 
@@ -60,7 +62,7 @@ public class PlayerChatView {
     }
 
     public boolean handleIncoming(Text message) {
-        return this.incomingPipeline.process(message, this.player);
+        return this.incomingPipeline.process(message, this.playerContext.player);
     }
 
     public Optional<Text> transformOutgoing(CommandSource sender, Text originalOutgoing, ChatType type) {
@@ -68,18 +70,23 @@ public class PlayerChatView {
             return Optional.of(originalOutgoing);
         }
         if (this.outgoingPipeline.process(originalOutgoing, sender)) {
-            return Optional.of(this.window.draw(PLAYER_BUFFER_HEIGHT));
+            return Optional.of(this.window.draw(this.playerContext));
         }
         return Optional.empty();
     }
 
     boolean handleCommand(String[] args) {
-        if (args[0].equals("settab")) {
+        String cmd = args[0];
+        if (cmd.equals("settab")) {
             this.window.setTab(Integer.parseInt(args[1]));
-        } else if (args[0].endsWith("closetab")) {
+        } else if (cmd.equals("closetab")) {
             this.window.removeTab(Integer.parseInt(args[1]));
-        } else if (args[0].endsWith("newtab")) {
+        } else if (cmd.equals("newtab")) {
             this.window.addTab(new NewTab(), true);
+        } else if (cmd.equals("tableft")) {
+            this.window.shiftLeft();
+        } else if (cmd.equals("tabright")) {
+            this.window.shiftRight();
         } else {
             return false;
         }

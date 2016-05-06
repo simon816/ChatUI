@@ -1,5 +1,6 @@
 package com.simon816.minecraft.tabchat.tabs;
 
+import com.simon816.minecraft.tabchat.PlayerContext;
 import com.simon816.minecraft.tabchat.pagination.PaginationSourceWrapper;
 import org.spongepowered.api.text.Text;
 
@@ -14,26 +15,26 @@ public class PaginationTab extends BufferedTab {
         this.title = title;
     }
 
-    @Override
-    public void appendMessage(Text message) {
-        this.currentPageText = message;
+    private void update() {
         if (this.source.view.getWindow().getActiveTab() == this) {
             this.source.view.update();
         }
+    }
+
+    @Override
+    public void appendMessage(Text message) {
+        this.currentPageText = message;
+        update();
     }
 
     public void setPage(Iterable<Text> texts) {
         this.currentPageText = Text.joinWith(Text.NEW_LINE, texts);
-        if (this.source.view.getWindow().getActiveTab() == this) {
-            this.source.view.update();
-        }
+        update();
     }
 
     public void setPage(Text[] texts) {
         this.currentPageText = Text.joinWith(Text.NEW_LINE, texts);
-        if (this.source.view.getWindow().getActiveTab() == this) {
-            this.source.view.update();
-        }
+        update();
     }
 
     @Override
@@ -43,9 +44,9 @@ public class PaginationTab extends BufferedTab {
     }
 
     @Override
-    public Text draw(int height) {
+    public Text draw(PlayerContext ctx) {
         if (this.currentPageText == null) {
-            return super.draw(height);
+            return super.draw(ctx);
         }
         return this.currentPageText;
     }

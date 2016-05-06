@@ -20,7 +20,6 @@ public class TextUtils {
     private static final String NON_UNICODE_CHARS;
     private static final int[] NON_UNICODE_CHAR_WIDTHS;
     private static final byte[] UNICODE_CHAR_WIDTHS;
-    private static final int LINE_WIDTH = 320;
 
     static {
         ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder()
@@ -123,15 +122,10 @@ public class TextUtils {
         return stringbuilder.toString();
     }
 
-    public static List<Text> splitLines(Text original, boolean withColor) {
-        return splitLines(original, LINE_WIDTH, withColor);
-    }
-
     private static LiteralText createWithInheritedProperties(String text, final Text from) {
         // TODO This uses internal code for now
         ChatComponentText component = new ChatComponentText(text);
         component.setChatStyle(SpongeTexts.toComponent(from).getChatStyle().createShallowCopy());
-        System.out.println(SpongeTexts.toComponent(from));
         return (LiteralText) SpongeTexts.toText(component);
     }
 
@@ -141,6 +135,7 @@ public class TextUtils {
         }
         return message;
     }
+
     public static List<Text> splitLines(Text original, int maxWidth, boolean withColor) {
         original = unwrap(original);
         // See GuiUtilRenderComponents
@@ -210,5 +205,9 @@ public class TextUtils {
 
         list.add(ichatcomponent.build());
         return list;
+    }
+
+    public static int getWidth(Text text) {
+        return getStringWidth(text.toPlain(), text.getStyle().isBold().orElse(false));
     }
 }
