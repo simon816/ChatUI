@@ -10,6 +10,8 @@ import java.awt.image.BufferedImage;
 
 /**
  * Uses the braille unicode characters.
+ *
+ * Standard dimensions: 212 x 128.
  */
 public class BrailleRenderContext extends RenderingContext {
 
@@ -89,6 +91,7 @@ public class BrailleRenderContext extends RenderingContext {
 
         @Override
         public void draw(LineDrawingContext ctx) {
+            ctx.data(new PixelMetadata(TextColors.WHITE));
             // TODO configurable threshold level
             int min = 0x80; // min==80 && max==FF -> normal
             int max = 0xFF; // min==0 && max==80 -> negative
@@ -97,8 +100,7 @@ public class BrailleRenderContext extends RenderingContext {
                     int rgb = this.img.getRGB(x, y);
                     int grayValue = (((rgb >> 16) & 0xFF) + ((rgb >> 8) & 0xFF) + (rgb & 0xFF)) / 3;
                     if (grayValue >= min && grayValue <= max) {
-                        // 1.4 looks less squashed. TODO calculate real value
-                        setRelative(ctx, (int) (x * 1.4) + this.x, y + this.y);
+                        setRelative(ctx, (int) x + this.x, y + this.y);
                     }
                 }
             }

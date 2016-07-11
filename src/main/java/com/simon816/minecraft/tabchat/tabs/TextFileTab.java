@@ -14,7 +14,7 @@ import java.util.List;
 
 public class TextFileTab extends BufferedTab {
 
-    private final List<Text> buffer = Lists.newArrayList();
+    private final List<String> buffer = Lists.newArrayList();
     private int caretLine;
     private int caretCol;
 
@@ -34,7 +34,7 @@ public class TextFileTab extends BufferedTab {
         int remainingHeight = ctx.height;
         bufferLoop: for (int i = 0; i < this.buffer.size(); i++) {
             String side = ":: ";
-            Text message = this.buffer.get(i);
+            Text message = Text.of(this.buffer.get(i));
             List<Text> lines = TextUtils.splitLines(message, ctx.width - TextUtils.getStringWidth(side, false), ctx.player.isChatColorsEnabled());
             for (Text line : lines) {
                 if (--remainingHeight < 0) {
@@ -50,7 +50,7 @@ public class TextFileTab extends BufferedTab {
                         this.caretLine = ln;
                         this.caretCol = col;
                         TabbedChat.getView(ctx.player).update();
-                    })).color(ln == this.caretLine && j == this.caretCol ? TextColors.RED : TextColors.WHITE).toText());
+                    })).onShiftClick(TextActions.insertText(str)).color(ln == this.caretLine && j == this.caretCol ? TextColors.RED : TextColors.WHITE).toText());
                 }
                 line = b.build();
                 if (ln == this.caretLine) {
@@ -82,24 +82,24 @@ public class TextFileTab extends BufferedTab {
 
     @Override
     public void appendMessage(Text message) {
+        String insertText = message.toPlain();
         while (this.buffer.size() < this.caretLine) {
-            this.buffer.add(Text.EMPTY);
+            this.buffer.add("");
         }
         if (this.buffer.size() >= this.caretLine) {
-            Text existing = this.buffer.get(this.caretLine - 1);
-            String str = existing.toPlain();
+            String existing = this.buffer.get(this.caretLine - 1);
             String newStr;
-            if (str.length() > this.caretCol) {
-                newStr = str.substring(0, this.caretCol + 1) + message.toPlain() + str.substring(this.caretCol + 1);
+            if (existing.length() > this.caretCol) {
+                newStr = existing.substring(0, this.caretCol + 1) + insertText + existing.substring(this.caretCol + 1);
                 this.caretCol++;
             } else {
-                newStr = str + message.toPlain();
+                newStr = existing + insertText;
             }
-            this.buffer.set(this.caretLine - 1, Text.of(newStr));
+            this.buffer.set(this.caretLine - 1, newStr);
         } else {
-            this.buffer.add(message);
+            this.buffer.add(insertText);
         }
-        this.caretCol += message.toPlain().length() - 1;
+        this.caretCol += insertText.length() - 1;
     }
 
 }

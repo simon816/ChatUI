@@ -1,5 +1,6 @@
 package com.simon816.minecraft.tabchat;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.simon816.minecraft.tabchat.channel.WrapOutputChannel;
 import com.simon816.minecraft.tabchat.pagination.TabbedPaginationService;
@@ -24,6 +25,7 @@ import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.util.Tristate;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,6 +34,8 @@ import java.util.UUID;
 public class TabbedChat {
 
     private final Map<UUID, PlayerChatView> playerViewMap = Maps.newHashMap();
+    private final List<FeatureLoader> features = Lists.newArrayList();
+
     private static TabbedChat instance;
 
     public static TabbedChat instance() {
@@ -58,6 +62,11 @@ public class TabbedChat {
     @Listener
     public void onInit(GameInitializationEvent event) {
         Sponge.getGame().getCommandManager().register(this, new TabbedChatCommand(), "tabchat");
+        this.addFeature(new PrivateMessageFeature.Loader());
+    }
+
+    public void addFeature(FeatureLoader loader) {
+        this.features.add(loader);
     }
 
     @Listener(order = Order.POST)
@@ -109,9 +118,10 @@ public class TabbedChat {
         event.setChannel(new WrapOutputChannel(event.getChannel().get(), source));
     }
 
-    // Possibly expand this to be properly pluggable and configurable
     void loadFeatures(PlayerChatView view) {
-        new PrivateMessageFeature(view);
+        for (FeatureLoader feature : this.features) {
+            feature.onNewPlayerView(view);
+        }
     }
 
 }

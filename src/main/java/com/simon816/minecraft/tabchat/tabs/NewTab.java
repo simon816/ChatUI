@@ -3,6 +3,7 @@ package com.simon816.minecraft.tabchat.tabs;
 import com.simon816.minecraft.tabchat.PlayerChatView;
 import com.simon816.minecraft.tabchat.PlayerContext;
 import com.simon816.minecraft.tabchat.TabbedChat;
+import com.simon816.minecraft.tabchat.tabs.canvas.CanvasTab;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
@@ -32,7 +33,7 @@ public class NewTab extends Tab {
             view.getWindow().addTab(new CanvasTab(), true);
             view.update();
         })).build());
-        //builder.append(Text.builder("* View Player List\n").build());
+        // builder.append(Text.builder("* View Player List\n").build());
         builder.append(Text.builder("* Create text file\n")
                 .onClick(TextActions.executeCallback(src -> {
                     PlayerChatView view = TabbedChat.getView((Player) src);

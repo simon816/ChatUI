@@ -2,6 +2,7 @@ package com.simon816.minecraft.tabchat.privmsg;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
+import com.simon816.minecraft.tabchat.FeatureLoader;
 import com.simon816.minecraft.tabchat.PlayerChatView;
 import com.simon816.minecraft.tabchat.util.TextUtils;
 import org.spongepowered.api.Sponge;
@@ -16,10 +17,19 @@ import java.util.UUID;
 
 public class PrivateMessageFeature {
 
+    public static class Loader implements FeatureLoader {
+
+        @Override
+        public void onNewPlayerView(PlayerChatView view) {
+            new PrivateMessageFeature(view);
+        }
+
+    }
+
     private final Map<UUID, PrivateMessageTab> privateChatTabs = Maps.newHashMap();
     private final PlayerChatView view;
 
-    public PrivateMessageFeature(PlayerChatView view) {
+    private PrivateMessageFeature(PlayerChatView view) {
         this.view = view;
         view.getOutgoingPipeline().addHandler((message, sender) -> {
             message = TextUtils.unwrap(message);

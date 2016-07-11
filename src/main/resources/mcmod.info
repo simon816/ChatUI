@@ -7,7 +7,7 @@
     "url": "https://github.com/simon816/TabbedChat",
     "authors": ["Simon816"],
     "requiredMods": [
-        "SpongeAPI@[4.0,5.0)"
+        "sponge"
     ],
     "dependencies": [
     ],

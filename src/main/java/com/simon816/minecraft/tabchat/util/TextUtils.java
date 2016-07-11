@@ -50,6 +50,9 @@ public class TextUtils {
         if (codePoint == '\u2063') {
             return 9; // TODO Investigate why incorrect value is returned
         }
+        if (codePoint >= '\u2800' && codePoint < '\u2900') {
+            return 3;
+        }
         int nonUnicodeIdx = NON_UNICODE_CHARS.indexOf(codePoint);
         double width;
         if (nonUnicodeIdx != -1) {
