@@ -11,7 +11,7 @@ import java.awt.image.BufferedImage;
 /**
  * Uses the braille unicode characters.
  *
- * Standard dimensions: 212 x 128.
+ * Standard dimensions: 212 x 144.
  */
 public class BrailleRenderContext extends RenderingContext {
 
@@ -42,7 +42,7 @@ public class BrailleRenderContext extends RenderingContext {
         }
     }
 
-    private static void setRelative(LineDrawingContext ctx, int x, int y) {
+    static void setRelative(LineDrawingContext ctx, int x, int y) {
         int realX = x >>> 1;
         int realY = y >>> 2;
         char c = ctx.getChar(realX, realY);
@@ -100,7 +100,7 @@ public class BrailleRenderContext extends RenderingContext {
                     int rgb = this.img.getRGB(x, y);
                     int grayValue = (((rgb >> 16) & 0xFF) + ((rgb >> 8) & 0xFF) + (rgb & 0xFF)) / 3;
                     if (grayValue >= min && grayValue <= max) {
-                        setRelative(ctx, (int) x + this.x, y + this.y);
+                        setRelative(ctx, x + this.x, y + this.y);
                     }
                 }
             }

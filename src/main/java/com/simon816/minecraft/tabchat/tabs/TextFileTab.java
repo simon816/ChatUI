@@ -1,7 +1,6 @@
 package com.simon816.minecraft.tabchat.tabs;
 
 import com.google.common.collect.Lists;
-import com.simon816.minecraft.tabchat.PlayerChatView;
 import com.simon816.minecraft.tabchat.PlayerContext;
 import com.simon816.minecraft.tabchat.TabbedChat;
 import com.simon816.minecraft.tabchat.util.TextUtils;
@@ -18,9 +17,9 @@ public class TextFileTab extends BufferedTab {
     private int caretLine;
     private int caretCol;
 
-    public TextFileTab(PlayerChatView view) {
+    public TextFileTab() {
         this.caretLine = 1;
-        enableInputCapturing(view);
+        bufferInput();
     }
 
     @Override

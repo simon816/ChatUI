@@ -65,7 +65,7 @@ public class TabbedPaginationList implements PaginationList {
             this.list.sendTo(receiver);
             return;
         }
-        PlayerChatView view = TabbedChat.getView((Player) sendTo);
+        PlayerChatView view = TabbedChat.getView(sendTo);
         CommandSource newReceiver = new PaginationSourceWrapper(view, (CommandSource) receiver, getTitle().orElse(null));
         this.list.sendTo(newReceiver);
         if (this.service instanceof SpongePaginationService) {

@@ -1,5 +1,7 @@
 package com.simon816.minecraft.tabchat;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.simon816.minecraft.tabchat.channel.WrapOutputChannel;
@@ -34,12 +36,17 @@ import java.util.UUID;
 public class TabbedChat {
 
     private final Map<UUID, PlayerChatView> playerViewMap = Maps.newHashMap();
-    private final List<FeatureLoader> features = Lists.newArrayList();
+    private final List<AbstractFeature> features = Lists.newArrayList();
 
     private static TabbedChat instance;
 
     public static TabbedChat instance() {
         return instance;
+    }
+
+    public static PlayerChatView getView(CommandSource source) {
+        checkArgument(source instanceof Player);
+        return getView((Player) source);
     }
 
     public static PlayerChatView getView(Player player) {
@@ -62,11 +69,13 @@ public class TabbedChat {
     @Listener
     public void onInit(GameInitializationEvent event) {
         Sponge.getGame().getCommandManager().register(this, new TabbedChatCommand(), "tabchat");
-        this.addFeature(new PrivateMessageFeature.Loader());
+
+        this.addFeature(new PrivateMessageFeature());
     }
 
-    public void addFeature(FeatureLoader loader) {
-        this.features.add(loader);
+    public void addFeature(AbstractFeature feature) {
+        this.features.add(feature);
+        feature.onInit();
     }
 
     @Listener(order = Order.POST)
@@ -88,7 +97,11 @@ public class TabbedChat {
 
     @Listener
     public void onPlayerQuit(ClientConnectionEvent.Disconnect event) {
-        this.playerViewMap.remove(event.getTargetEntity().getUniqueId());
+        PlayerChatView view = this.playerViewMap.remove(event.getTargetEntity().getUniqueId());
+        for (AbstractFeature feature : this.features) {
+            feature.onViewClose(view);
+        }
+        view.getWindow().closeAll();
         // TODO Offline message buffering?
     }
 
@@ -119,7 +132,7 @@ public class TabbedChat {
     }
 
     void loadFeatures(PlayerChatView view) {
-        for (FeatureLoader feature : this.features) {
+        for (AbstractFeature feature : this.features) {
             feature.onNewPlayerView(view);
         }
     }

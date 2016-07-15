@@ -30,7 +30,9 @@ public class WrapOutputChannel extends DelegateMessageChannel {
         if (!optMessage.isPresent()) {
             return optMessage;
         }
-        if (recipient instanceof Player && type != ChatTypes.ACTION_BAR) {
+        // This could be useful as a method on ChatType.
+        boolean isChatArea = type == ChatTypes.CHAT || type == ChatTypes.SYSTEM;
+        if (recipient instanceof Player && isChatArea) {
             PlayerChatView view = TabbedChat.getView((Player) recipient);
             CommandSource source = this.causeSource;
             if (sender instanceof CommandSource) {

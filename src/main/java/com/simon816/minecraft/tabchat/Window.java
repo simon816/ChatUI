@@ -1,5 +1,6 @@
 package com.simon816.minecraft.tabchat;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.simon816.minecraft.tabchat.tabs.Tab;
 import com.simon816.minecraft.tabchat.util.TextBuffer;
@@ -52,8 +53,16 @@ public class Window implements ITextDrawable {
         this.tabs.get(this.activeIndex).onFocus();
     }
 
+    public void setTab(Tab tab) {
+        setTab(this.tabs.indexOf(tab));
+    }
+
     public Tab getActiveTab() {
         return this.tabs.get(this.activeIndex);
+    }
+
+    public int getActiveIndex() {
+        return this.activeIndex;
     }
 
     @Override
@@ -61,102 +70,95 @@ public class Window implements ITextDrawable {
         if (ctx.height < 5) {
             throw new IllegalArgumentException("Height too small");
         }
-        StringBuilder borderBuilder = new StringBuilder();
-        double borderWidth = 0;
-        while (borderWidth <= ctx.width) {
-            borderWidth += TextUtils.getWidth('=', false);
-            if (borderWidth <= ctx.width) {
-                borderBuilder.append('=');
-            }
-        }
-        String borderLine = borderBuilder.toString();
         Builder builder = Text.builder();
         builder.append(getTabListText(ctx.width));
-        builder.append(Text.of(borderLine));
         builder.append(Text.NEW_LINE);
-        builder.append(getActiveTab().draw(ctx.withHeight(ctx.height - 4)));
-        builder.append(Text.of(borderLine + "\n"));
-        builder.append(getStatusBarText());
+        builder.append(getActiveTab().draw(ctx.withHeight(ctx.height - this.tabListLines - 1)));
+        builder.append(getStatusBarText(ctx.width));
         return builder.build();
     }
 
-    private Text getStatusBarText() {
-        return Text.of("Status: ", TextColors.RED, "0", TextColors.RESET, " unread PMs");
+    private Text getStatusBarText(int width) {
+        Text line = Text.of("╚Status: ", TextColors.RED, "0", TextColors.RESET, " unread PMs");
+        return Text.builder().append(line, TextUtils.repeatAndTerminate('═', '╝', width - TextUtils.getWidth(line))).build();
     }
 
-    private static final LiteralText leftArrow = Text.builder("< ").onClick(TabbedChat.command("tableft")).build();
-    private static final LiteralText rightArrow = Text.builder(" >").onClick(TabbedChat.command("tabright")).build();
-    private static final LiteralText newTab = Text.builder(" [+]").color(TextColors.GREEN).onClick(TabbedChat.command("newtab"))
-            .onHover(TextActions.showText(Text.of("New Tab"))).build();
-    private int displayTabIndex;
+    private static final LiteralText newTab = Text.builder("[+]")
+            .color(TextColors.GREEN)
+            .onClick(TabbedChat.command("newtab"))
+            .onHover(TextActions.showText(Text.of("New Tab")))
+            .build();
 
-    public void shiftLeft() {
-        if (--this.displayTabIndex < 0) {
-            this.displayTabIndex = 0;
-        }
-    }
-
-    public void shiftRight() {
-        if (++this.displayTabIndex >= this.tabs.size()) {
-            this.displayTabIndex--;
-        }
-    }
+    private int tabListLines;
 
     private Text getTabListText(int maxWidth) {
         Text.Builder builder = Text.builder();
-        int width = TextUtils.getWidth(leftArrow) + TextUtils.getWidth(rightArrow);
+        int currentLineWidth = 0;
         TextBuffer buffer = new TextBuffer();
-        int count = 0;
-        for (int i = this.displayTabIndex; i < this.tabs.size(); i++) {
+        buffer.append(TextUtils.charCache('╔'));
+        this.tabListLines = 1;
+        for (int i = 0; i < this.tabs.size(); i++) {
             Tab tab = this.tabs.get(i);
-
-            buffer.append(Text.of("| "));
-
-            Text.Builder button = tab.getTitle().toBuilder();
-            button.color(TextColors.GREEN);
-            if (i == this.activeIndex) {
-                button.style(TextStyles.BOLD);
-            } else {
-                button.onClick(TabbedChat.command("settab " + i));
-            }
-
-            buffer.append(button.build());
-
+            buffer.append(createTabButton(i));
             if (tab.hasCloseButton()) {
-                Text closeButton = Text.builder("[x]").color(TextColors.RED)
-                        .onClick(TabbedChat.command("closetab " + i))
-                        .onHover(TextActions.showText(Text.of("Close")))
-                        .build();
-                buffer.append(closeButton);
+                buffer.append(createCloseButton(i));
             }
-            buffer.append(Text.of(" |"));
-
-            width += buffer.getWidth();
-            if (width <= maxWidth) {
-                builder.append(buffer.getContents());
-                count++;
-                buffer.clear();
-            } else {
-                buffer.clear();
-                break;
-            }
+            buffer.append(TextUtils.charCache('═'));
+            currentLineWidth = addTabElement(buffer, builder, currentLineWidth, maxWidth);
+            buffer.clear();
         }
-        width += TextUtils.getWidth(newTab);
-        if (this.displayTabIndex == 0 && width <= maxWidth) {
-            builder.append(newTab);
-        } else {
-            if (this.displayTabIndex > 0) {
-                builder.insert(0, leftArrow);
-            }
-            if (this.displayTabIndex + count < this.tabs.size() || width > maxWidth) {
-                builder.append(rightArrow);
-            }
-            if (width <= maxWidth) {
-                builder.append(newTab);
-            }
-        }
-
+        buffer.append(newTab);
+        currentLineWidth = addTabElement(buffer, builder, currentLineWidth, maxWidth);
+        builder.append(TextUtils.repeatAndTerminate('═', this.tabListLines == 1 ? '╗' : '╣', maxWidth - currentLineWidth));
         return builder.build();
+    }
+
+    private int addTabElement(TextBuffer buffer, Text.Builder builder, int currentLineWidth, int maxWidth) {
+        if (currentLineWidth + buffer.getWidth() > maxWidth) {
+            // Overspilled - finish this line and move to another one
+            builder.append(TextUtils.repeatAndTerminate('═', this.tabListLines == 1 ? '╗' : '╣', maxWidth - currentLineWidth));
+            Text newLineStart = Text.of("\n╠");
+            currentLineWidth = TextUtils.getWidth(newLineStart);
+            builder.append(newLineStart);
+            this.tabListLines++;
+        }
+        currentLineWidth += buffer.getWidth();
+        builder.append(buffer.getContents());
+        return currentLineWidth;
+    }
+
+    private Text createTabButton(int tabIndex) {
+        Text.Builder button = this.tabs.get(tabIndex).getTitle().toBuilder();
+        button.color(TextColors.GREEN);
+        if (tabIndex == this.activeIndex) {
+            button.style(TextStyles.BOLD);
+        } else {
+            button.onClick(TabbedChat.command("settab " + tabIndex));
+        }
+        return button.build();
+    }
+
+    private Text createCloseButton(int tabIndex) {
+        return Text.builder("[x]").color(TextColors.RED)
+                .onClick(TabbedChat.command("closetab " + tabIndex))
+                .onHover(TextActions.showText(Text.of("Close")))
+                .build();
+    }
+
+    void closeAll() {
+        for (Tab tab : this.tabs) {
+            tab.onClose();
+        }
+        this.tabs.clear();
+        this.activeIndex = -1;
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+                .add("active", getActiveTab())
+                .add("tabs", this.tabs)
+                .toString();
     }
 
 }

@@ -1,5 +1,6 @@
 package com.simon816.minecraft.tabchat;
 
+import com.google.common.base.Objects;
 import com.simon816.minecraft.tabchat.tabs.GlobalTab;
 import com.simon816.minecraft.tabchat.tabs.NewTab;
 import com.simon816.minecraft.tabchat.tabs.TextBufferTab;
@@ -33,6 +34,7 @@ public class PlayerChatView {
             return true;
         });
         this.incomingPipeline.addHandler((message, sender) -> {
+            this.window.getActiveTab().onTextEntered(this, message);
             // Only allow normal chat to get processed if on the global tab
             return this.window.getActiveTab() != this.globalTab;
         });
@@ -62,16 +64,24 @@ public class PlayerChatView {
     }
 
     public boolean handleIncoming(Text message) {
-        return this.incomingPipeline.process(message, this.playerContext.player);
+        try {
+            return this.incomingPipeline.process(message, this.playerContext.player);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return true; // Just ignore the input
+        }
     }
 
     public Optional<Text> transformOutgoing(CommandSource sender, Text originalOutgoing, ChatType type) {
         if (this.isUpdating) {
+            // Send it straight out
             return Optional.of(originalOutgoing);
         }
+        // pump the text through the outgoing pipeline and redraw
         if (this.outgoingPipeline.process(originalOutgoing, sender)) {
             return Optional.of(this.window.draw(this.playerContext));
         }
+        // Text ignored
         return Optional.empty();
     }
 
@@ -83,10 +93,6 @@ public class PlayerChatView {
             this.window.removeTab(Integer.parseInt(args[1]));
         } else if (cmd.equals("newtab")) {
             this.window.addTab(new NewTab(), true);
-        } else if (cmd.equals("tableft")) {
-            this.window.shiftLeft();
-        } else if (cmd.equals("tabright")) {
-            this.window.shiftRight();
         } else {
             return false;
         }
@@ -94,4 +100,11 @@ public class PlayerChatView {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+                .add("player", this.playerContext)
+                .add("window", this.window)
+                .toString();
+    }
 }

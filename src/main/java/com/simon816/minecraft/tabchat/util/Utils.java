@@ -12,4 +12,10 @@ public class Utils {
         return source;
     }
 
+    public static int ensureMultiple(int val, int of) {
+        while (val % of != 0) {
+            val++;
+        }
+        return val;
+    }
 }

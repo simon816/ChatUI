@@ -1,6 +1,8 @@
 package com.simon816.minecraft.tabchat.util;
 
 import com.google.common.collect.Lists;
+import gnu.trove.map.TCharObjectMap;
+import gnu.trove.map.hash.TCharObjectHashMap;
 import net.minecraft.util.ChatComponentText;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
@@ -79,11 +81,11 @@ public class TextUtils {
     }
 
     public static int getStringWidth(String text, boolean isBold) {
-        int width = 0;
+        double width = 0;
         for (int i = 0; i < text.length(); ++i) {
             width += getWidth(text.codePointAt(i), isBold);
         }
-        return width;
+        return (int) Math.ceil(width);
     }
 
     private static String trimStringToWidth(String text, int width, boolean isBold) {
@@ -143,7 +145,6 @@ public class TextUtils {
     }
 
     public static List<Text> splitLines(Text original, int maxWidth, boolean withColor) {
-        original = unwrap(original);
         // See GuiUtilRenderComponents
         int i = 0;
         LiteralText.Builder ichatcomponent = Text.builder("");
@@ -216,4 +217,78 @@ public class TextUtils {
     public static int getWidth(Text text) {
         return getStringWidth(text.toPlain(), text.getStyle().isBold().orElse(false));
     }
+
+    private static final TCharObjectMap<Text> charTextCache = new TCharObjectHashMap<>();
+
+    public static Text charCache(char c) {
+        Text t = charTextCache.get(c);
+        if (t == null) {
+            charTextCache.put(c, t = Text.of(c));
+        }
+        return t;
+    }
+
+    private static final int SPACE_WIDTH = getStringWidth(" ", false);
+    private static final char PIXEL_CHAR = '⁚'; // 1px wide character
+
+    public static void padSpaces(StringBuilder builder, int width) {
+        while (width >= SPACE_WIDTH) {
+            width -= SPACE_WIDTH;
+            builder.append(' ');
+        }
+        while (width-- > 0) {
+            builder.append(PIXEL_CHAR);
+        }
+    }
+
+    public static int repeat(Text.Builder builder, char repChar, int length) {
+        return startRepeatTerminate(builder, (char) 0, repChar, (char) 0, length);
+    }
+
+    public static Text repeatAndTerminate(char repChar, char termChar, int length) {
+        Text.Builder builder = Text.builder();
+        repeatAndTerminate(builder, repChar, termChar, length);
+        return builder.build();
+    }
+
+    public static int repeatAndTerminate(Text.Builder builder, char repChar, char termChar, int length) {
+        return startRepeatTerminate(builder, (char) 0, repChar, termChar, length);
+    }
+
+    public static Text startRepeatTerminate(char startChar, char repChar, char termChar, int length) {
+        Text.Builder builder = Text.builder();
+        startRepeatTerminate(builder, startChar, repChar, termChar, length);
+        return builder.build();
+    }
+
+    public static int startRepeatTerminate(Text.Builder builder, char startChar, char repChar, char termChar, int length) {
+        int repWidth = TextUtils.getStringWidth(String.valueOf(repChar), false);
+        int startWidth = 0;
+        if (startChar != 0) {
+            startWidth = TextUtils.getStringWidth(String.valueOf(startChar), false);
+        }
+        int termWidth = 0;
+        if (termChar != 0) {
+            termWidth = TextUtils.getStringWidth(String.valueOf(termChar), false);
+        }
+
+        length -= termWidth + startWidth;
+        if (length < 0) {
+            return length;
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        if (startChar != 0) {
+            stringBuilder.append(startChar);
+        }
+        while (length >= repWidth) {
+            length -= repWidth;
+            stringBuilder.append(repChar);
+        }
+        if (termChar != 0) {
+            stringBuilder.append(termChar);
+        }
+        builder.append(Text.of(stringBuilder.toString()));
+        return length;
+    }
+
 }

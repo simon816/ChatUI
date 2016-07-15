@@ -6,7 +6,7 @@ import org.spongepowered.api.text.Text;
 
 import java.util.List;
 
-public class MessagePipeline implements MessageHandler /*Implements because why not */ {
+public class MessagePipeline implements MessageHandler {
 
     private final List<MessageHandler> handlers = Lists.newArrayList();
 

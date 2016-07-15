@@ -21,7 +21,7 @@ public class TabbedChatCommand implements CommandCallable {
         if (!(source instanceof Player)) {
             throw new CommandException(Text.of("Source must be player"));
         }
-        if (TabbedChat.getView((Player) source).handleCommand(arguments.split("\\s+"))) {
+        if (TabbedChat.getView(source).handleCommand(arguments.split("\\s+"))) {
             return CommandResult.success();
         }
         throw new CommandNotFoundException(arguments);
