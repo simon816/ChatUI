@@ -211,8 +211,8 @@ public class ConfigEditTab extends Tab {
         builder.append(createBreadcrumb(), Text.NEW_LINE);
         List<ConfigEntry> entries = getEntries();
         int remaining = ctx.height - 2;
-        int lenOfBar = TextUtils.getStringWidth("│", false);
-        int lenOfCross = TextUtils.getStringWidth("┼", false);
+        int lenOfBar = TextUtils.getWidth('│', false);
+        int lenOfCross = TextUtils.getWidth('┼', false);
         this.widestKey = Utils.ensureMultiple(this.widestKey + lenOfBar, lenOfCross) - lenOfBar;
         this.widestValue = Utils.ensureMultiple(this.widestValue + lenOfBar, lenOfCross) - lenOfBar;
         int i;

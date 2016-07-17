@@ -34,7 +34,7 @@ public class TextFileTab extends BufferedTab {
         bufferLoop: for (int i = 0; i < this.buffer.size(); i++) {
             String side = ":: ";
             Text message = Text.of(this.buffer.get(i));
-            List<Text> lines = TextUtils.splitLines(message, ctx.width - TextUtils.getStringWidth(side, false), ctx.player.isChatColorsEnabled());
+            List<Text> lines = TextUtils.splitLines(message, ctx.width - TextUtils.getStringWidth(side, false), ctx.player.getLocale());
             for (Text line : lines) {
                 if (--remainingHeight < 0) {
                     break bufferLoop;

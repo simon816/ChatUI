@@ -75,7 +75,7 @@ public class NewTab extends Tab {
     }
 
     private Text[] drawButton(Button button, int width) {
-        int barWidth = TextUtils.getStringWidth(String.valueOf('│'), false) * 2;
+        int barWidth = TextUtils.getWidth('│', false) * 2;
         int bwidth = button.getWidth();
         Text buttonText = button.text;
         if (bwidth > width - barWidth - 3) {
