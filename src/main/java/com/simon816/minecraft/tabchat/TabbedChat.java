@@ -4,16 +4,23 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.inject.Inject;
 import com.simon816.minecraft.tabchat.channel.WrapOutputChannel;
 import com.simon816.minecraft.tabchat.pagination.TabbedPaginationService;
 import com.simon816.minecraft.tabchat.privmsg.PrivateMessageFeature;
+import ninja.leaping.configurate.ConfigurationNode;
+import ninja.leaping.configurate.commented.CommentedConfigurationNode;
+import ninja.leaping.configurate.loader.ConfigurationLoader;
+import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.filter.IsCancelled;
 import org.spongepowered.api.event.filter.cause.Root;
+import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePostInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
@@ -39,6 +46,13 @@ public class TabbedChat {
     private final List<AbstractFeature> features = Lists.newArrayList();
 
     private static TabbedChat instance;
+
+    @Inject
+    @DefaultConfig(sharedRoot = true)
+    private ConfigurationLoader<CommentedConfigurationNode> confLoader;
+
+    @Inject
+    private Logger logger;
 
     public static TabbedChat instance() {
         return instance;
@@ -69,7 +83,7 @@ public class TabbedChat {
     @Listener
     public void onInit(GameInitializationEvent event) {
         Sponge.getGame().getCommandManager().register(this, new TabbedChatCommand(), "tabchat");
-
+        Config.init(this.confLoader, this.logger);
         this.addFeature(new PrivateMessageFeature());
     }
 
@@ -89,15 +103,26 @@ public class TabbedChat {
     }
 
     @Listener
+    public void onGameReload(GameReloadEvent event) {
+        Config.loadConfig();
+    }
+
+    @Listener
     public void onPlayerJoin(ClientConnectionEvent.Join event) {
-        PlayerChatView view = new PlayerChatView(event.getTargetEntity());
-        this.playerViewMap.put(event.getTargetEntity().getUniqueId(), view);
+        Player player = event.getTargetEntity();
+        ConfigurationNode playerSettings = Config.playerConfig(player.getUniqueId());
+        if (!playerSettings.getNode("enabled").getBoolean()) {
+            // Does nothing for now
+        }
+        PlayerChatView view = new PlayerChatView(player, playerSettings);
+        this.playerViewMap.put(player.getUniqueId(), view);
         view.update();
     }
 
     @Listener
     public void onPlayerQuit(ClientConnectionEvent.Disconnect event) {
         PlayerChatView view = this.playerViewMap.remove(event.getTargetEntity().getUniqueId());
+        Config.saveConfig();
         for (AbstractFeature feature : this.features) {
             feature.onViewClose(view);
         }

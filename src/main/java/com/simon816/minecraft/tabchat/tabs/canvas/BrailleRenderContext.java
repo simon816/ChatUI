@@ -30,7 +30,11 @@ public class BrailleRenderContext extends RenderingContext {
     }
 
     public void drawImage(int x, int y, BufferedImage img) {
-        this.layers.add(new ImageLayer(x, y, img));
+        this.drawImage(x, y, img, 0x80, 0xFF);
+    }
+
+    public void drawImage(int x, int y, BufferedImage img, int grayMin, int grayMax) {
+        this.layers.add(new ImageLayer(x, y, img, grayMin, grayMax));
     }
 
     private static char set(char c, int x, int y) {
@@ -82,24 +86,25 @@ public class BrailleRenderContext extends RenderingContext {
         private final int x;
         private final int y;
         private final BufferedImage img;
+        private final int grayMin;
+        private final int grayMax;
 
-        public ImageLayer(int x, int y, BufferedImage img) {
+        public ImageLayer(int x, int y, BufferedImage img, int grayMin, int grayMax) {
             this.x = x;
             this.y = y;
             this.img = img;
+            this.grayMin = grayMin;
+            this.grayMax = grayMax;
         }
 
         @Override
         public void draw(LineDrawingContext ctx) {
             ctx.data(new PixelMetadata(TextColors.WHITE));
-            // TODO configurable threshold level
-            int min = 0x80; // min==80 && max==FF -> normal
-            int max = 0xFF; // min==0 && max==80 -> negative
             for (int y = 0; y < this.img.getHeight(); y++) {
                 for (int x = 0; x < this.img.getWidth(); x++) {
                     int rgb = this.img.getRGB(x, y);
                     int grayValue = (((rgb >> 16) & 0xFF) + ((rgb >> 8) & 0xFF) + (rgb & 0xFF)) / 3;
-                    if (grayValue >= min && grayValue <= max) {
+                    if (grayValue >= this.grayMin && grayValue <= this.grayMax) {
                         setRelative(ctx, x + this.x, y + this.y);
                     }
                 }

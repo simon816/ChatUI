@@ -21,9 +21,39 @@ import org.spongepowered.api.text.format.TextStyles;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.function.Consumer;
 
 public class ConfigEditTab extends Tab {
+
+    public static class Options {
+
+        public static final Options DEFAULTS = new Options(true, true, true, null);
+        public final boolean canAdd;
+        public final boolean canDelete;
+        public final boolean canEdit;
+        public final String rootNodeName;
+
+        public Options(boolean add, boolean edit, boolean delete, String rootName) {
+            this.canAdd = add;
+            this.canEdit = edit;
+            this.canDelete = delete;
+            this.rootNodeName = rootName;
+        }
+    }
+
+    public static abstract class ActionHandler {
+
+        public static final ActionHandler NONE = new ActionHandler() {
+        };
+
+        public void onNodeChanged(ConfigurationNode node) {
+        }
+
+        public void onNodeRemoved(Object key) {
+        }
+
+        public void onNodeAdded(ConfigurationNode node) {
+        }
+    }
 
     NodeBuilder nodeBuilder;
     ConfigurationNode node;
@@ -32,15 +62,21 @@ public class ConfigEditTab extends Tab {
     int widestValue;
     private ConfigEntry activeEntry;
     boolean deleteMode;
-    private final Consumer<ConfigurationNode> changeHandler;
+    private final Object[] ignored;
+    final Options options;
+    final ActionHandler handler;
+    private final Text title;
 
-    public ConfigEditTab(ConfigurationNode node) {
-        this(node, null);
+    public ConfigEditTab(ConfigurationNode node, Text title) {
+        this(node, title, Options.DEFAULTS, ActionHandler.NONE);
     }
 
-    public ConfigEditTab(ConfigurationNode node, Consumer<ConfigurationNode> changeHandler) {
+    public ConfigEditTab(ConfigurationNode node, Text title, Options options, ActionHandler handler) {
+        this.ignored = node.getParent().getPath();
         this.node = node;
-        this.changeHandler = changeHandler;
+        this.title = title;
+        this.options = options;
+        this.handler = handler;
     }
 
     private static class NodeBuilder {
@@ -94,16 +130,16 @@ public class ConfigEditTab extends Tab {
 
             if (hasKey() && this.value != null) {
                 builder.append(Text.builder(" [Add Node]").color(TextColors.GREEN).onClick(onClick(() -> {
-                    submitValue();
-                    this.tab.onChange();
+                    ConfigurationNode newNode = submitValue();
+                    this.tab.handler.onNodeAdded(newNode);
                     this.tab.nodeBuilder = null;
                 })).build());
             }
             builder.append(Text.NEW_LINE);
         }
 
-        protected void submitValue() {
-            this.tab.node.getNode(this.key).setValue(this.value);
+        protected ConfigurationNode submitValue() {
+            return this.tab.node.getNode(this.key).setValue(this.value);
         }
 
         private Text getKeyText() {
@@ -176,15 +212,14 @@ public class ConfigEditTab extends Tab {
         }
 
         @Override
-        protected void submitValue() {
-            this.tab.node.getAppendedNode().setValue(this.value);
-
+        protected ConfigurationNode submitValue() {
+            return this.tab.node.getAppendedNode().setValue(this.value);
         }
     }
 
     @Override
     public Text getTitle() {
-        return Text.of("Edit Config");
+        return this.title;
     }
 
     public void setNode(ConfigurationNode node) {
@@ -193,12 +228,6 @@ public class ConfigEditTab extends Tab {
         }
         this.node = node;
         this.offset = 0;
-    }
-
-    void onChange() {
-        if (this.changeHandler != null) {
-            this.changeHandler.accept(this.node);
-        }
     }
 
     @Override
@@ -307,7 +336,7 @@ public class ConfigEditTab extends Tab {
                 this.deleteMode = !this.deleteMode;
             } else {
                 this.node.removeChild(this.activeEntry.key);
-                this.onChange();
+                this.handler.onNodeRemoved(this.activeEntry.key);
                 this.activeEntry = null;
             }
             TabbedChat.getView(src).update();
@@ -320,13 +349,15 @@ public class ConfigEditTab extends Tab {
             builder.append(Text.of(scrollUp(), this.offset == 0 ? TextColors.DARK_GRAY : TextColors.WHITE, "[Scroll Up] "));
             builder.append(Text.of(scrollDown(lastIndex, maxOffset),
                     lastIndex > maxOffset ? TextColors.DARK_GRAY : TextColors.WHITE, "[Scroll Down] "));
-            if ((this.node.hasListChildren() || this.node.hasMapChildren()) && !this.deleteMode) {
+            if (this.options.canAdd && (this.node.hasListChildren() || this.node.hasMapChildren()) && !this.deleteMode) {
                 builder.append(Text.of(addNew(), TextColors.GREEN, "[Add]"));
             }
         } else {
             builder.append(Text.of(closeEntry(), TextColors.RED, "[Close]"));
         }
-        builder.append(Text.of(deleteEntry(), TextColors.RED, " [Delete]"));
+        if (this.options.canDelete) {
+            builder.append(Text.of(deleteEntry(), TextColors.RED, " [Delete]"));
+        }
         return builder.build();
     }
 
@@ -377,6 +408,8 @@ public class ConfigEditTab extends Tab {
             return new SimpleValue(value, ValueType.BOOLEAN);
         } else if (value instanceof String) {
             return new SimpleValue(value, ValueType.STRING);
+        } else if (value == null) {
+            return new SimpleValue(value, ValueType.NULL);
         }
         return new UnknownValueType(value);
     }
@@ -384,7 +417,15 @@ public class ConfigEditTab extends Tab {
     private Text createBreadcrumb() {
         Text.Builder builder = Text.builder();
         Object[] path = this.node.getPath();
+        boolean isRoot = true;
         for (int i = 0; i < path.length; i++) {
+            if (i < this.ignored.length && this.ignored[i] == path[i]) {
+                continue;
+            }
+            if (isRoot && this.options.rootNodeName != null) {
+                path[i] = this.options.rootNodeName;
+            }
+            isRoot = false;
             Text.Builder part = Text.builder(path[i].toString());
             final int distance = path.length - i - 1;
             part.color(TextColors.BLUE).onClick(TextActions.executeCallback(src -> {
@@ -423,7 +464,7 @@ public class ConfigEditTab extends Tab {
         ConfigurationNode node = this.node.getNode(this.activeEntry.key);
         Object value = this.activeEntry.value.onSetValue(input.toPlain());
         node.setValue(value);
-        this.onChange();
+        this.handler.onNodeChanged(node);
         this.activeEntry = null;
         view.update();
     }
@@ -454,7 +495,7 @@ public class ConfigEditTab extends Tab {
             public void onClick(ConfigEntry entry, ConfigEditTab tab) {
                 ConfigurationNode node = tab.node.getNode(entry.key);
                 node.setValue(!this.<Boolean>checkType(node.getValue()));
-                tab.onChange();
+                tab.handler.onNodeChanged(node);
             }
 
             @Override
@@ -488,6 +529,27 @@ public class ConfigEditTab extends Tab {
             public Object setValue(Object old, String input) {
                 return input;
             }
+        },
+        NULL(null) {
+
+            @Override
+            public void onClick(ConfigEntry entry, ConfigEditTab tab) {
+            }
+
+            @Override
+            public ClickAction<?> createClickAction(Object value, ConfigEntry entry, ConfigEditTab boundTab) {
+                return null;
+            }
+
+            @Override
+            public Text.Builder toText(Object value) {
+                return Text.builder("NULL");
+            }
+
+            @Override
+            public Object setValue(Object old, String input) {
+                throw new UnsupportedOperationException("Cannot set value of this node");
+            }
         };
 
         private final Class<?> type;
@@ -498,6 +560,10 @@ public class ConfigEditTab extends Tab {
 
         @SuppressWarnings("unchecked")
         protected final <T> T checkType(Object value) {
+            if (this == NULL) {
+                checkArgument(value == null, "Value must be null");
+                return null;
+            }
             checkArgument(this.type.isInstance(value), "Value must be instance of %s, found %s", this.type, value.getClass());
             return (T) value;
         }
@@ -550,6 +616,9 @@ public class ConfigEditTab extends Tab {
 
         @Override
         protected ClickAction<?> createClickAction(ConfigEntry entry, ConfigEditTab boundTab) {
+            if (!boundTab.options.canEdit) {
+                return null;
+            }
             return this.type.createClickAction(this.value, entry, boundTab);
         }
 
@@ -638,7 +707,7 @@ public class ConfigEditTab extends Tab {
                         return;
                     }
                     boundTab.node.removeChild(this.key);
-                    boundTab.onChange();
+                    boundTab.handler.onNodeRemoved(this.key);
                     boundTab.deleteMode = false;
                     TabbedChat.getView(src).update();
                 }));

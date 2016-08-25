@@ -22,6 +22,11 @@ public class PlayerContext {
         return new PlayerContext(this.player, this.width, height);
     }
 
+    public PlayerContext withWidth(int width) {
+        checkArgument(width >= 9, "Width must be at least 9");
+        return new PlayerContext(this.player, width, this.height);
+    }
+
     @Override
     public String toString() {
         return Objects.toStringHelper(this)

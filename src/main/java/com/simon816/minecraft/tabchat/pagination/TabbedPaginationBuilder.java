@@ -15,9 +15,9 @@ public class TabbedPaginationBuilder implements PaginationList.Builder {
     public TabbedPaginationBuilder(PaginationService service) {
         this.builder = service.builder();
         this.service = service;
-        // TODO get number dynamically
-        this.removedHeight = 4;
-        this.builder.linesPerPage(PlayerChatView.PLAYER_BUFFER_HEIGHT - this.removedHeight);
+        // This cannot be obtained without a Window object
+        this.removedHeight = 2;
+        this.builder.linesPerPage(PlayerChatView.DEFAULT_BUFFER_HEIGHT - this.removedHeight);
     }
 
     @Override

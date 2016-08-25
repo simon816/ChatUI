@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 import com.simon816.minecraft.tabchat.AbstractFeature;
 import com.simon816.minecraft.tabchat.PlayerChatView;
 import com.simon816.minecraft.tabchat.PlayerContext;
-import com.simon816.minecraft.tabchat.tabs.NewTab;
 import com.simon816.minecraft.tabchat.tabs.NewTab.LaunchTabButton;
 import com.simon816.minecraft.tabchat.tabs.Tab;
 import org.spongepowered.api.Sponge;
@@ -29,11 +28,13 @@ public class PrivateMessageFeature extends AbstractFeature {
         @Override
         public Text draw(PlayerContext ctx) {
             Text.Builder builder = Text.builder();
+            int remaining = ctx.height;
             for (int i = 0; i < ctx.height / 2; i++) {
                 builder.append(Text.NEW_LINE);
             }
+            remaining -= ctx.height / 2;
             builder.append(Text.of("Type the name of the player you want to message:"));
-            for (int i = 0; i < ctx.height / 2; i++) {
+            for (int i = 0; i < remaining; i++) {
                 builder.append(Text.NEW_LINE);
             }
             return builder.build();
@@ -51,16 +52,12 @@ public class PrivateMessageFeature extends AbstractFeature {
         }
     }
 
-    @Override
-    protected void onInit() {
-        NewTab.registerButton(new LaunchTabButton("Private Message", () -> new MessageWithTab()));
-    }
-
     static final Map<UUID, PlayerPrivateView> privateView = Maps.newHashMap();
 
     @Override
     protected void onNewPlayerView(PlayerChatView view) {
         privateView.put(view.getPlayer().getUniqueId(), new PlayerPrivateView(view));
+        view.getNewTab().addButton(new LaunchTabButton("Private Message", () -> new MessageWithTab()));
     }
 
     @Override

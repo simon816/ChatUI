@@ -1,15 +1,15 @@
 package com.simon816.minecraft.tabchat.tabs;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.Lists;
 import com.simon816.minecraft.tabchat.PlayerChatView;
 import com.simon816.minecraft.tabchat.PlayerContext;
 import com.simon816.minecraft.tabchat.TabbedChat;
-import com.simon816.minecraft.tabchat.tabs.canvas.CanvasTab;
 import com.simon816.minecraft.tabchat.util.TextUtils;
 import org.spongepowered.api.text.LiteralText;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
-import org.spongepowered.common.SpongeImpl;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -18,17 +18,10 @@ public class NewTab extends Tab {
 
     private static final Text TITLE = Text.of("New Tab");
 
-    private static final List<Button> buttons = Lists.newArrayList();
+    private final List<Button> buttons = Lists.newArrayList();
 
-    static {
-        registerButton(new LaunchTabButton("Settings", () -> new SettingsTab()));
-        registerButton(new LaunchTabButton("Canvas", () -> new CanvasTab()));
-        registerButton(new LaunchTabButton("New File", () -> new TextFileTab()));
-        registerButton(new LaunchTabButton("Edit Config", () -> new ConfigEditTab(SpongeImpl.getGlobalConfig().getRootNode())));
-    }
-
-    public static void registerButton(Button button) {
-        buttons.add(button);
+    public void addButton(Button button) {
+        this.buttons.add(button);
     }
 
     @Override
@@ -39,10 +32,11 @@ public class NewTab extends Tab {
     @Override
     public Text draw(PlayerContext ctx) {
         Text.Builder builder = Text.builder();
+        checkArgument(ctx.height >= 3, "Height must be at least 3");
         int maxButtonRows = ctx.height / 3;
         int columns = 1;
 
-        while (maxButtonRows < Math.ceil(buttons.size() / (float) columns)) {
+        while (maxButtonRows < Math.ceil(this.buttons.size() / (float) columns)) {
             columns++;
         }
 
@@ -51,15 +45,15 @@ public class NewTab extends Tab {
         while (width % 9 != 0) {
             width -= 1;
         }
-        for (int i = 0; i < buttons.size() && remainingHeight > 0; i += columns) {
+        for (int i = 0; i < this.buttons.size() && remainingHeight > 0; i += columns) {
             Text.Builder line1 = Text.builder();
             Text.Builder line2 = Text.builder();
             Text.Builder line3 = Text.builder();
             for (int j = 0; j < columns; j++) {
-                if (buttons.size() <= i + j) {
+                if (this.buttons.size() <= i + j) {
                     break;
                 }
-                Button button = buttons.get(i + j);
+                Button button = this.buttons.get(i + j);
                 Text[] text = drawButton(button, width);
                 line1.append(text[0]);
                 line2.append(text[1]);
@@ -81,16 +75,17 @@ public class NewTab extends Tab {
         if (bwidth > width - barWidth - 3) {
             // Trim down
             String t = buttonText.toPlain();
-            while (bwidth > width - barWidth - 3) {
+            while (bwidth > width - barWidth - 3 && t.length() > 0) {
                 t = t.substring(0, t.length() - 1);
-                bwidth = TextUtils.getStringWidth(t, false) + 6;
+                bwidth = TextUtils.getStringWidth(t, false) + 6; // 6 is width
+                                                                 // of '...'
             }
             buttonText = ((LiteralText.Builder) buttonText.toBuilder()).content(t + "...").build();
         }
         StringBuilder spaces = new StringBuilder();
         spaces.append('│');
         // Not sure why -3 is needed but it works
-        TextUtils.padSpaces(spaces, width - bwidth - barWidth-3);
+        TextUtils.padSpaces(spaces, width - bwidth - barWidth - 3);
         spaces.append('│');
         String left = spaces.substring(0, spaces.length() / 2);
         String right = spaces.substring(left.length());

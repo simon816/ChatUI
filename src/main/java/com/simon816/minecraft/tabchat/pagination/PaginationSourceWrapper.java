@@ -27,8 +27,6 @@ public class PaginationSourceWrapper implements ProxySource {
         this.actualSource = actualSource;
         this.tab = new PaginationTab(this, title == null ? Text.of("Pagination") : title);
         view.getWindow().addTab(this.tab, false);
-//        MessageHandler pipelineHandler = (message, sender) -> true;
-//        view.getPipeline().addHandler(pipelineHandler);
         view.update();
     }
 

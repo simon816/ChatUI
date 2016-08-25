@@ -79,7 +79,7 @@ public class Window implements ITextDrawable {
     }
 
     private Text getStatusBarText(int width) {
-        Text line = Text.of("╚Status: ", TextColors.RED, "0", TextColors.RESET, " unread PMs");
+        Text line = Text.of("╚Status: Nothing here yet");
         return Text.builder().append(line, TextUtils.repeatAndTerminate('═', '╝', width - TextUtils.getWidth(line))).build();
     }
 

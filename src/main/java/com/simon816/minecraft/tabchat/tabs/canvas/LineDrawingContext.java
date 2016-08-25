@@ -176,7 +176,7 @@ public class LineDrawingContext {
                     rootBuilder.append(prevData.toText(string.toString()));
                     string = new StringBuilder();
                     for (int j = w; j < this.cellWidth; j++) {
-                        string.append(this.emptyChar);
+                        string.append(TextUtils.PIXEL_CHAR);
                     }
                     rootBuilder.append(this.emptyData.toText(string.toString()));
                     string = new StringBuilder();

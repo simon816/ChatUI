@@ -116,13 +116,13 @@ public class BlockRenderContext extends RenderingContext {
             }
             if (this.showArrows) {
                 ctx.write((this.x1 + this.x2) / 2, this.y1 - 1, '^', new PixelMetadata(TextColors.WHITE, src -> {
-                    PlayerChatView view = TabbedChat.getView((Player) src);
+                    PlayerChatView view = TabbedChat.getView(src);
                     this.y1--;
                     this.y2--;
                     view.update();
                 } , true));
                 ctx.write((this.x1 + this.x2) / 2, this.y2, 'v', new PixelMetadata(TextColors.WHITE, src -> {
-                    PlayerChatView view = TabbedChat.getView((Player) src);
+                    PlayerChatView view = TabbedChat.getView(src);
                     this.y1++;
                     this.y2++;
                     view.update();

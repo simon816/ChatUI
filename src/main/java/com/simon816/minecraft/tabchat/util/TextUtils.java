@@ -115,7 +115,7 @@ public class TextUtils {
     }
 
     private static final int SPACE_WIDTH = getWidth(' ', false);
-    private static final char PIXEL_CHAR = '⁚'; // 1px wide character
+    public static final char PIXEL_CHAR = '⁚'; // 1px wide character
 
     public static void padSpaces(StringBuilder builder, int width) {
         while (width >= SPACE_WIDTH) {
