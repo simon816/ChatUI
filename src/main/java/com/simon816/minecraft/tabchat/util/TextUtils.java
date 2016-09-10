@@ -87,7 +87,7 @@ public class TextUtils {
     }
 
     public static int getWidth(char c, boolean isBold) {
-        return getStringWidth(String.valueOf(c), isBold);
+        return (int) Math.ceil(getWidth((int) c, isBold));
     }
 
     public static List<Text> splitLines(Text original, int maxWidth) {
@@ -139,6 +139,10 @@ public class TextUtils {
 
     public static int repeatAndTerminate(Text.Builder builder, char repChar, char termChar, int length) {
         return startRepeatTerminate(builder, (char) 0, repChar, termChar, length);
+    }
+
+    public static int startAndRepeat(Text.Builder builder, char startChar, char repChar, int length) {
+        return startRepeatTerminate(builder, startChar, repChar, (char) 0, length);
     }
 
     public static Text startRepeatTerminate(char startChar, char repChar, char termChar, int length) {

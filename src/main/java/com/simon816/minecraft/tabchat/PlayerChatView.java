@@ -1,12 +1,12 @@
 package com.simon816.minecraft.tabchat;
 
 import com.google.common.base.Objects;
-import com.simon816.minecraft.tabchat.tabs.ConfigEditTab;
 import com.simon816.minecraft.tabchat.tabs.GlobalTab;
 import com.simon816.minecraft.tabchat.tabs.NewTab;
 import com.simon816.minecraft.tabchat.tabs.PlayerListTab;
 import com.simon816.minecraft.tabchat.tabs.Tab;
 import com.simon816.minecraft.tabchat.tabs.TextBufferTab;
+import com.simon816.minecraft.tabchat.tabs.config.ConfigEditTab;
 import ninja.leaping.configurate.ConfigurationNode;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
