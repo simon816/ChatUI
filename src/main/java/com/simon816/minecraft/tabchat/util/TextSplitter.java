@@ -123,6 +123,10 @@ class TextSplitter {
             if (currLineLength + lineW > maxWidth) {
                 String[] trimmed = trimToMaxWidth(line, isBold, maxWidth - currLineLength);
                 line = trimmed[0];
+                if (currLineLength == 0 && line.isEmpty()) {
+                    // Cannot fit this within the maxWidth
+                    break; // give up
+                }
                 lineW = TextUtils.getStringWidth(line, isBold);
                 next = trimmed[1];
             }
@@ -176,10 +180,12 @@ class TextSplitter {
     private static String[] trimToMaxWidth(String text, boolean bold, int maxWidth) {
         int currLen = 0;
         int pos = 0;
-        while (currLen < maxWidth) {
+        while (currLen < maxWidth && pos < text.length()) {
             currLen += TextUtils.getWidth(text.charAt(pos++), bold);
         }
-        pos--;
+        if (currLen > maxWidth) {
+            pos--;
+        }
         return new String[] {text.substring(0, pos), text.substring(pos)};
     }
 

@@ -3,6 +3,7 @@ package com.simon816.minecraft.tabchat;
 import com.google.common.base.Objects;
 import com.simon816.minecraft.tabchat.tabs.GlobalTab;
 import com.simon816.minecraft.tabchat.tabs.NewTab;
+import com.simon816.minecraft.tabchat.tabs.PermissionsTab;
 import com.simon816.minecraft.tabchat.tabs.PlayerListTab;
 import com.simon816.minecraft.tabchat.tabs.Tab;
 import com.simon816.minecraft.tabchat.tabs.TextBufferTab;
@@ -31,12 +32,14 @@ public class PlayerChatView {
 
     private final MessagePipeline incomingPipeline = new MessagePipeline();
     private final MessagePipeline outgoingPipeline = new MessagePipeline();
+    private final PlayerListTab playerListTab;
 
     PlayerChatView(Player player, ConfigurationNode settings) {
         this.playerContext = new PlayerContext(player, settings.getNode("displayWidth").getInt(), settings.getNode("displayHeight").getInt());
         this.window = new Window();
         this.window.addTab(this.globalTab = new GlobalTab(), true);
         this.newTab = new NewTab();
+        this.playerListTab = new PlayerListTab(player);
         initNewTab(player);
 
         this.outgoingPipeline.addHandler((message, sender) -> {
@@ -51,12 +54,19 @@ public class PlayerChatView {
         TabbedChat.instance().loadFeatures(this);
     }
 
+    public PlayerListTab getPlayerListTab() {
+        return this.playerListTab;
+    }
+
     private void initNewTab(Player player) {
-        this.newTab.addButton(new NewTab.LaunchTabButton("Player List", () -> PlayerListTab.INSTANCE));
+        this.newTab.addButton(new NewTab.LaunchTabButton("Player List", () -> this.playerListTab));
         UUID uuid = player.getUniqueId();
         this.newTab.addButton(new NewTab.LaunchTabButton("Settings", () -> createSettingsTab(uuid)));
         if (player.hasPermission("tabchat.admin")) {
             showNewTabAdminButtons();
+        }
+        if (DemoContent.ENABLE_DEMO) {
+            this.newTab.addButton(new NewTab.LaunchTabButton("Demo Content", () -> DemoContent.TAB));
         }
     }
 
@@ -100,6 +110,7 @@ public class PlayerChatView {
             this.newTab.addButton(new NewTab.LaunchTabButton("Edit Config", () -> new ConfigEditTab(SpongeImpl.getGlobalConfig().getRootNode(),
                     Text.of("Sponge Config"), ConfigEditTab.Options.DEFAULTS, handler)));
         }
+        this.newTab.addButton(new NewTab.LaunchTabButton("Permissions", () -> new PermissionsTab()));
     }
 
     public Player getPlayer() {

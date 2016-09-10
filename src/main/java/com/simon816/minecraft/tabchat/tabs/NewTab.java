@@ -12,6 +12,7 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class NewTab extends Tab {
@@ -71,7 +72,7 @@ public class NewTab extends Tab {
     private Text[] drawButton(Button button, int width) {
         int barWidth = TextUtils.getWidth('│', false) * 2;
         int bwidth = button.getWidth();
-        Text buttonText = button.text;
+        Text buttonText = button.getText();
         if (bwidth > width - barWidth - 3) {
             // Trim down
             String t = buttonText.toPlain();
@@ -97,13 +98,17 @@ public class NewTab extends Tab {
 
     public static abstract class Button {
 
-        protected final Text text;
+        private final String label;
         private int textWidth = -1;
 
-        public Button(String text) {
-            this.text = Text.builder(text).onClick(TextActions.executeCallback(src -> {
+        public Button(String label) {
+            this.label = label;
+        }
+
+        public Text getText() {
+            return Text.builder(this.label).onClick(TextActions.executeCallback(src -> {
                 PlayerChatView view = TabbedChat.getView(src);
-                if (view.getWindow().getActiveTab().getClass() != NewTab.class) {
+                if (!(view.getWindow().getActiveTab() instanceof NewTab)) {
                     return; // Expired link
                 }
                 onClick(view);
@@ -112,7 +117,7 @@ public class NewTab extends Tab {
 
         protected int getWidth() {
             if (this.textWidth == -1) {
-                this.textWidth = TextUtils.getWidth(this.text);
+                this.textWidth = TextUtils.getWidth(getText());
             }
             return this.textWidth;
         }
@@ -129,16 +134,20 @@ public class NewTab extends Tab {
 
     public static class LaunchTabButton extends Button {
 
-        private final Supplier<Tab> supplier;
+        private final Function<PlayerChatView, Tab> tabOpenFunc;
 
-        public LaunchTabButton(String text, Supplier<Tab> tabSupplier) {
+        public LaunchTabButton(String text, Supplier<Tab> tabOpenFunc) {
+            this(text, view -> tabOpenFunc.get());
+        }
+
+        public LaunchTabButton(String text, Function<PlayerChatView, Tab> tabOpenFunc) {
             super(text);
-            this.supplier = tabSupplier;
+            this.tabOpenFunc = tabOpenFunc;
         }
 
         @Override
         protected void onClick(PlayerChatView view) {
-            replaceWith(this.supplier.get(), view);
+            replaceWith(this.tabOpenFunc.apply(view), view);
         }
     }
 

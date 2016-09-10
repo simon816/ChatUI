@@ -1,17 +1,10 @@
 package com.simon816.minecraft.tabchat.tabs.canvas;
 
-import com.simon816.minecraft.tabchat.PlayerChatView;
-import com.simon816.minecraft.tabchat.TabbedChat;
 import com.simon816.minecraft.tabchat.tabs.canvas.CanvasTab.Context;
 import com.simon816.minecraft.tabchat.tabs.canvas.CanvasTab.Layer;
 import com.simon816.minecraft.tabchat.tabs.canvas.CanvasTab.RenderingContext;
 import com.simon816.minecraft.tabchat.tabs.canvas.LineDrawingContext.PixelMetadata;
-import org.spongepowered.api.command.CommandSource;
-import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.format.TextColor;
-import org.spongepowered.api.text.format.TextColors;
-
-import java.util.function.Consumer;
 
 public class BlockRenderContext extends RenderingContext {
 
@@ -90,8 +83,6 @@ public class BlockRenderContext extends RenderingContext {
         private int x2;
         private int y2;
         private TextColor color;
-        private Consumer<CommandSource> clickAction;
-        private boolean showArrows;
 
         public Rect(int x1, int y1, int x2, int y2, TextColor color) {
             this.x1 = x1;
@@ -99,46 +90,15 @@ public class BlockRenderContext extends RenderingContext {
             this.y1 = y1;
             this.y2 = y2;
             this.color = color;
-            this.clickAction = src -> {
-                PlayerChatView view = TabbedChat.getView((Player) src);
-                this.showArrows = !this.showArrows;
-                view.update();
-            };
         }
 
         @Override
         public void draw(LineDrawingContext ctx) {
-            ctx.data(new PixelMetadata(this.color, this.clickAction, false));
+            ctx.data(new PixelMetadata(this.color));
             for (int y = this.y1; y < this.y2; y++) {
                 for (int x = this.x1; x < this.x2; x++) {
                     ctx.write(x, y, '\u2588');
                 }
-            }
-            if (this.showArrows) {
-                ctx.write((this.x1 + this.x2) / 2, this.y1 - 1, '^', new PixelMetadata(TextColors.WHITE, src -> {
-                    PlayerChatView view = TabbedChat.getView(src);
-                    this.y1--;
-                    this.y2--;
-                    view.update();
-                } , true));
-                ctx.write((this.x1 + this.x2) / 2, this.y2, 'v', new PixelMetadata(TextColors.WHITE, src -> {
-                    PlayerChatView view = TabbedChat.getView(src);
-                    this.y1++;
-                    this.y2++;
-                    view.update();
-                } , true));
-                ctx.write(this.x1 - 1, (this.y1 + this.y2) / 2, '<', new PixelMetadata(TextColors.WHITE, src -> {
-                    PlayerChatView view = TabbedChat.getView((Player) src);
-                    this.x1--;
-                    this.x2--;
-                    view.update();
-                } , true));
-                ctx.write(this.x2, (this.y1 + this.y2) / 2, '>', new PixelMetadata(TextColors.WHITE, src -> {
-                    PlayerChatView view = TabbedChat.getView((Player) src);
-                    this.x1++;
-                    this.x2++;
-                    view.update();
-                } , true));
             }
         }
     }

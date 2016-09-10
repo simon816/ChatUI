@@ -76,7 +76,7 @@ public class TableUI implements UIComponent {
             List<List<Text>> rowLineList = row.getValue();
             Text.Builder completeLineBuilder = Text.builder();
             for (List<Text> colGroup : rowLineList) {
-                Text lineSegment = this.renderer.applySideBorders(colGroup, colMaxWidths);
+                Text lineSegment = this.renderer.applySideBorders(rowIndex, colGroup, colMaxWidths);
                 completeLineBuilder.append(lineSegment, Text.NEW_LINE);
                 lineCount++;
             }

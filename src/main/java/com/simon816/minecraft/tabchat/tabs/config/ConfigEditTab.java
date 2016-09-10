@@ -6,7 +6,9 @@ import com.simon816.minecraft.tabchat.TabbedChat;
 import com.simon816.minecraft.tabchat.tabs.Tab;
 import com.simon816.minecraft.tabchat.ui.Frame;
 import com.simon816.minecraft.tabchat.ui.UIComponent;
+import com.simon816.minecraft.tabchat.ui.table.TableScrollHelper;
 import com.simon816.minecraft.tabchat.ui.table.TableUI;
+import com.simon816.minecraft.tabchat.util.TextUtils;
 import ninja.leaping.configurate.ConfigurationNode;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.text.Text;
@@ -48,10 +50,10 @@ public class ConfigEditTab extends Tab {
         @Override
         public int draw(Text.Builder builder, PlayerContext ctx) {
             if (ConfigEditTab.this.control.getActiveEntry() == null) {
-                builder.append(Text.of(clickAction(ConfigEditTab.this.control::scrollUp),
-                        ConfigEditTab.this.control.canScrollUp() ? TextColors.WHITE : TextColors.DARK_GRAY, "[Scroll Up] "));
-                builder.append(Text.of(clickAction(ConfigEditTab.this.control::scrollDown),
-                        ConfigEditTab.this.control.canScrollDown() ? TextColors.WHITE : TextColors.DARK_GRAY, "[Scroll Down] "));
+                builder.append(Text.of(clickAction(ConfigEditTab.this.scroll::scrollUp),
+                        ConfigEditTab.this.scroll.canScrollUp() ? TextColors.WHITE : TextColors.DARK_GRAY, "[Scroll Up] "));
+                builder.append(Text.of(clickAction(ConfigEditTab.this.scroll::scrollDown),
+                        ConfigEditTab.this.scroll.canScrollDown() ? TextColors.WHITE : TextColors.DARK_GRAY, "[Scroll Down] "));
                 if (ConfigEditTab.this.control.options.canAdd && !ConfigEditTab.this.control.inDeleteMode()) {
                     builder.append(Text.of(clickAction(() -> {
                         ConfigEditTab.this.nodeBuilder = NodeBuilder.forNode(ConfigEditTab.this.control.getNode(), ConfigEditTab.this);
@@ -94,7 +96,7 @@ public class ConfigEditTab extends Tab {
                 }
             }
             builder.append(Text.NEW_LINE);
-            return 1;
+            return (int) Math.ceil((double) TextUtils.getWidth(builder.build()) / ctx.width);
         }
 
     }
@@ -133,6 +135,7 @@ public class ConfigEditTab extends Tab {
     private final Frame frame;
     final ConfigTabControl control;
     private final Text title;
+    final TableScrollHelper scroll;
 
     NodeBuilder nodeBuilder;
 
@@ -140,12 +143,14 @@ public class ConfigEditTab extends Tab {
         this(node, title, Options.DEFAULTS, ActionHandler.NONE);
     }
 
-    public ConfigEditTab(ConfigurationNode rootNode, Text title,Options options, ActionHandler handler) {
+    public ConfigEditTab(ConfigurationNode rootNode, Text title, Options options, ActionHandler handler) {
         this.title = title;
         this.control = new ConfigTabControl(this, rootNode, options, handler);
+        ConfigTableModel model = this.control.createTableModel();
+        this.scroll = new TableScrollHelper(model);
         this.frame = new Frame();
         this.frame.addComponent(new Breadcrumb(), Frame.STICK_TOP);
-        this.frame.addComponent(new TableUI(this.control.createTableModel(), this.control.createTableRenderer()));
+        this.frame.addComponent(new TableUI(model, this.control.createTableRenderer()));
         this.frame.addComponent(new ButtonBar(), Frame.STICK_BOTTOM);
     }
 

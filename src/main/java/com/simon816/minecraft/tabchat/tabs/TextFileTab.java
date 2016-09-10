@@ -9,6 +9,7 @@ import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
 
+import java.util.Collections;
 import java.util.List;
 
 public class TextFileTab extends BufferedTab {
@@ -16,6 +17,11 @@ public class TextFileTab extends BufferedTab {
     private final List<String> buffer = Lists.newArrayList();
     private int caretLine;
     private int caretCol;
+
+    public TextFileTab(String[] lines) {
+        this();
+        Collections.addAll(this.buffer, lines);
+    }
 
     public TextFileTab() {
         this.caretLine = 1;
@@ -49,7 +55,8 @@ public class TextFileTab extends BufferedTab {
                         this.caretLine = ln;
                         this.caretCol = col;
                         TabbedChat.getView(ctx.player).update();
-                    })).onShiftClick(TextActions.insertText(str)).color(ln == this.caretLine && j == this.caretCol ? TextColors.RED : TextColors.WHITE).toText());
+                    })).onShiftClick(TextActions.insertText(str))
+                            .color(ln == this.caretLine && j == this.caretCol ? TextColors.RED : TextColors.WHITE).toText());
                 }
                 line = b.build();
                 if (ln == this.caretLine) {

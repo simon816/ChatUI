@@ -3,61 +3,32 @@ package com.simon816.minecraft.tabchat.privmsg;
 import com.google.common.collect.Maps;
 import com.simon816.minecraft.tabchat.AbstractFeature;
 import com.simon816.minecraft.tabchat.PlayerChatView;
-import com.simon816.minecraft.tabchat.PlayerContext;
-import com.simon816.minecraft.tabchat.tabs.NewTab.LaunchTabButton;
-import com.simon816.minecraft.tabchat.tabs.Tab;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.api.text.format.TextStyles;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 public class PrivateMessageFeature extends AbstractFeature {
-
-    static class MessageWithTab extends Tab {
-
-        private static final Text TITLE = Text.of("Private Message");
-
-        @Override
-        public Text getTitle() {
-            return TITLE;
-        }
-
-        @Override
-        public Text draw(PlayerContext ctx) {
-            Text.Builder builder = Text.builder();
-            int remaining = ctx.height;
-            for (int i = 0; i < ctx.height / 2; i++) {
-                builder.append(Text.NEW_LINE);
-            }
-            remaining -= ctx.height / 2;
-            builder.append(Text.of("Type the name of the player you want to message:"));
-            for (int i = 0; i < remaining; i++) {
-                builder.append(Text.NEW_LINE);
-            }
-            return builder.build();
-        }
-
-        @Override
-        public void onTextEntered(PlayerChatView view, Text input) {
-            Optional<Player> player = Sponge.getServer().getPlayer(input.toPlain());
-            if (!player.isPresent()) {
-                return;
-            }
-            privateView.get(view.getPlayer().getUniqueId()).createPrivateMessageTab(player.get(), true);
-            view.getWindow().removeTab(this);
-            view.update();
-        }
-    }
 
     static final Map<UUID, PlayerPrivateView> privateView = Maps.newHashMap();
 
     @Override
     protected void onNewPlayerView(PlayerChatView view) {
         privateView.put(view.getPlayer().getUniqueId(), new PlayerPrivateView(view));
-        view.getNewTab().addButton(new LaunchTabButton("Private Message", () -> new MessageWithTab()));
+        view.getPlayerListTab().addAddon(player -> {
+            Text.Builder builder = Text.builder("Message");
+            if (player != view.getPlayer()) {
+                builder.onClick(view.getPlayerListTab()
+                        .clickAction(() -> newPrivateMessage(view.getPlayer(), player)))
+                        .color(TextColors.BLUE).style(TextStyles.UNDERLINE);
+            } else {
+                builder.color(TextColors.GRAY);
+            }
+            return builder.build();
+        });
     }
 
     @Override
@@ -70,6 +41,10 @@ public class PrivateMessageFeature extends AbstractFeature {
                 chat.otherPlayerView.view.update();
             }
         }
+    }
+
+    private void newPrivateMessage(Player sourcePlayer, Player destPlayer) {
+        privateView.get(sourcePlayer.getUniqueId()).createPrivateMessageTab(destPlayer, true);
     }
 
     static class PlayerPrivateView {

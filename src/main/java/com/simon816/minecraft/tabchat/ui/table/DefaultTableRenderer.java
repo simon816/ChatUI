@@ -7,6 +7,8 @@ import org.spongepowered.api.text.Text;
 
 import java.util.List;
 
+import javax.swing.SwingConstants;
+
 public class DefaultTableRenderer implements TableRenderer {
 
     private static final TableViewport DEFAULT_VIEWPORT = new TableViewport() {
@@ -30,10 +32,13 @@ public class DefaultTableRenderer implements TableRenderer {
         return DEFAULT_VIEWPORT;
     }
 
+    protected int calculateEqualWidth(TableModel model, PlayerContext ctx) {
+        return (ctx.width / model.getColumnCount()) - BORDER_MULTIPLE - BORDER_SIDE_WIDTH;
+    }
+
     @Override
     public List<Text> renderCellValue(Object value, int row, int column, TableModel model, PlayerContext ctx) {
-        int fractionWidth = ((ctx.width) / model.getColumnCount()) - BORDER_SIDE_WIDTH * 2;
-        return TextUtils.splitLines(Text.of(value), fractionWidth);
+        return TextUtils.splitLines(Text.of(value), calculateEqualWidth(model, ctx));
     }
 
     @Override
@@ -41,8 +46,12 @@ public class DefaultTableRenderer implements TableRenderer {
         return Utils.ensureMultiple(max + BORDER_SIDE_WIDTH, BORDER_MULTIPLE) - BORDER_SIDE_WIDTH;
     }
 
+    protected int getCellAlignment(int row, int column) {
+        return SwingConstants.LEFT;
+    }
+
     @Override
-    public Text applySideBorders(List<Text> line, int[] colMaxWidths) {
+    public Text applySideBorders(int rowIndex, List<Text> line, int[] colMaxWidths) {
         Text.Builder builder = Text.builder();
         Text bar = TextUtils.charCache('│');
         for (int i = 0; i < colMaxWidths.length; i++) {
@@ -57,11 +66,25 @@ public class DefaultTableRenderer implements TableRenderer {
             StringBuilder spaces = new StringBuilder();
             TextUtils.padSpaces(spaces, colMaxWidths[i] - partWidth);
             builder.append(bar);
+            int alignment = getCellAlignment(rowIndex, i);
+            if (alignment == SwingConstants.RIGHT || alignment == SwingConstants.CENTER) {
+                if (spaces.length() > 0) {
+                    if (alignment == SwingConstants.CENTER) {
+                        String half = spaces.substring(0, (int) (spaces.length() + 0.5) / 2);
+                        spaces.delete(0, half.length());
+                        builder.append(Text.of(half));
+                    } else {
+                        builder.append(Text.of(spaces.toString()));
+                    }
+                }
+            }
             if (part != null) {
                 builder.append(part);
             }
-            if (spaces.length() > 0) {
-                builder.append(Text.of(spaces.toString()));
+            if (alignment == SwingConstants.LEFT || alignment == SwingConstants.CENTER) {
+                if (spaces.length() > 0) {
+                    builder.append(Text.of(spaces.toString()));
+                }
             }
             if (i == colMaxWidths.length - 1) {
                 builder.append(bar);

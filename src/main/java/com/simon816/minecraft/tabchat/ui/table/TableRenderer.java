@@ -19,7 +19,7 @@ public interface TableRenderer {
 
     List<Text> renderCellValue(Object value, int row, int column, TableModel model, PlayerContext ctx);
 
-    Text applySideBorders(List<Text> line, int[] colMaxWidths);
+    Text applySideBorders(int rowIndex, List<Text> line, int[] colMaxWidths);
 
     Text createBorder(TableModel model, int rowIndex, int[] colMaxWidths);
 

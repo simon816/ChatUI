@@ -50,6 +50,9 @@ public class TextUtils {
         if (codePoint == '\u2063') {
             return 9; // TODO Investigate why incorrect value is returned
         }
+        if (codePoint == '\n') {
+            return 0;
+        }
         if (codePoint >= '\u2800' && codePoint < '\u2900') {
             return 3;
         }

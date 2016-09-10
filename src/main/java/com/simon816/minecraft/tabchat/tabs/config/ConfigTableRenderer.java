@@ -3,37 +3,23 @@ package com.simon816.minecraft.tabchat.tabs.config;
 import com.simon816.minecraft.tabchat.PlayerContext;
 import com.simon816.minecraft.tabchat.ui.table.DefaultTableRenderer;
 import com.simon816.minecraft.tabchat.ui.table.TableModel;
+import com.simon816.minecraft.tabchat.ui.table.TableScrollHelper;
 import com.simon816.minecraft.tabchat.util.TextUtils;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
 import java.util.List;
 
+import javax.swing.SwingConstants;
+
 class ConfigTableRenderer extends DefaultTableRenderer {
-
-    private class Viewport implements TableViewport {
-
-        public Viewport() {
-        }
-
-        @Override
-        public int getFirstRowIndex() {
-            return ConfigTableRenderer.this.control.getScrollOffset();
-        }
-
-        @Override
-        public int getFirstColumnIndex() {
-            return 0;
-        }
-
-    }
 
     final ConfigTabControl control;
     private final TableViewport viewport;
 
-    public ConfigTableRenderer(ConfigTabControl control) {
+    public ConfigTableRenderer(ConfigTabControl control, TableScrollHelper scrollHelper) {
         this.control = control;
-        this.viewport = new Viewport();
+        this.viewport = scrollHelper.createViewport();
     }
 
     @Override
@@ -43,13 +29,21 @@ class ConfigTableRenderer extends DefaultTableRenderer {
 
     @Override
     public List<Text> renderCellValue(Object value, int row, int column, TableModel model, PlayerContext ctx) {
-        int fractionWidth = ((ctx.width) / model.getColumnCount()) - BORDER_SIDE_WIDTH * 2;
+        int fractionWidth = calculateEqualWidth(model, ctx);
         ConfigEntry entry = this.control.getEntries().get(row);
         if (column == 0) {
             return TextUtils.splitLines(renderKey(value, entry), fractionWidth);
         } else {
             return TextUtils.splitLines(renderValue((ConfigEntry.ConfigValue) value, entry), fractionWidth);
         }
+    }
+
+    @Override
+    protected int getCellAlignment(int row, int column) {
+        if (column == 0) {
+            return SwingConstants.RIGHT;
+        }
+        return SwingConstants.LEFT;
     }
 
     private Text.Builder getBuilder(ConfigEntry entry) {

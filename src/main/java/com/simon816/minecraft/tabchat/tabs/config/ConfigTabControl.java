@@ -16,12 +16,12 @@ class ConfigTabControl {
 
     private ConfigurationNode currentNode;
     private ConfigEntry activeEntry;
-    private int scrollOffset;
     private boolean deleteMode;
 
     ConfigTabControl(ConfigEditTab tab, ConfigurationNode rootNode, ConfigEditTab.Options options, ConfigEditTab.ActionHandler handler) {
         this.tab = tab;
-        this.setNode(rootNode);
+        this.currentNode = rootNode;
+        updateEntryList(rootNode);
         Object[] ignore = rootNode.getParent().getPath();
         if (ignore.length == 1 && ignore[0] == null) {
             ignore = new Object[0];
@@ -67,39 +67,11 @@ class ConfigTabControl {
     }
 
     public ConfigTableRenderer createTableRenderer() {
-        return new ConfigTableRenderer(this);
+        return new ConfigTableRenderer(this, this.tab.scroll);
     }
 
     public ConfigTableModel createTableModel() {
         return new ConfigTableModel(this);
-    }
-
-    public boolean scrollUp() {
-        if (!canScrollUp()) {
-            return false;
-        }
-        this.scrollOffset--;
-        return true;
-    }
-
-    public boolean canScrollUp() {
-        return this.scrollOffset > 0;
-    }
-
-    public boolean scrollDown() {
-        if (!canScrollDown()) {
-            return false;
-        }
-        this.scrollOffset++;
-        return true;
-    }
-
-    public boolean canScrollDown() {
-        return this.scrollOffset < this.entryList.size() - 1;
-    }
-
-    public int getScrollOffset() {
-        return this.scrollOffset;
     }
 
     public boolean closeActiveEntry() {
@@ -155,7 +127,7 @@ class ConfigTabControl {
         }
         this.currentNode = node;
         updateEntryList(node);
-        this.scrollOffset = 0;
+        this.tab.scroll.reset();
     }
 
     public List<ConfigEntry> getEntries() {
