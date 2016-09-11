@@ -18,11 +18,11 @@ apply plugin: 'eclipse'
 sourceCompatibility = "1.8"
 targetCompatibility = "1.8"
 
-version = "0.0.1"
+version = "0.1.0"
 
-group = "com.simon816.minecraft"
+group = "com.simon816.chatui"
 
-archivesBaseName = "TabbedChat"
+archivesBaseName = "ChatUI"
 
 repositories {
     mavenCentral()
@@ -37,6 +37,8 @@ repositories {
 }
 
 compileJava.options.encoding = 'UTF-8'
+// Stop AP generating a mcmod.info file
+compileJava.options.compilerArgs += '-proc:none'
 
 minecraft {
     version = "1855"
@@ -47,4 +49,11 @@ minecraft {
 dependencies {
     compile 'org.spongepowered:spongeapi:4.1.0'
     compile 'org.spongepowered:spongeforge:1.8.9-1855-4.1.0-BETA-1312:dev'
+}
+
+processResources {
+    from('src/main/resources') {
+        include 'mcmod.info'
+        expand(version: project.version, apiVersionRange: '[4.0.0,5.0.0]')
+    }
 }

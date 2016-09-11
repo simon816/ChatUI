@@ -1,16 +1,13 @@
 [{
-    "modid": "tabbedchat",
-    "name": "Tabbed Chat",
-    "description": "",
-    "version": "0.0.1",
-    "mcversion": "1.8.9",
-    "url": "https://github.com/simon816/TabbedChat",
+    "modid": "chatui",
+    "name": "Chat UI",
+    "description": "A UI Toolkit for the chat box to draw GUIs on.",
+    "version": "$version",
+    "url": "https://github.com/simon816/ChatUI",
     "authors": ["Simon816"],
     "requiredMods": [
-        "sponge"
     ],
     "dependencies": [
     ],
     "useDependencyInformation": true
 }]
-    
