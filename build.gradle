@@ -41,14 +41,15 @@ compileJava.options.encoding = 'UTF-8'
 compileJava.options.compilerArgs += '-proc:none'
 
 minecraft {
-    version = "1855"
+    version = "1890"
     runDir = "run"
     mappings = "stable_22"
 }
 
 dependencies {
     compile 'org.spongepowered:spongeapi:4.1.0'
-    compile 'org.spongepowered:spongeforge:1.8.9-1855-4.1.0-BETA-1312:dev'
+    compile 'net.sf.trove4j:trove4j:3.0.3' // From spongecommon
+    compile 'org.spongepowered:spongeforge:1.8.9-1890-4.1.0-BETA-1399:dev'
 }
 
 processResources {
