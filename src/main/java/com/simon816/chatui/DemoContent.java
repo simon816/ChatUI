@@ -1,10 +1,13 @@
 package com.simon816.chatui;
 
 import com.simon816.chatui.tabs.NewTab;
+import com.simon816.chatui.tabs.SceneTab;
 import com.simon816.chatui.tabs.Tab;
 import com.simon816.chatui.tabs.TextFileTab;
-import com.simon816.chatui.tabs.canvas.BlockRenderContext;
-import com.simon816.chatui.tabs.canvas.CanvasTab;
+import com.simon816.chatui.ui.AnchorPaneUI;
+import com.simon816.chatui.ui.canvas.BlockRenderContext;
+import com.simon816.chatui.ui.canvas.CanvasUI;
+import com.simon816.chatui.ui.canvas.CanvasUI.Context;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
@@ -27,9 +30,9 @@ public class DemoContent {
     private static class DemoTab extends NewTab {
 
         public DemoTab() {
-            addButton(new NewTab.LaunchTabButton("Text Editor", () -> new TextFileTab(TEXT_EDITOR_TEXT)));
-            addButton(new SineWaveAnimLoader());
-            addButton(new NewTab.LaunchTabButton("Back", PlayerChatView::getNewTab));
+            addButton("Text Editor", new NewTab.LaunchTabAction(() -> new TextFileTab(TEXT_EDITOR_TEXT)));
+            addButton("Sine Wave Animation", new SineWaveAnimLoader());
+            addButton("Back", new NewTab.LaunchTabAction(PlayerChatView::getNewTab));
         }
 
         @Override
@@ -38,15 +41,15 @@ public class DemoContent {
         }
     }
 
-    private static class SineWaveAnimLoader extends NewTab.Button {
+    private static class SineWaveAnimLoader extends NewTab.ButtonAction {
 
         public SineWaveAnimLoader() {
-            super("Sine Wave Animation");
         }
 
         @Override
         protected void onClick(PlayerChatView view) {
-            CanvasTab canvas = new CanvasTab(Text.of("Sine Wave Demo")) {
+            CanvasUI canvas = new CanvasUI();
+            Tab sineWaveTab = new SceneTab(Text.of("Sine Wave Demo"), new AnchorPaneUI(canvas)) {
 
                 private Task task;
 
@@ -61,7 +64,8 @@ public class DemoContent {
                 @Override
                 public void onFocus() {
                     super.onFocus();
-                    BlockRenderContext ctx = getContext(Context.BLOCKS);
+                    BlockRenderContext ctx = canvas.getContext(Context.BLOCKS);
+                    ctx.clear();
                     int[] i = new int[1];
                     this.task = Sponge.getScheduler().createTaskBuilder().execute(() -> {
                         ctx.clear();
@@ -82,7 +86,7 @@ public class DemoContent {
                     }
                 }
             };
-            replaceWith(canvas, view);
+            replaceWith(sineWaveTab, view);
         }
 
     }

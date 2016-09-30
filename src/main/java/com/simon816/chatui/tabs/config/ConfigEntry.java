@@ -93,10 +93,9 @@ class ConfigEntry {
 
         @Override
         public Object onSetValue(String input) {
-            // Note: Don't do an in-place value update, do full refresh
-//            this.value = this.type.setValue(this.value, input);
-//            this.text = this.type.toText(this.value).build();
-            return this.type.setValue(this.value, input);
+            this.value = this.type.setValue(this.value, input);
+            this.text = this.type.toText(this.value).build();
+            return this.value;
         }
     }
 
@@ -111,9 +110,9 @@ class ConfigEntry {
             @Override
             public void onClick(ConfigEntry entry, ConfigEditTab tab) {
                 ConfigurationNode node = tab.control.getNode().getNode(entry.key);
-                node.setValue(!this.<Boolean>checkType(node.getValue()));
+                Object value = entry.value.onSetValue(Boolean.toString(!this.<Boolean>checkType(node.getValue())));
+                node.setValue(value);
                 tab.control.handler.onNodeChanged(node);
-                tab.control.refresh();
             }
 
             @Override

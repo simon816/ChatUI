@@ -15,6 +15,7 @@ import org.spongepowered.api.text.format.TextStyle;
 import org.spongepowered.api.text.format.TextStyles;
 import org.spongepowered.api.text.translation.Translation;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
@@ -77,6 +78,9 @@ class TextSplitter {
     private static final Pattern MARKER_PATTERN = Pattern.compile("\\$MARKER(\\d+)\\$");
 
     public static void splitLines(Text original, List<Text> output, int maxWidth, Locale locale) {
+        if (maxWidth < 1) {
+            throw new IllegalArgumentException("Max width must be at least 1, was " + maxWidth);
+        }
         Stack<Format> formatStack = new Stack<>();
         Object[] ret = apply(0, Text.builder(), formatStack, original, output, maxWidth, locale);
         output.add(((Text.Builder) ret[1]).build());
@@ -114,8 +118,8 @@ class TextSplitter {
                 currLineBuilder = Text.builder();
                 currLineLength = 0;
             }
+            first = false;
             if (line.isEmpty()) {
-                first = false;
                 continue;
             }
             boolean isBold = format.format.getStyle().isBold().get();
@@ -132,7 +136,6 @@ class TextSplitter {
             }
             currLineLength += lineW;
             currLineBuilder.append(format.createText(line));
-            first = false;
         }
 
         for (Text child : text.getChildren()) {
@@ -142,6 +145,17 @@ class TextSplitter {
         }
         formatStack.pop();
         return new Object[] {currLineLength, currLineBuilder};
+    }
+
+    private static Format pushFormat(Stack<Format> formatStack, Text text) {
+        Format format;
+        if (formatStack.isEmpty()) {
+            format = new Format(text);
+        } else {
+            format = formatStack.peek().with(text);
+        }
+        formatStack.push(format);
+        return format;
     }
 
     // Transforms a TranslatableText into a LiteralText
@@ -189,15 +203,28 @@ class TextSplitter {
         return new String[] {text.substring(0, pos), text.substring(pos)};
     }
 
-    private static Format pushFormat(Stack<Format> formatStack, Text text) {
-        Format format;
-        if (formatStack.isEmpty()) {
-            format = new Format(text);
-        } else {
-            format = formatStack.peek().with(text);
+    public static void splitLines(String original, List<String> output, int maxWidth) {
+        String next = null;
+        Iterator<String> iterator = LINE_SPLITTER.split(original).iterator();
+        int currLineWidth = 0;
+        while (iterator.hasNext() || next != null) {
+            String part = next != null ? next : iterator.next();
+            next = null;
+            int partW = TextUtils.getStringWidth(part, false);
+            if (partW + currLineWidth > maxWidth) {
+                String[] trimmed = trimToMaxWidth(part, false, maxWidth - currLineWidth);
+                part = trimmed[0];
+                if (currLineWidth == 0 && part.isEmpty()) {
+                    break;
+                }
+                next = trimmed[1];
+                partW = TextUtils.getStringWidth(part, false);
+                currLineWidth = 0;
+            } else {
+                currLineWidth += partW;
+            }
+            output.add(part);
         }
-        formatStack.push(format);
-        return format;
     }
 
 }

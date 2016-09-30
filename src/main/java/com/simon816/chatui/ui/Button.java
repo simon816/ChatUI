@@ -1,0 +1,117 @@
+package com.simon816.chatui.ui;
+
+import com.google.common.collect.Lists;
+import com.simon816.chatui.ChatUI;
+import com.simon816.chatui.PlayerChatView;
+import com.simon816.chatui.PlayerContext;
+import com.simon816.chatui.util.TextUtils;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.action.ClickAction;
+import org.spongepowered.api.text.action.HoverAction;
+import org.spongepowered.api.text.action.TextActions;
+
+import java.util.List;
+import java.util.function.Consumer;
+
+public class Button implements UIComponent {
+
+    private final String label;
+    private final int width;
+    private boolean truncate;
+    private Consumer<PlayerChatView> onClick;
+
+    public Button(String label) {
+        this.label = label;
+        this.width = TextUtils.getStringWidth(label, false);
+    }
+
+    public String getLabel() {
+        return this.label;
+    }
+
+    public void setClickHandler(Consumer<PlayerChatView> handler) {
+        this.onClick = handler;
+    }
+
+    public void truncateOverflow(boolean truncate) {
+        this.truncate = truncate;
+    }
+
+    @Override
+    public int getPrefHeight(PlayerContext ctx) {
+        if (this.truncate) {
+            return 3;
+        }
+        int desiredWidth = ctx.width;
+        while (desiredWidth % 9 != 0) {
+            desiredWidth -= 1;
+        }
+        int barWidth = TextUtils.getWidth('│', false) * 2;
+        return TextUtils.splitLines(Text.of(this.label), desiredWidth - barWidth - 3).size();
+    }
+
+    @Override
+    public int getPrefWidth(PlayerContext ctx) {
+        return ctx.width;
+    }
+
+    @Override
+    public int getMinWidth(PlayerContext ctx) {
+        if (this.truncate) {
+            return 6;
+        }
+        return this.width;
+    }
+
+    @Override
+    public void draw(PlayerContext ctx, LineFactory lineFactory) {
+        int desiredWidth = ctx.width;
+        while (desiredWidth % 9 != 0) {
+            desiredWidth -= 1;
+        }
+        int barWidth = TextUtils.getWidth('│', false) * 2;
+        HoverAction<?> hover = null;
+        ClickAction<?> click = null;
+        if (this.onClick != null) {
+            click = TextActions.executeCallback(src -> {
+                this.onClick.accept(ChatUI.getView(src));
+            });
+        }
+
+        List<String> labelLines = null;
+        String labelPart = this.label;
+        if (this.width > desiredWidth - barWidth - 3) {
+            if (this.truncate) {
+                int tWidth = this.width;
+                // Trim down
+                String t = labelPart;
+                while (tWidth > desiredWidth - barWidth - 3 && t.length() > 0) {
+                    t = t.substring(0, t.length() - 1);
+                    // 6 is width of '...'
+                    tWidth = TextUtils.getStringWidth(t, false) + 6;
+                }
+                labelPart = t + "...";
+                hover = TextActions.showText(Text.of(this.label));
+            } else {
+                labelLines = TextUtils.splitLines(labelPart, desiredWidth - barWidth - 3);
+            }
+        }
+        if (labelLines == null) {
+            labelLines = Lists.newArrayList(labelPart);
+        }
+
+        lineFactory.appendNewLine(TextUtils.startRepeatTerminate('┌', '─', '┐', desiredWidth));
+
+        for (String line : labelLines) {
+            int tWidth = TextUtils.getStringWidth(line, false);
+            StringBuilder spaces = new StringBuilder();
+            spaces.append('│');
+            TextUtils.padSpaces(spaces, desiredWidth - tWidth - barWidth - 3);
+            spaces.append('│');
+            String left = spaces.substring(0, spaces.length() / 2);
+            String right = spaces.substring(left.length());
+            lineFactory.appendNewLine(Text.builder(left + line + right).onClick(click).onHover(hover).build());
+        }
+        lineFactory.appendNewLine(TextUtils.startRepeatTerminate('└', '─', '┘', desiredWidth));
+    }
+}

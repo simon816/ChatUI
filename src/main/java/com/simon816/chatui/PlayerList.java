@@ -1,10 +1,10 @@
-package com.simon816.chatui.tabs;
+package com.simon816.chatui;
 
 import com.google.common.collect.Lists;
-import com.simon816.chatui.ChatUI;
-import com.simon816.chatui.PlayerContext;
-import com.simon816.chatui.ui.Frame;
+import com.simon816.chatui.ui.AnchorPaneUI;
+import com.simon816.chatui.ui.LineFactory;
 import com.simon816.chatui.ui.UIComponent;
+import com.simon816.chatui.ui.UIPane;
 import com.simon816.chatui.ui.table.DefaultTableRenderer;
 import com.simon816.chatui.ui.table.TableModel;
 import com.simon816.chatui.ui.table.TableRenderer;
@@ -14,7 +14,6 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.service.ban.BanService;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.Text.Builder;
 import org.spongepowered.api.text.action.ClickAction;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
@@ -28,9 +27,9 @@ import java.util.function.BooleanSupplier;
 
 import javax.swing.SwingConstants;
 
-public class PlayerListTab extends Tab {
+public class PlayerList {
 
-    private final Frame frame;
+    private final AnchorPaneUI root;
     final List<Addon> addons = Lists.newArrayList();
 
     public static interface Addon {
@@ -39,24 +38,34 @@ public class PlayerListTab extends Tab {
 
     }
 
-    public PlayerListTab(Player player) {
-        this.frame = new Frame();
+    public PlayerList(Player player) {
+        this.root = new AnchorPaneUI();
         TableModel model = createTableModel();
         TableScrollHelper scroll = new TableScrollHelper(model);
-        this.frame.addComponent(new UIComponent() {
+        UIComponent scrollButtons = new UIComponent() {
 
             @Override
-            public int draw(Builder builder, PlayerContext ctx) {
+            public void draw(PlayerContext ctx, LineFactory lineFactory) {
+                Text.Builder builder = Text.builder();
                 builder.append(Text.of(clickAction(scroll::scrollUp),
                         scroll.canScrollUp() ? TextColors.WHITE : TextColors.DARK_GRAY, "[Scroll Up] "));
                 builder.append(Text.of(clickAction(scroll::scrollDown),
                         scroll.canScrollDown() ? TextColors.WHITE : TextColors.DARK_GRAY, "[Scroll Down] "));
-                builder.append(Text.NEW_LINE);
+                lineFactory.appendNewLine(builder.build());
+            }
+            @Override
+            public int getPrefHeight(PlayerContext ctx) {
                 return 1;
             }
-        }, Frame.STICK_BOTTOM);
-        this.frame.addComponent(new TableUI(model, createTableRenderer(scroll)));
+        };
+        TableUI table = new TableUI(model, createTableRenderer(scroll));
+        this.root.getChildren().add(table);
+        this.root.addWithConstraint(scrollButtons, AnchorPaneUI.ANCHOR_BOTTOM | AnchorPaneUI.ANCHOR_LEFT | AnchorPaneUI.ANCHOR_RIGHT);
         this.addDefaultAddons(player);
+    }
+
+    public UIPane getRoot() {
+        return this.root;
     }
 
     private TableRenderer createTableRenderer(TableScrollHelper scroll) {
@@ -98,7 +107,7 @@ public class PlayerListTab extends Tab {
 
             @Override
             public int getColumnCount() {
-                return 1 + PlayerListTab.this.addons.size();
+                return 1 + PlayerList.this.addons.size();
             }
 
             @Override
@@ -106,7 +115,7 @@ public class PlayerListTab extends Tab {
                 if (column == 0) {
                     return pList().get(row).getDisplayNameData().displayName().get();
                 }
-                return PlayerListTab.this.addons.get(column - 1).getColumnValue(pList().get(row));
+                return PlayerList.this.addons.get(column - 1).getColumnValue(pList().get(row));
             }
         };
     }
@@ -120,9 +129,9 @@ public class PlayerListTab extends Tab {
 
     public ClickAction<?> clickAction(BooleanSupplier action) {
         return TextActions.executeCallback(src -> {
-            if (ChatUI.getView(src).getWindow().getActiveTab() != this) {
-                return;
-            }
+//            if (ChatUI.getView(src).getWindow().getActiveTab() != this) {
+//                return;
+//            }
             if (action.getAsBoolean()) {
                 ChatUI.getView(src).update();
             }
@@ -131,16 +140,6 @@ public class PlayerListTab extends Tab {
 
     public void addAddon(Addon addon) {
         this.addons.add(addon);
-    }
-
-    @Override
-    public Text draw(PlayerContext ctx) {
-        return this.frame.draw(ctx);
-    }
-
-    @Override
-    public Text getTitle() {
-        return Text.of("Player List");
     }
 
     private void addDefaultAddons(Player player) {

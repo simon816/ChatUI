@@ -1,10 +1,11 @@
 package com.simon816.chatui.tabs.config;
 
+import com.simon816.chatui.ChatUI;
 import com.simon816.chatui.PlayerChatView;
 import com.simon816.chatui.PlayerContext;
-import com.simon816.chatui.ChatUI;
 import com.simon816.chatui.tabs.Tab;
-import com.simon816.chatui.ui.Frame;
+import com.simon816.chatui.ui.AnchorPaneUI;
+import com.simon816.chatui.ui.LineFactory;
 import com.simon816.chatui.ui.UIComponent;
 import com.simon816.chatui.ui.table.TableScrollHelper;
 import com.simon816.chatui.ui.table.TableUI;
@@ -48,7 +49,8 @@ public class ConfigEditTab extends Tab {
         }
 
         @Override
-        public int draw(Text.Builder builder, PlayerContext ctx) {
+        public void draw(PlayerContext ctx, LineFactory lineFactory) {
+            Text.Builder builder = Text.builder();
             if (ConfigEditTab.this.control.getActiveEntry() == null) {
                 builder.append(Text.of(clickAction(ConfigEditTab.this.scroll::scrollUp),
                         ConfigEditTab.this.scroll.canScrollUp() ? TextColors.WHITE : TextColors.DARK_GRAY, "[Scroll Up] "));
@@ -65,8 +67,7 @@ public class ConfigEditTab extends Tab {
             if (ConfigEditTab.this.control.options.canDelete) {
                 builder.append(Text.of(clickAction(ConfigEditTab.this.control::setDeleteModeOrDeleteNode), TextColors.RED, " [Delete]"));
             }
-            builder.append(Text.NEW_LINE);
-            return 1;
+            lineFactory.appendNewLine(builder.build());
         }
 
     }
@@ -77,7 +78,8 @@ public class ConfigEditTab extends Tab {
         }
 
         @Override
-        public int draw(Text.Builder builder, PlayerContext ctx) {
+        public void draw(PlayerContext ctx, LineFactory lineFactory) {
+            Text.Builder builder = Text.builder();
             Object[] path = ConfigEditTab.this.control.getPath();
             for (int i = 0; i < path.length; i++) {
                 Text.Builder part = Text.builder(path[i].toString());
@@ -95,8 +97,7 @@ public class ConfigEditTab extends Tab {
                     builder.append(Text.of("->"));
                 }
             }
-            builder.append(Text.NEW_LINE);
-            return (int) Math.ceil((double) TextUtils.getWidth(builder.build()) / ctx.width);
+            lineFactory.addAll(TextUtils.splitLines(builder.build(), ctx.width));
         }
 
     }
@@ -132,7 +133,7 @@ public class ConfigEditTab extends Tab {
         }
     }
 
-    private final Frame frame;
+    private final AnchorPaneUI pane;
     final ConfigTabControl control;
     private final Text title;
     final TableScrollHelper scroll;
@@ -148,10 +149,10 @@ public class ConfigEditTab extends Tab {
         this.control = new ConfigTabControl(this, rootNode, options, handler);
         ConfigTableModel model = this.control.createTableModel();
         this.scroll = new TableScrollHelper(model);
-        this.frame = new Frame();
-        this.frame.addComponent(new Breadcrumb(), Frame.STICK_TOP);
-        this.frame.addComponent(new TableUI(model, this.control.createTableRenderer()));
-        this.frame.addComponent(new ButtonBar(), Frame.STICK_BOTTOM);
+        this.pane = new AnchorPaneUI();
+        this.pane.addWithConstraint(new Breadcrumb(), AnchorPaneUI.ANCHOR_TOP);
+        this.pane.getChildren().add(new TableUI(model, this.control.createTableRenderer()));
+        this.pane.addWithConstraint(new ButtonBar(), AnchorPaneUI.ANCHOR_BOTTOM);
     }
 
     @Override
@@ -164,7 +165,7 @@ public class ConfigEditTab extends Tab {
         if (this.nodeBuilder != null) {
             return this.nodeBuilder.draw(ctx);
         }
-        return this.frame.draw(ctx);
+        return this.pane.draw(ctx);
     }
 
     @Override
@@ -181,8 +182,6 @@ public class ConfigEditTab extends Tab {
         node.setValue(value);
         this.control.handler.onNodeChanged(node);
         this.control.closeActiveEntry();
-        this.control.refresh();// Full refresh (mainly in case onNodeChange did
-                               // anything else)
         view.update();
     }
 

@@ -1,4 +1,4 @@
-package com.simon816.chatui.tabs.canvas;
+package com.simon816.chatui.ui.canvas;
 
 import com.simon816.chatui.util.TextUtils;
 import gnu.trove.map.hash.TIntCharHashMap;
@@ -36,15 +36,26 @@ public class LineDrawingContext {
 
     }
 
-    Text.Builder[] render() {
-        Text.Builder[] lines = new Text.Builder[this.lines.length];
+    int getMinWidth() {
+        return TextUtils.getWidth(this.emptyChar, false);
+    }
+
+    Text[] render() {
+        int lastNonNull = 0;
+        Text[] lines = new Text[this.lines.length];
         for (int i = 0; i < lines.length; i++) {
-            lines[i] = Text.builder();
             Line line = this.lines[i];
             if (line == null) {
+                lines[i] = Text.EMPTY;
                 continue;
             }
-            lines[i].append(line.toText());
+            lastNonNull = i;
+            lines[i] = line.toText();
+        }
+        if (lastNonNull < lines.length - 1) {
+            Text[] newLines = new Text[lastNonNull + 1];
+            System.arraycopy(lines, 0, newLines, 0, lastNonNull + 1);
+            lines = newLines;
         }
         return lines;
     }
@@ -72,6 +83,13 @@ public class LineDrawingContext {
             return 0;
         }
         return this.lines[y].get(x);
+    }
+
+    public PixelMetadata getData(int x, int y) {
+        if (y > this.lines.length - 1 || y < 0 || this.lines[y] == null) {
+            return null;
+        }
+        return this.lines[y].metadata.get(x);
     }
 
     public static class PixelMetadata {
@@ -116,7 +134,7 @@ public class LineDrawingContext {
     private static class Line {
 
         private final TIntCharHashMap characters = new TIntCharHashMap();
-        private final TIntObjectHashMap<PixelMetadata> metadata = new TIntObjectHashMap<>();
+        final TIntObjectHashMap<PixelMetadata> metadata = new TIntObjectHashMap<>();
 
         private final int cellWidth;
         private final char emptyChar;
@@ -139,6 +157,12 @@ public class LineDrawingContext {
             if (existing != null && existing.locked) {
                 return;
             }
+            // Special case: RESET will remove the data
+            if (data != null && data.color == TextColors.RESET) {
+                this.metadata.remove(index);
+                this.characters.remove(index);
+                return;
+            }
             this.currentMax = Math.max(this.currentMax, index);
             this.metadata.put(index, data == null ? this.emptyData : data);
             this.characters.put(index, c);
@@ -152,6 +176,9 @@ public class LineDrawingContext {
         }
 
         public Text toText() {
+            if (this.characters.isEmpty()) {
+                return Text.EMPTY;
+            }
             StringBuilder string = new StringBuilder();
             Text.Builder rootBuilder = Text.builder();
             PixelMetadata prevData = null;
@@ -171,7 +198,7 @@ public class LineDrawingContext {
                     prevData = data;
                 }
                 string.append(c);
-                int w = (int) TextUtils.getWidth(c, false);
+                int w = TextUtils.getWidth(c, false);
                 if (w < this.cellWidth) {
                     rootBuilder.append(prevData.toText(string.toString()));
                     string = new StringBuilder();

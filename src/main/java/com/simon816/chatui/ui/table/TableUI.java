@@ -3,6 +3,7 @@ package com.simon816.chatui.ui.table;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.simon816.chatui.PlayerContext;
+import com.simon816.chatui.ui.LineFactory;
 import com.simon816.chatui.ui.UIComponent;
 import com.simon816.chatui.ui.table.TableRenderer.TableViewport;
 import com.simon816.chatui.util.TextUtils;
@@ -17,14 +18,55 @@ public class TableUI implements UIComponent {
 
     private final TableModel model;
     private final TableRenderer renderer;
+    private final List<TableColumnRenderer> columnRenderers = Lists.newArrayList();
 
     public TableUI(TableModel model, TableRenderer renderer) {
         this.model = model;
         this.renderer = renderer;
+        initTable();
+    }
+
+    private void initTable() {
+        for (int i = 0; i < this.model.getColumnCount(); i++) {
+            this.columnRenderers.add(this.renderer.createColumnRenderer(i));
+        }
     }
 
     @Override
-    public int draw(Text.Builder builder, PlayerContext ctx) {
+    public int getPrefWidth(PlayerContext ctx) {
+        int width = 0;
+        List<TableColumnRenderer> columnRenderers2 = this.columnRenderers;
+        for (int i = 0; i < columnRenderers2.size(); i++) {
+            width += columnRenderers2.get(i).getPrefWidth();
+            width += this.renderer.getPrefBorderWidth(i);
+        }
+        return width;
+    }
+
+    @Override
+    public int getMinWidth(PlayerContext ctx) {
+        int width = 0;
+        List<TableColumnRenderer> columnRenderers2 = this.columnRenderers;
+        for (int i = 0; i < columnRenderers2.size(); i++) {
+            width += columnRenderers2.get(i).getMinWidth();
+            width += this.renderer.getMinBorderWidth(i);
+        }
+        return width;
+    }
+
+    @Override
+    public int getMinHeight(PlayerContext ctx) {
+        return 1;
+    }
+
+    @Override
+    public int getPrefHeight(PlayerContext ctx) {
+        int numRows = this.model.getRowCount() - this.renderer.getViewport().getFirstRowIndex();
+        return (numRows * 2) + 1;
+    }
+
+    @Override
+    public void draw(PlayerContext ctx, LineFactory lineFactory) {
         TableViewport viewport = this.renderer.getViewport();
         Map<Integer, Integer> columnMaxWidths = Maps.newLinkedHashMap();
         Map<Integer, List<List<Text>>> rowLines = Maps.newLinkedHashMap();
@@ -33,7 +75,7 @@ public class TableUI implements UIComponent {
             List<List<Text>> cellLines = Lists.newArrayList();
             for (int column = viewport.getFirstColumnIndex(); column < this.model.getColumnCount(); column++) {
                 Object value = this.model.getCellValue(row, column);
-                List<Text> lines = this.renderer.renderCellValue(value, row, column, this.model, ctx);
+                List<Text> lines = this.columnRenderers.get(column).renderCell(value, row, ctx.width);
                 for (int i = 0; i < lines.size(); i++) {
                     Text line = lines.get(i);
                     int width = TextUtils.getWidth(line);
@@ -69,30 +111,19 @@ public class TableUI implements UIComponent {
             colMaxWidths[i] = this.renderer.modifyMaxWidth(i++, max);
         }
         Text border = this.renderer.createBorder(this.model, viewport.getFirstRowIndex() - 1, colMaxWidths);
-        builder.append(border, Text.NEW_LINE);
-        int lineCount = 1;
+        lineFactory.appendNewLine(border);
         for (Entry<Integer, List<List<Text>>> row : rowLines.entrySet()) {
             int rowIndex = row.getKey();
             List<List<Text>> rowLineList = row.getValue();
-            Text.Builder completeLineBuilder = Text.builder();
             for (List<Text> colGroup : rowLineList) {
                 Text lineSegment = this.renderer.applySideBorders(rowIndex, colGroup, colMaxWidths);
-                completeLineBuilder.append(lineSegment, Text.NEW_LINE);
-                lineCount++;
+                lineFactory.appendNewLine(lineSegment);
             }
-            Text completeLine = completeLineBuilder.build();
-            if (ctx.height - lineCount > 0) {
+            if (lineFactory.linesRemaining(ctx) > 0) {
                 border = this.renderer.createBorder(this.model, rowIndex, colMaxWidths);
-                builder.append(completeLine, border, Text.NEW_LINE);
-                lineCount++;
-            } else {
-                builder.append(completeLine);
+                lineFactory.appendNewLine(border);
             }
         }
-        while (lineCount++ < ctx.height) {
-            builder.append(Text.NEW_LINE);
-        }
-        return lineCount;
     }
 
 }

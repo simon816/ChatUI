@@ -8,11 +8,36 @@ public interface UIComponent extends ITextDrawable {
 
     @Override
     default Text draw(PlayerContext ctx) {
-        Text.Builder builder = Text.builder();
-        draw(builder, ctx);
-        return builder.build();
+        LineFactory factory = new LineFactory();
+        draw(ctx, factory);
+        factory.fillBlank(ctx);
+        return Text.builder().append(Text.joinWith(Text.NEW_LINE, factory.getLines()), Text.NEW_LINE).build();
     }
 
-    int draw(Text.Builder builder, PlayerContext ctx);
+    void draw(PlayerContext ctx, LineFactory lineFactory);
+
+    default int getPrefHeight(PlayerContext ctx) {
+        return ctx.height;
+    }
+
+    default int getMinHeight(PlayerContext ctx) {
+        return getPrefHeight(ctx);
+    }
+
+    default int getMaxHeight(PlayerContext ctx) {
+        return getPrefHeight(ctx);
+    }
+
+    default int getPrefWidth(PlayerContext ctx) {
+        return ctx.width;
+    }
+
+    default int getMinWidth(PlayerContext ctx) {
+        return getPrefWidth(ctx);
+    }
+
+    default int getMaxWidth(PlayerContext ctx) {
+        return getPrefWidth(ctx);
+    }
 
 }

@@ -1,7 +1,8 @@
 package com.simon816.chatui.pagination;
 
-import com.simon816.chatui.PlayerChatView;
 import com.simon816.chatui.ChatUI;
+import com.simon816.chatui.PlayerChatView;
+import com.simon816.chatui.impl.ImplementationPagination;
 import com.simon816.chatui.util.Utils;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.living.player.Player;
@@ -9,8 +10,6 @@ import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.service.pagination.PaginationService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.MessageReceiver;
-import org.spongepowered.common.service.pagination.SpongePaginationAccessor;
-import org.spongepowered.common.service.pagination.SpongePaginationService;
 
 import java.util.Optional;
 
@@ -68,9 +67,7 @@ public class TabbedPaginationList implements PaginationList {
         PlayerChatView view = ChatUI.getView(sendTo);
         CommandSource newReceiver = new PaginationSourceWrapper(view, (CommandSource) receiver, getTitle().orElse(null));
         this.list.sendTo(newReceiver);
-        if (this.service instanceof SpongePaginationService) {
-            SpongePaginationAccessor.replaceActivePagination((SpongePaginationService) this.service, newReceiver, sendTo);
-        }
+        ImplementationPagination.modify(this.service, newReceiver, sendTo);
     }
 
 }

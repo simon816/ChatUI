@@ -18,10 +18,10 @@ public class PrivateMessageFeature extends AbstractFeature {
     @Override
     protected void onNewPlayerView(PlayerChatView view) {
         privateView.put(view.getPlayer().getUniqueId(), new PlayerPrivateView(view));
-        view.getPlayerListTab().addAddon(player -> {
+        view.getPlayerList().addAddon(player -> {
             Text.Builder builder = Text.builder("Message");
             if (player != view.getPlayer()) {
-                builder.onClick(view.getPlayerListTab()
+                builder.onClick(view.getPlayerList()
                         .clickAction(() -> newPrivateMessage(view.getPlayer(), player)))
                         .color(TextColors.BLUE).style(TextStyles.UNDERLINE);
             } else {

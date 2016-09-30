@@ -1,45 +1,28 @@
-package com.simon816.chatui.tabs.canvas;
+package com.simon816.chatui.ui.canvas;
 
 import com.google.common.collect.Lists;
 import com.simon816.chatui.PlayerContext;
-import com.simon816.chatui.tabs.Tab;
+import com.simon816.chatui.ui.LineFactory;
+import com.simon816.chatui.ui.UIComponent;
 import org.spongepowered.api.text.Text;
 
 import java.util.List;
 
-public class CanvasTab extends Tab {
+public class CanvasUI implements UIComponent {
 
-    private final Text title;
     private RenderingContext context;
 
-    public CanvasTab() {
-        this(Text.of("Canvas"));
-    }
-
-    public CanvasTab(Text title) {
-        this.title = title;
+    @Override
+    public int getMinHeight(PlayerContext ctx) {
+        return 1;
     }
 
     @Override
-    public Text getTitle() {
-        return this.title;
-    }
-
-    @Override
-    public Text draw(PlayerContext ctx) {
+    public int getMinWidth(PlayerContext ctx) {
         if (this.context == null) {
-            return super.draw(ctx);
+            return 0;
         }
-        Text.Builder builder = Text.builder();
-        LineDrawingContext drawContext = this.context.createDrawContext(ctx.width, ctx.height);
-        for (Layer layer : this.context.layers) {
-            layer.draw(drawContext);
-        }
-        Text.Builder[] lines = drawContext.render();
-        for (int i = 0; i < lines.length; i++) {
-            builder.append(lines[i].append(Text.NEW_LINE).build());
-        }
-        return builder.build();
+        return this.context.createDrawContext(0, 0).getMinWidth();
     }
 
     @SuppressWarnings("unchecked")
@@ -58,6 +41,19 @@ public class CanvasTab extends Tab {
         return type == this.context.getType() ? (T) this.context : null;
     }
 
+    @Override
+    public void draw(PlayerContext ctx, LineFactory lineFactory) {
+        if (this.context == null) {
+            return;
+        }
+        LineDrawingContext drawContext = this.context.createDrawContext(ctx.width, ctx.height);
+        for (Layer layer : this.context.layers) {
+            layer.draw(drawContext);
+        }
+        Text[] rendered = drawContext.render();
+        lineFactory.addAll(rendered);
+    }
+
     public enum Context {
         BLOCKS,
         BRAILLE
@@ -65,12 +61,16 @@ public class CanvasTab extends Tab {
 
     public static abstract class RenderingContext {
 
-        protected final List<Layer> layers = Lists.newArrayList();
+        final List<Layer> layers = Lists.newArrayList();
 
         public abstract Context getType();
 
         protected LineDrawingContext createDrawContext(int width, int height) {
             return new LineDrawingContext(width, height);
+        }
+
+        public void addLayer(Layer layer) {
+            this.layers.add(layer);
         }
 
         public void clear() {
@@ -83,5 +83,4 @@ public class CanvasTab extends Tab {
 
         void draw(LineDrawingContext ctx);
     }
-
 }

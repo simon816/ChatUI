@@ -1,6 +1,5 @@
 package com.simon816.chatui.ui.table;
 
-import com.simon816.chatui.PlayerContext;
 import com.simon816.chatui.util.TextUtils;
 import com.simon816.chatui.util.Utils;
 import org.spongepowered.api.text.Text;
@@ -32,13 +31,14 @@ public class DefaultTableRenderer implements TableRenderer {
         return DEFAULT_VIEWPORT;
     }
 
-    protected int calculateEqualWidth(TableModel model, PlayerContext ctx) {
-        return (ctx.width / model.getColumnCount()) - BORDER_MULTIPLE - BORDER_SIDE_WIDTH;
+    @Override
+    public int getPrefBorderWidth(int columnIndex) {
+        return BORDER_MULTIPLE;
     }
 
     @Override
-    public List<Text> renderCellValue(Object value, int row, int column, TableModel model, PlayerContext ctx) {
-        return TextUtils.splitLines(Text.of(value), calculateEqualWidth(model, ctx));
+    public TableColumnRenderer createColumnRenderer(int columnIndex) {
+        return new DefaultColumnRenderer();
     }
 
     @Override

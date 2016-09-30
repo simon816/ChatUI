@@ -7,6 +7,7 @@ import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
+import org.spongepowered.api.text.LiteralText;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.translation.locale.Locales;
 
@@ -37,7 +38,7 @@ public class TextUtils {
 
             List<? extends ConfigurationNode> glyphWidths = node.getNode("glyph-widths").getChildrenList();
             byte[] unicodeCharWidths = new byte[glyphWidths.size()];
-            for (int i = 0; i < nonUnicodeCharWidths.length; ++i) {
+            for (int i = 0; i < unicodeCharWidths.length; ++i) {
                 unicodeCharWidths[i] = (byte) glyphWidths.get(i).getInt();
             }
             UNICODE_CHAR_WIDTHS = unicodeCharWidths;
@@ -47,14 +48,8 @@ public class TextUtils {
     }
 
     public static double getWidth(int codePoint, boolean isBold) {
-        if (codePoint == '\u2063') {
-            return 9; // TODO Investigate why incorrect value is returned
-        }
         if (codePoint == '\n') {
             return 0;
-        }
-        if (codePoint >= '\u2800' && codePoint < '\u2900') {
-            return 3;
         }
         int nonUnicodeIdx = NON_UNICODE_CHARS.indexOf(codePoint);
         double width;
@@ -93,18 +88,39 @@ public class TextUtils {
         return (int) Math.ceil(getWidth((int) c, isBold));
     }
 
+    public static int getWidth(Text text) {
+        return (int) Math.ceil(getWidth0(text, false));
+    }
+
+    private static double getWidth0(Text text, boolean parentIsbold) {
+        double width = 0;
+        boolean thisIsBold = text.getStyle().isBold().orElse(parentIsbold);
+        if (text instanceof LiteralText) {
+            String content = ((LiteralText) text).getContent();
+            width += getStringWidth(content, thisIsBold);
+            for (Text child : text.getChildren()) {
+                width += getWidth0(child, thisIsBold);
+            }
+        } else {
+            width += getStringWidth(text.toPlain(), thisIsBold);
+        }
+        return width;
+    }
+
     public static List<Text> splitLines(Text original, int maxWidth) {
         return splitLines(original, maxWidth, Locales.DEFAULT);
+    }
+
+    public static List<String> splitLines(String original, int maxWidth) {
+        List<String> output = Lists.newArrayList();
+        TextSplitter.splitLines(original, output, maxWidth);
+        return output;
     }
 
     public static List<Text> splitLines(Text original, int maxWidth, Locale locale) {
         List<Text> output = Lists.newArrayList();
         TextSplitter.splitLines(original, output, maxWidth, locale);
         return output;
-    }
-
-    public static int getWidth(Text text) {
-        return getStringWidth(text.toPlain(), text.getStyle().isBold().orElse(false));
     }
 
     private static final TCharObjectMap<Text> charTextCache = new TCharObjectHashMap<>();

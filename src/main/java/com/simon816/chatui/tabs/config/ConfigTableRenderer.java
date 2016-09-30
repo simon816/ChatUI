@@ -1,8 +1,7 @@
 package com.simon816.chatui.tabs.config;
 
-import com.simon816.chatui.PlayerContext;
 import com.simon816.chatui.ui.table.DefaultTableRenderer;
-import com.simon816.chatui.ui.table.TableModel;
+import com.simon816.chatui.ui.table.TableColumnRenderer;
 import com.simon816.chatui.ui.table.TableScrollHelper;
 import com.simon816.chatui.util.TextUtils;
 import org.spongepowered.api.text.Text;
@@ -28,13 +27,11 @@ class ConfigTableRenderer extends DefaultTableRenderer {
     }
 
     @Override
-    public List<Text> renderCellValue(Object value, int row, int column, TableModel model, PlayerContext ctx) {
-        int fractionWidth = calculateEqualWidth(model, ctx);
-        ConfigEntry entry = this.control.getEntries().get(row);
-        if (column == 0) {
-            return TextUtils.splitLines(renderKey(value, entry), fractionWidth);
+    public TableColumnRenderer createColumnRenderer(int columnIndex) {
+        if (columnIndex == 0) {
+            return new KeyColumnRenderer();
         } else {
-            return TextUtils.splitLines(renderValue((ConfigEntry.ConfigValue) value, entry), fractionWidth);
+            return new ValueColumnRenderer();
         }
     }
 
@@ -46,7 +43,7 @@ class ConfigTableRenderer extends DefaultTableRenderer {
         return SwingConstants.LEFT;
     }
 
-    private Text.Builder getBuilder(ConfigEntry entry) {
+    Text.Builder getBuilder(ConfigEntry entry) {
         Text.Builder builder = Text.builder();
         boolean focus = this.control.hasFocus(entry);
         if (!focus) {
@@ -61,19 +58,58 @@ class ConfigTableRenderer extends DefaultTableRenderer {
         return builder;
     }
 
-    private Text renderKey(Object value, ConfigEntry entry) {
-        return getBuilder(entry).append(Text.of(value)).build();
+    protected int calculateEqualWidth(int tableWidth, int columnCount) {
+        return (tableWidth / columnCount) - BORDER_MULTIPLE - BORDER_SIDE_WIDTH;
     }
 
-    private Text renderValue(ConfigEntry.ConfigValue value, ConfigEntry entry) {
-        Text.Builder builder = getBuilder(entry);
-        boolean focus = this.control.hasFocus(entry);
-        Text valueText = entry.value.toText(focus && !this.control.inDeleteMode());
-        if (this.control.inDeleteMode()) {
-            valueText = valueText.toBuilder().color(TextColors.GRAY).build();
+    private class KeyColumnRenderer implements TableColumnRenderer {
+
+        KeyColumnRenderer() {
         }
-        builder.append(valueText);
-        return builder.build();
+
+        @Override
+        public List<Text> renderCell(Object value, int row, int tableWidth) {
+            int fractionWidth = calculateEqualWidth(tableWidth, 2);
+            ConfigEntry entry = ConfigTableRenderer.this.control.getEntries().get(row);
+
+            Text keyText = getBuilder(entry).append(Text.of(value)).build();
+
+            return TextUtils.splitLines(keyText, fractionWidth);
+        }
+
+        @Override
+        public int getPrefWidth() {
+            return 75;
+        }
+
+    }
+
+    private class ValueColumnRenderer implements TableColumnRenderer {
+
+        ValueColumnRenderer() {
+        }
+
+        @Override
+        public List<Text> renderCell(Object value, int row, int tableWidth) {
+            int fractionWidth = calculateEqualWidth(tableWidth, 2);
+            ConfigEntry entry = ConfigTableRenderer.this.control.getEntries().get(row);
+
+            Text.Builder builder = getBuilder(entry);
+            boolean focus = ConfigTableRenderer.this.control.hasFocus(entry);
+            Text valueText = entry.value.toText(focus && !ConfigTableRenderer.this.control.inDeleteMode());
+            if (ConfigTableRenderer.this.control.inDeleteMode()) {
+                valueText = valueText.toBuilder().color(TextColors.GRAY).build();
+            }
+            builder.append(valueText);
+
+            return TextUtils.splitLines(builder.build(), fractionWidth);
+        }
+
+        @Override
+        public int getPrefWidth() {
+            return 75;
+        }
+
     }
 
 }

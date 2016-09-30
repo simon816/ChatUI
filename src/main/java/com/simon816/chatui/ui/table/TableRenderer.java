@@ -1,6 +1,5 @@
 package com.simon816.chatui.ui.table;
 
-import com.simon816.chatui.PlayerContext;
 import org.spongepowered.api.text.Text;
 
 import java.util.List;
@@ -17,8 +16,6 @@ public interface TableRenderer {
 
     TableViewport getViewport();
 
-    List<Text> renderCellValue(Object value, int row, int column, TableModel model, PlayerContext ctx);
-
     Text applySideBorders(int rowIndex, List<Text> line, int[] colMaxWidths);
 
     Text createBorder(TableModel model, int rowIndex, int[] colMaxWidths);
@@ -26,5 +23,13 @@ public interface TableRenderer {
     default int modifyMaxWidth(int index, int max) {
         return max;
     }
+
+    int getPrefBorderWidth(int columnIndex);
+
+    default int getMinBorderWidth(int columnIndex) {
+        return getPrefBorderWidth(columnIndex);
+    }
+
+    TableColumnRenderer createColumnRenderer(int columnIndex);
 
 }

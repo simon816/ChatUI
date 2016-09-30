@@ -1,11 +1,13 @@
 package com.simon816.chatui.tabs;
 
 import com.google.common.collect.Lists;
-import com.simon816.chatui.PlayerContext;
 import com.simon816.chatui.ChatUI;
+import com.simon816.chatui.PlayerChatView;
+import com.simon816.chatui.PlayerContext;
 import com.simon816.chatui.util.TextUtils;
 import org.spongepowered.api.text.LiteralText;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.action.ClickAction;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
 
@@ -47,26 +49,24 @@ public class TextFileTab extends BufferedTab {
                 }
                 int ln = ctx.height - remainingHeight;
                 String str = line.toPlain();
-                Text.Builder b = Text.builder();
+                Text.Builder b = Text.builder()
+                        .onShiftClick(TextActions.insertText(str))
+                        .color(TextColors.WHITE);
                 char[] chars = str.toCharArray();
                 for (int j = 0; j < chars.length; j++) {
                     int col = j;
-                    b.append(Text.builder(chars[j]).onClick(TextActions.executeCallback(src -> {
-                        this.caretLine = ln;
-                        this.caretCol = col;
-                        ChatUI.getView(ctx.player).update();
-                    })).onShiftClick(TextActions.insertText(str))
-                            .color(ln == this.caretLine && j == this.caretCol ? TextColors.RED : TextColors.WHITE).toText());
+                    Text.Builder charBuilder = Text.builder(chars[j])
+                            .onClick(clickAction(ln, col));
+                    if (ln == this.caretLine && j == this.caretCol) {
+                        charBuilder.color(TextColors.RED);
+                    }
+                    b.append(charBuilder.build());
                 }
                 line = b.build();
                 if (ln == this.caretLine) {
                     side = "@";
                 }
-                builder.append(Text.of(TextColors.GRAY, TextActions.executeCallback(src -> {
-                    this.caretLine = ln;
-                    this.caretCol = 0;
-                    ChatUI.getView(ctx.player).update();
-                }), side), line, Text.NEW_LINE);
+                builder.append(Text.of(TextColors.GRAY, clickAction(ln, 0), side), line, Text.NEW_LINE);
             }
         }
         if (remainingHeight > 0) {
@@ -76,14 +76,21 @@ public class TextFileTab extends BufferedTab {
                 if (ln == this.caretLine) {
                     side = "@\n";
                 }
-                builder.append(Text.of(TextColors.GRAY, TextActions.executeCallback(src -> {
-                    this.caretLine = ln;
-                    this.caretCol = 0;
-                    ChatUI.getView(ctx.player).update();
-                }), side));
+                builder.append(Text.of(TextColors.GRAY, clickAction(ln, 0), side));
             }
         }
         return builder.build();
+    }
+
+    private ClickAction<?> clickAction(int ln, int col) {
+        // Reduces the size of the serialized JSON by not using UUIDs for each
+        // line/column
+        return ChatUI.command("tf " + ln + " " + col);
+    }
+
+    public void onCommand(PlayerChatView view, int ln, int col) {
+        this.caretLine = ln;
+        this.caretCol = col;
     }
 
     @Override

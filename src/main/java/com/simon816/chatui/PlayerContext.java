@@ -23,7 +23,7 @@ public class PlayerContext {
     }
 
     public PlayerContext withWidth(int width) {
-        checkArgument(width >= 9, "Width must be at least 9");
+        checkArgument(width >= 1, "Width must be at least one");
         return new PlayerContext(this.player, width, this.height);
     }
 

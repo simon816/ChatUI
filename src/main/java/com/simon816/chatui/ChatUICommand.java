@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
 
 public class ChatUICommand implements CommandCallable {
 
-    private final Text desc = Text.of("Internal TabbedChat commands");
+    private final Text desc = Text.of("Internal Chat UI commands");
 
     @Override
     public CommandResult process(CommandSource source, String arguments) throws CommandException {

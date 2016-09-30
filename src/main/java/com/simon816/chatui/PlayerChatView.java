@@ -1,20 +1,20 @@
 package com.simon816.chatui;
 
 import com.google.common.base.Objects;
+import com.simon816.chatui.impl.ImplementationConfig;
 import com.simon816.chatui.tabs.GlobalTab;
 import com.simon816.chatui.tabs.NewTab;
 import com.simon816.chatui.tabs.PermissionsTab;
-import com.simon816.chatui.tabs.PlayerListTab;
+import com.simon816.chatui.tabs.SceneTab;
 import com.simon816.chatui.tabs.Tab;
 import com.simon816.chatui.tabs.TextBufferTab;
+import com.simon816.chatui.tabs.TextFileTab;
 import com.simon816.chatui.tabs.config.ConfigEditTab;
 import ninja.leaping.configurate.ConfigurationNode;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.chat.ChatType;
-import org.spongepowered.common.SpongeImpl;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -32,14 +32,14 @@ public class PlayerChatView {
 
     private final MessagePipeline incomingPipeline = new MessagePipeline();
     private final MessagePipeline outgoingPipeline = new MessagePipeline();
-    private final PlayerListTab playerListTab;
+    private final PlayerList playerList;
 
     PlayerChatView(Player player, ConfigurationNode settings) {
         this.playerContext = new PlayerContext(player, settings.getNode("displayWidth").getInt(), settings.getNode("displayHeight").getInt());
         this.window = new Window();
         this.window.addTab(this.globalTab = new GlobalTab(), true);
         this.newTab = new NewTab();
-        this.playerListTab = new PlayerListTab(player);
+        this.playerList = new PlayerList(player);
         initNewTab(player);
 
         this.outgoingPipeline.addHandler((message, sender) -> {
@@ -54,19 +54,19 @@ public class PlayerChatView {
         ChatUI.instance().loadFeatures(this);
     }
 
-    public PlayerListTab getPlayerListTab() {
-        return this.playerListTab;
+    public PlayerList getPlayerList() {
+        return this.playerList;
     }
 
     private void initNewTab(Player player) {
-        this.newTab.addButton(new NewTab.LaunchTabButton("Player List", () -> this.playerListTab));
+        this.newTab.addButton("Player List", new NewTab.LaunchTabAction(() -> new SceneTab(Text.of("Player List"), this.playerList.getRoot())));
         UUID uuid = player.getUniqueId();
-        this.newTab.addButton(new NewTab.LaunchTabButton("Settings", () -> createSettingsTab(uuid)));
+        this.newTab.addButton("Settings", new NewTab.LaunchTabAction(() -> createSettingsTab(uuid)));
         if (player.hasPermission(ChatUI.ADMIN_PERMISSON)) {
             showNewTabAdminButtons();
         }
         if (DemoContent.ENABLE_DEMO) {
-            this.newTab.addButton(new NewTab.LaunchTabButton("Demo Content", () -> DemoContent.TAB));
+            this.newTab.addButton("Demo Content", new NewTab.LaunchTabAction(() -> DemoContent.TAB));
         }
     }
 
@@ -85,36 +85,19 @@ public class PlayerChatView {
     }
 
     private void showNewTabAdminButtons() {
-        if (Sponge.getPlatform().getImplementation().getId().equals("sponge")) {
-            ConfigEditTab.ActionHandler handler = new ConfigEditTab.ActionHandler() {
-
-                private void save() {
-                    SpongeImpl.getGlobalConfig().save();
-                }
-
-                @Override
-                public void onNodeAdded(ConfigurationNode node) {
-                    save();
-                }
-
-                @Override
-                public void onNodeChanged(ConfigurationNode node) {
-                    save();
-                }
-
-                @Override
-                public void onNodeRemoved(Object key) {
-                    save();
-                }
-            };
-            this.newTab.addButton(new NewTab.LaunchTabButton("Edit Config", () -> new ConfigEditTab(SpongeImpl.getGlobalConfig().getRootNode(),
-                    Text.of("Sponge Config"), ConfigEditTab.Options.DEFAULTS, handler)));
+        if (ImplementationConfig.isSupported()) {
+            this.newTab.addButton("Edit Config", new NewTab.LaunchTabAction(() -> new ConfigEditTab(ImplementationConfig.getRootNode(),
+                    Text.of("Sponge Config"), ConfigEditTab.Options.DEFAULTS, ImplementationConfig.getHandler())));
         }
-        this.newTab.addButton(new NewTab.LaunchTabButton("Permissions", () -> new PermissionsTab()));
+        this.newTab.addButton("Permissions", new NewTab.LaunchTabAction(() -> new PermissionsTab()));
     }
 
     public Player getPlayer() {
         return this.playerContext.player;
+    }
+
+    public PlayerContext getContext() {
+        return this.playerContext;
     }
 
     public Window getWindow() {
@@ -169,6 +152,9 @@ public class PlayerChatView {
             this.window.removeTab(Integer.parseInt(args[1]));
         } else if (cmd.equals("newtab")) {
             this.window.addTab(this.newTab, true);
+        } else if (cmd.equals("tf") && this.window.getActiveTab() instanceof TextFileTab) {
+            // TextFileTab specific behaviour, see TextFileTab#clickAction
+            ((TextFileTab) this.window.getActiveTab()).onCommand(this, Integer.parseInt(args[1]), Integer.parseInt(args[2]));
         } else {
             return false;
         }
