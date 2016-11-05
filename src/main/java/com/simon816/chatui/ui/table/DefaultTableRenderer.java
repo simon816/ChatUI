@@ -10,7 +10,7 @@ import javax.swing.SwingConstants;
 
 public class DefaultTableRenderer implements TableRenderer {
 
-    private static final TableViewport DEFAULT_VIEWPORT = new TableViewport() {
+    public static final TableViewport DEFAULT_VIEWPORT = new TableViewport() {
 
         @Override
         public int getFirstRowIndex() {
@@ -23,8 +23,10 @@ public class DefaultTableRenderer implements TableRenderer {
         }
     };
 
-    protected static final int BORDER_MULTIPLE = TextUtils.getWidth('┼', false);
-    protected static final int BORDER_SIDE_WIDTH = TextUtils.getWidth('│', false);
+    protected static final int BORDER_MULTIPLE_A = TextUtils.getWidth('┼', false, false);
+    protected static final int BORDER_SIDE_WIDTH_A = TextUtils.getWidth('│', false, false);
+    protected static final int BORDER_MULTIPLE_U = TextUtils.getWidth('┼', false, true);
+    protected static final int BORDER_SIDE_WIDTH_U = TextUtils.getWidth('│', false, true);
 
     @Override
     public TableViewport getViewport() {
@@ -33,7 +35,7 @@ public class DefaultTableRenderer implements TableRenderer {
 
     @Override
     public int getPrefBorderWidth(int columnIndex) {
-        return BORDER_MULTIPLE;
+        return Math.max(BORDER_MULTIPLE_A, BORDER_MULTIPLE_U);
     }
 
     @Override
@@ -42,8 +44,10 @@ public class DefaultTableRenderer implements TableRenderer {
     }
 
     @Override
-    public int modifyMaxWidth(int index, int max) {
-        return Utils.ensureMultiple(max + BORDER_SIDE_WIDTH, BORDER_MULTIPLE) - BORDER_SIDE_WIDTH;
+    public int modifyMaxWidth(int index, int max, boolean forceUnicode) {
+        final int mul = forceUnicode ? BORDER_MULTIPLE_U : BORDER_MULTIPLE_A;
+        final int side = forceUnicode ? BORDER_SIDE_WIDTH_U : BORDER_SIDE_WIDTH_A;
+        return Utils.ensureMultiple(max + side, mul) - side;
     }
 
     protected int getCellAlignment(int row, int column) {
@@ -51,7 +55,7 @@ public class DefaultTableRenderer implements TableRenderer {
     }
 
     @Override
-    public Text applySideBorders(int rowIndex, List<Text> line, int[] colMaxWidths) {
+    public Text applySideBorders(int rowIndex, List<Text> line, int[] colMaxWidths, boolean forceUnicode) {
         Text.Builder builder = Text.builder();
         Text bar = TextUtils.charCache('│');
         for (int i = 0; i < colMaxWidths.length; i++) {
@@ -61,7 +65,7 @@ public class DefaultTableRenderer implements TableRenderer {
                 part = line.get(i);
             }
             if (part != null) {
-                partWidth = TextUtils.getWidth(part);
+                partWidth = TextUtils.getWidth(part, forceUnicode);
             }
             StringBuilder spaces = new StringBuilder();
             TextUtils.padSpaces(spaces, colMaxWidths[i] - partWidth);
@@ -95,7 +99,14 @@ public class DefaultTableRenderer implements TableRenderer {
     }
 
     @Override
-    public Text createBorder(TableModel model, int rowIndex, int[] colMaxWidths) {
+    public int borderHeight() {
+        return 1;
+    }
+
+    @Override
+    public Text createBorder(TableModel model, int rowIndex, int[] colMaxWidths, boolean forceUnicode) {
+        final int mul = forceUnicode ? BORDER_MULTIPLE_U : BORDER_MULTIPLE_A;
+        final int side = forceUnicode ? BORDER_SIDE_WIDTH_U : BORDER_SIDE_WIDTH_A;
         char left = '├';
         char right = '┤';
         char join = '┼';
@@ -110,14 +121,14 @@ public class DefaultTableRenderer implements TableRenderer {
         }
         Text.Builder lineBuilder = Text.builder();
         for (int i = 0; i < colMaxWidths.length; i++) {
-            int width = colMaxWidths[i] + BORDER_MULTIPLE;
-            int widest = Utils.ensureMultiple(width + BORDER_SIDE_WIDTH, BORDER_MULTIPLE) - BORDER_SIDE_WIDTH;
+            int width = colMaxWidths[i] + mul;
+            int widest = Utils.ensureMultiple(width + side, mul) - side;
             if (i < colMaxWidths.length - 1) {
-                TextUtils.startAndRepeat(lineBuilder, i == 0 ? left : join, '─', widest);
+                TextUtils.startAndRepeat(lineBuilder, i == 0 ? left : join, '─', widest, forceUnicode);
             } else {
-                width += BORDER_MULTIPLE;
-                widest = Utils.ensureMultiple(width + BORDER_SIDE_WIDTH, BORDER_MULTIPLE) - BORDER_SIDE_WIDTH;
-                TextUtils.startRepeatTerminate(lineBuilder, i == 0 ? left : join, '─', right, widest);
+                width += mul;
+                widest = Utils.ensureMultiple(width + side, mul) - side;
+                TextUtils.startRepeatTerminate(lineBuilder, i == 0 ? left : join, '─', right, widest, forceUnicode);
             }
         }
         return lineBuilder.build();

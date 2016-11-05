@@ -111,12 +111,17 @@ public class ChatUI {
 
     @Listener
     public void onPlayerJoin(ClientConnectionEvent.Join event) {
-        Player player = event.getTargetEntity();
+        initialize(event.getTargetEntity());
+    }
+
+    void initialize(Player player) {
         ConfigurationNode playerSettings = Config.playerConfig(player.getUniqueId());
+        PlayerChatView view;
         if (!playerSettings.getNode("enabled").getBoolean()) {
-            // Does nothing for now
+            view = new DisabledChatView(player);
+        } else {
+            view = new ActivePlayerChatView(player, playerSettings);
         }
-        PlayerChatView view = new PlayerChatView(player, playerSettings);
         this.playerViewMap.put(player.getUniqueId(), view);
         view.update();
     }

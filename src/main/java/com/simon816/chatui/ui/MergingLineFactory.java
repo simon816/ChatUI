@@ -10,24 +10,24 @@ public class MergingLineFactory extends LineFactory {
     private int currentMaxWidth = 0;
 
     @Override
-    public void appendNewLine(Text text) {
-        this.currentMaxWidth = Math.max(this.currentMaxWidth, TextUtils.getWidth(text));
+    public void appendNewLine(Text text, boolean forceUnicode) {
+        this.currentMaxWidth = Math.max(this.currentMaxWidth, TextUtils.getWidth(text, forceUnicode));
         if (this.currLineOverwrite == -1) {
-            super.appendNewLine(text);
+            super.appendNewLine(text, forceUnicode);
             return;
         } else if (this.currLineOverwrite < getLines().size()) {
-            getLines().set(this.currLineOverwrite, appendOnto(getLines().get(this.currLineOverwrite), text));
+            getLines().set(this.currLineOverwrite, appendOnto(getLines().get(this.currLineOverwrite), text, forceUnicode));
         } else {
-            getLines().add(appendOnto(null, text));
+            getLines().add(appendOnto(null, text, forceUnicode));
         }
         this.currLineOverwrite++;
     }
 
-    private Text appendOnto(Text existing, Text newText) {
+    private Text appendOnto(Text existing, Text newText, boolean forceUnicode) {
         if (newText.isEmpty()) {
             return existing == null ? newText : existing;
         }
-        int exWidth = existing == null ? 0 : TextUtils.getWidth(existing);
+        int exWidth = existing == null ? 0 : TextUtils.getWidth(existing, forceUnicode);
         Text.Builder builder = Text.builder();
         StringBuilder spaces = new StringBuilder();
         TextUtils.padSpaces(spaces, this.baseOffset - exWidth);

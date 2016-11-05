@@ -75,10 +75,14 @@ public class TableUI implements UIComponent {
             List<List<Text>> cellLines = Lists.newArrayList();
             for (int column = viewport.getFirstColumnIndex(); column < this.model.getColumnCount(); column++) {
                 Object value = this.model.getCellValue(row, column);
-                List<Text> lines = this.columnRenderers.get(column).renderCell(value, row, ctx.width);
+                int cOff = 0;
+                while (this.columnRenderers.size() <= column) {
+                    this.columnRenderers.add(this.renderer.createColumnRenderer(column + cOff++));
+                }
+                List<Text> lines = this.columnRenderers.get(column).renderCell(value, row, ctx.width, ctx.forceUnicode);
                 for (int i = 0; i < lines.size(); i++) {
                     Text line = lines.get(i);
-                    int width = TextUtils.getWidth(line);
+                    int width = TextUtils.getWidth(line, ctx.forceUnicode);
                     columnMaxWidths.put(column, Math.max(columnMaxWidths.getOrDefault(column, 0), width));
                     List<Text> correctLine = i < cellLines.size() ? cellLines.get(i) : null;
                     if (correctLine == null) {
@@ -91,7 +95,7 @@ public class TableUI implements UIComponent {
                 }
                 rowLines.put(row, cellLines);
             }
-            lineCountInitial += cellLines.size() + 1; // +1 for border
+            lineCountInitial += cellLines.size() + this.renderer.borderHeight();
             if (lineCountInitial > ctx.height) {
                 List<List<Text>> overRowLines = rowLines.get(row);
                 while (!overRowLines.isEmpty() && lineCountInitial > ctx.height) {
@@ -108,20 +112,24 @@ public class TableUI implements UIComponent {
         int[] colMaxWidths = new int[colMaxes.size()];
         int i = 0;
         for (Integer max : colMaxes) {
-            colMaxWidths[i] = this.renderer.modifyMaxWidth(i++, max);
+            colMaxWidths[i] = this.renderer.modifyMaxWidth(i++, max, ctx.forceUnicode);
         }
-        Text border = this.renderer.createBorder(this.model, viewport.getFirstRowIndex() - 1, colMaxWidths);
-        lineFactory.appendNewLine(border);
+        Text border = this.renderer.createBorder(this.model, viewport.getFirstRowIndex() - 1, colMaxWidths, ctx.forceUnicode);
+        if (border != null) {
+            lineFactory.appendNewLine(border, ctx.forceUnicode);
+        }
         for (Entry<Integer, List<List<Text>>> row : rowLines.entrySet()) {
             int rowIndex = row.getKey();
             List<List<Text>> rowLineList = row.getValue();
             for (List<Text> colGroup : rowLineList) {
-                Text lineSegment = this.renderer.applySideBorders(rowIndex, colGroup, colMaxWidths);
-                lineFactory.appendNewLine(lineSegment);
+                Text lineSegment = this.renderer.applySideBorders(rowIndex, colGroup, colMaxWidths, ctx.forceUnicode);
+                lineFactory.appendNewLine(lineSegment, ctx.forceUnicode);
             }
             if (lineFactory.linesRemaining(ctx) > 0) {
-                border = this.renderer.createBorder(this.model, rowIndex, colMaxWidths);
-                lineFactory.appendNewLine(border);
+                border = this.renderer.createBorder(this.model, rowIndex, colMaxWidths, ctx.forceUnicode);
+                if (border != null) {
+                    lineFactory.appendNewLine(border, ctx.forceUnicode);
+                }
             }
         }
     }

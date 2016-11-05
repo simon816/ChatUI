@@ -77,12 +77,12 @@ class TextSplitter {
     private static final Splitter LINE_SPLITTER = Splitter.on('\n');
     private static final Pattern MARKER_PATTERN = Pattern.compile("\\$MARKER(\\d+)\\$");
 
-    public static void splitLines(Text original, List<Text> output, int maxWidth, Locale locale) {
+    public static void splitLines(Text original, List<Text> output, int maxWidth, Locale locale, boolean forceUnicode) {
         if (maxWidth < 1) {
             throw new IllegalArgumentException("Max width must be at least 1, was " + maxWidth);
         }
         Stack<Format> formatStack = new Stack<>();
-        Object[] ret = apply(0, Text.builder(), formatStack, original, output, maxWidth, locale);
+        Object[] ret = apply(0, Text.builder(), formatStack, original, output, maxWidth, locale, forceUnicode);
         output.add(((Text.Builder) ret[1]).build());
     }
 
@@ -94,7 +94,7 @@ class TextSplitter {
     }
 
     private static Object[] apply(int currLineLength, Text.Builder currLineBuilder, Stack<Format> formatStack, Text text, List<Text> output,
-            int maxWidth, Locale locale) {
+            int maxWidth, Locale locale, boolean forceUnicode) {
         if (text instanceof TranslatableText) {
             text = transformTranslationText((TranslatableText) text, locale);
         }
@@ -123,15 +123,15 @@ class TextSplitter {
                 continue;
             }
             boolean isBold = format.format.getStyle().isBold().get();
-            int lineW = TextUtils.getStringWidth(line, isBold);
+            int lineW = TextUtils.getStringWidth(line, isBold, forceUnicode);
             if (currLineLength + lineW > maxWidth) {
-                String[] trimmed = trimToMaxWidth(line, isBold, maxWidth - currLineLength);
+                String[] trimmed = trimToMaxWidth(line, isBold, maxWidth - currLineLength, forceUnicode);
                 line = trimmed[0];
                 if (currLineLength == 0 && line.isEmpty()) {
                     // Cannot fit this within the maxWidth
                     break; // give up
                 }
-                lineW = TextUtils.getStringWidth(line, isBold);
+                lineW = TextUtils.getStringWidth(line, isBold, forceUnicode);
                 next = trimmed[1];
             }
             currLineLength += lineW;
@@ -139,7 +139,7 @@ class TextSplitter {
         }
 
         for (Text child : text.getChildren()) {
-            Object[] ret = apply(currLineLength, currLineBuilder, formatStack, child, output, maxWidth, locale);
+            Object[] ret = apply(currLineLength, currLineBuilder, formatStack, child, output, maxWidth, locale, forceUnicode);
             currLineLength = (Integer) ret[0];
             currLineBuilder = (Text.Builder) ret[1];
         }
@@ -191,11 +191,11 @@ class TextSplitter {
         return builder.build();
     }
 
-    private static String[] trimToMaxWidth(String text, boolean bold, int maxWidth) {
+    private static String[] trimToMaxWidth(String text, boolean bold, int maxWidth, boolean forceUnicode) {
         int currLen = 0;
         int pos = 0;
         while (currLen < maxWidth && pos < text.length()) {
-            currLen += TextUtils.getWidth(text.charAt(pos++), bold);
+            currLen += TextUtils.getWidth(text.charAt(pos++), bold, forceUnicode);
         }
         if (currLen > maxWidth) {
             pos--;
@@ -203,22 +203,22 @@ class TextSplitter {
         return new String[] {text.substring(0, pos), text.substring(pos)};
     }
 
-    public static void splitLines(String original, List<String> output, int maxWidth) {
+    public static void splitLines(String original, List<String> output, int maxWidth, boolean forceUnicode) {
         String next = null;
         Iterator<String> iterator = LINE_SPLITTER.split(original).iterator();
         int currLineWidth = 0;
         while (iterator.hasNext() || next != null) {
             String part = next != null ? next : iterator.next();
             next = null;
-            int partW = TextUtils.getStringWidth(part, false);
+            int partW = TextUtils.getStringWidth(part, false, forceUnicode);
             if (partW + currLineWidth > maxWidth) {
-                String[] trimmed = trimToMaxWidth(part, false, maxWidth - currLineWidth);
+                String[] trimmed = trimToMaxWidth(part, false, maxWidth - currLineWidth, forceUnicode);
                 part = trimmed[0];
                 if (currLineWidth == 0 && part.isEmpty()) {
                     break;
                 }
                 next = trimmed[1];
-                partW = TextUtils.getStringWidth(part, false);
+                partW = TextUtils.getStringWidth(part, false, forceUnicode);
                 currLineWidth = 0;
             } else {
                 currLineWidth += partW;
@@ -226,5 +226,59 @@ class TextSplitter {
             output.add(part);
         }
     }
+/*
+    public static void split(String original, List<String> output, Iterator<String> iterator, Strategy strategy) {
+        strategy.init();
+        String next = null;
+        while (iterator.hasNext() || next != null) {
+            String part = next != null ? next : iterator.next();
+            String[] nextArr = new String[1];
+            part = strategy.apply(part, nextArr);
+            next = nextArr[0];
+            if (part == null) {
+                break;
+            }
+            output.add(part);
+        }
+    }
 
+    private static class MaxWidthStrategy implements Strategy {
+
+        private int currLineWidth;
+        private final int maxWidth;
+
+        public MaxWidthStrategy(int width) {
+            this.maxWidth = width;
+        }
+
+        @Override
+        public void init() {
+            this.currLineWidth = 0;
+        }
+
+        @Override
+        public String apply(String part, String[] nextRef) {
+            int partW = TextUtils.getStringWidth(part, false);
+            if (partW + this.currLineWidth > this.maxWidth) {
+                String[] trimmed = trimToMaxWidth(part, false, this.maxWidth - this.currLineWidth);
+                part = trimmed[0];
+                if (this.currLineWidth == 0 && part.isEmpty()) {
+                    return null;
+                }
+                nextRef[0] = trimmed[1];
+                this.currLineWidth = 0;
+            } else {
+                this.currLineWidth += partW;
+            }
+            return part;
+        }
+    }
+
+    private interface Strategy {
+
+        void init();
+
+        String apply(String part, String[] nextRef);
+    }
+*/
 }

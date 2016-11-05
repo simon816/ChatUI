@@ -71,16 +71,17 @@ public class Window implements ITextDrawable {
             throw new IllegalArgumentException("Height too small");
         }
         Builder builder = Text.builder();
-        builder.append(getTabListText(ctx.width));
+        builder.append(getTabListText(ctx.width, ctx.forceUnicode));
         builder.append(Text.NEW_LINE);
         builder.append(getActiveTab().draw(ctx.withHeight(ctx.height - this.tabListLines - 1)));
-        builder.append(getStatusBarText(ctx.width));
+        builder.append(getStatusBarText(ctx.width, ctx.forceUnicode));
         return builder.build();
     }
 
-    private Text getStatusBarText(int width) {
+    private Text getStatusBarText(int width, boolean forceUnicode) {
         Text line = Text.of("╚Status: Nothing here yet");
-        return Text.builder().append(line, TextUtils.repeatAndTerminate('═', '╝', width - TextUtils.getWidth(line))).build();
+        return Text.builder().append(line, TextUtils.repeatAndTerminate('═', '╝', width - TextUtils.getWidth(line, forceUnicode), forceUnicode))
+                .build();
     }
 
     private static final LiteralText newTab = Text.builder("[+]")
@@ -91,10 +92,10 @@ public class Window implements ITextDrawable {
 
     private int tabListLines;
 
-    private Text getTabListText(int maxWidth) {
+    private Text getTabListText(int maxWidth, boolean forceUnicode) {
         Text.Builder builder = Text.builder();
         int currentLineWidth = 0;
-        TextBuffer buffer = new TextBuffer();
+        TextBuffer buffer = new TextBuffer(forceUnicode);
         buffer.append(TextUtils.charCache('╔'));
         this.tabListLines = 1;
         for (int i = 0; i < this.tabs.size(); i++) {
@@ -104,21 +105,21 @@ public class Window implements ITextDrawable {
                 buffer.append(createCloseButton(i));
             }
             buffer.append(TextUtils.charCache('═'));
-            currentLineWidth = addTabElement(buffer, builder, currentLineWidth, maxWidth);
+            currentLineWidth = addTabElement(buffer, builder, currentLineWidth, maxWidth, forceUnicode);
             buffer.clear();
         }
         buffer.append(newTab);
-        currentLineWidth = addTabElement(buffer, builder, currentLineWidth, maxWidth);
-        builder.append(TextUtils.repeatAndTerminate('═', this.tabListLines == 1 ? '╗' : '╣', maxWidth - currentLineWidth));
+        currentLineWidth = addTabElement(buffer, builder, currentLineWidth, maxWidth, forceUnicode);
+        builder.append(TextUtils.repeatAndTerminate('═', this.tabListLines == 1 ? '╗' : '╣', maxWidth - currentLineWidth, forceUnicode));
         return builder.build();
     }
 
-    private int addTabElement(TextBuffer buffer, Text.Builder builder, int currentLineWidth, int maxWidth) {
+    private int addTabElement(TextBuffer buffer, Text.Builder builder, int currentLineWidth, int maxWidth, boolean forceUnicode) {
         if (currentLineWidth + buffer.getWidth() > maxWidth) {
             // Overspilled - finish this line and move to another one
-            builder.append(TextUtils.repeatAndTerminate('═', this.tabListLines == 1 ? '╗' : '╣', maxWidth - currentLineWidth));
+            builder.append(TextUtils.repeatAndTerminate('═', this.tabListLines == 1 ? '╗' : '╣', maxWidth - currentLineWidth, forceUnicode));
             Text newLineStart = Text.of("\n╠");
-            currentLineWidth = TextUtils.getWidth(newLineStart);
+            currentLineWidth = TextUtils.getWidth(newLineStart, forceUnicode);
             builder.append(newLineStart);
             this.tabListLines++;
         }

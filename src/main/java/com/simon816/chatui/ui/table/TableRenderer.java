@@ -16,11 +16,11 @@ public interface TableRenderer {
 
     TableViewport getViewport();
 
-    Text applySideBorders(int rowIndex, List<Text> line, int[] colMaxWidths);
+    Text applySideBorders(int rowIndex, List<Text> line, int[] colMaxWidths, boolean forceUnicode);
 
-    Text createBorder(TableModel model, int rowIndex, int[] colMaxWidths);
+    Text createBorder(TableModel model, int rowIndex, int[] colMaxWidths, boolean forceUnicode);
 
-    default int modifyMaxWidth(int index, int max) {
+    default int modifyMaxWidth(int index, int max, boolean forceUnicode) {
         return max;
     }
 
@@ -31,5 +31,7 @@ public interface TableRenderer {
     }
 
     TableColumnRenderer createColumnRenderer(int columnIndex);
+
+    int borderHeight();
 
 }

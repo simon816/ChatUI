@@ -8,8 +8,8 @@ import java.util.List;
 public class DefaultColumnRenderer implements TableColumnRenderer {
 
     @Override
-    public List<Text> renderCell(Object value, int row, int tableWidth) {
-        return TextUtils.splitLines(Text.of(value), getPrefWidth());
+    public List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode) {
+        return TextUtils.splitLines(Text.of(value), getPrefWidth(), forceUnicode);
     }
 
     @Override

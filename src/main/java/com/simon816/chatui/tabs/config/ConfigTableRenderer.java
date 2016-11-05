@@ -58,8 +58,9 @@ class ConfigTableRenderer extends DefaultTableRenderer {
         return builder;
     }
 
-    protected int calculateEqualWidth(int tableWidth, int columnCount) {
-        return (tableWidth / columnCount) - BORDER_MULTIPLE - BORDER_SIDE_WIDTH;
+    protected int calculateEqualWidth(int tableWidth, int columnCount, boolean forceUnicode) {
+        return (tableWidth / columnCount) - (forceUnicode ? BORDER_MULTIPLE_U : BORDER_MULTIPLE_A)
+                - (forceUnicode ? BORDER_SIDE_WIDTH_U : BORDER_SIDE_WIDTH_A);
     }
 
     private class KeyColumnRenderer implements TableColumnRenderer {
@@ -68,13 +69,13 @@ class ConfigTableRenderer extends DefaultTableRenderer {
         }
 
         @Override
-        public List<Text> renderCell(Object value, int row, int tableWidth) {
-            int fractionWidth = calculateEqualWidth(tableWidth, 2);
+        public List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode) {
+            int fractionWidth = calculateEqualWidth(tableWidth, 2, forceUnicode);
             ConfigEntry entry = ConfigTableRenderer.this.control.getEntries().get(row);
 
             Text keyText = getBuilder(entry).append(Text.of(value)).build();
 
-            return TextUtils.splitLines(keyText, fractionWidth);
+            return TextUtils.splitLines(keyText, fractionWidth, forceUnicode);
         }
 
         @Override
@@ -90,8 +91,8 @@ class ConfigTableRenderer extends DefaultTableRenderer {
         }
 
         @Override
-        public List<Text> renderCell(Object value, int row, int tableWidth) {
-            int fractionWidth = calculateEqualWidth(tableWidth, 2);
+        public List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode) {
+            int fractionWidth = calculateEqualWidth(tableWidth, 2, forceUnicode);
             ConfigEntry entry = ConfigTableRenderer.this.control.getEntries().get(row);
 
             Text.Builder builder = getBuilder(entry);
@@ -102,7 +103,7 @@ class ConfigTableRenderer extends DefaultTableRenderer {
             }
             builder.append(valueText);
 
-            return TextUtils.splitLines(builder.build(), fractionWidth);
+            return TextUtils.splitLines(builder.build(), fractionWidth, forceUnicode);
         }
 
         @Override

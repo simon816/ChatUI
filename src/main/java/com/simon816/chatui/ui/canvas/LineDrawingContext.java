@@ -17,6 +17,8 @@ public class LineDrawingContext {
     public static final PixelMetadata DEFAULT_DATA = new PixelMetadata(TextColors.BLACK);
     public static final char DEFAULT_CHAR = '\u2063';
 
+    private static final boolean FORCE_UNICODE = false;
+
     private final Line[] lines;
     private final int width;
     private final char emptyChar;
@@ -37,7 +39,7 @@ public class LineDrawingContext {
     }
 
     int getMinWidth() {
-        return TextUtils.getWidth(this.emptyChar, false);
+        return TextUtils.getWidth(this.emptyChar, false, FORCE_UNICODE);
     }
 
     Text[] render() {
@@ -143,7 +145,7 @@ public class LineDrawingContext {
         private int currentMax;
 
         public Line(int maxWidth, char emptyChar, PixelMetadata emptyData) {
-            this.cellWidth = (int) TextUtils.getWidth(emptyChar, false);
+            this.cellWidth = (int) TextUtils.getWidth(emptyChar, false, FORCE_UNICODE);
             this.maxIndex = (maxWidth / this.cellWidth) - 1;
             this.emptyChar = emptyChar;
             this.emptyData = emptyData;
@@ -198,7 +200,7 @@ public class LineDrawingContext {
                     prevData = data;
                 }
                 string.append(c);
-                int w = TextUtils.getWidth(c, false);
+                int w = TextUtils.getWidth(c, false, FORCE_UNICODE);
                 if (w < this.cellWidth) {
                     rootBuilder.append(prevData.toText(string.toString()));
                     string = new StringBuilder();

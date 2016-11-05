@@ -10,19 +10,19 @@ public class LineFactory {
 
     private final List<Text> lines = Lists.newArrayList();
 
-    public void appendNewLine(Text text) {
+    public void appendNewLine(Text text, boolean forceUnicode) {
         this.lines.add(text);
     }
 
-    public void addAll(List<Text> lines) {
+    public void addAll(List<Text> lines, boolean forceUnicode) {
         for (Text line : lines) {
-            appendNewLine(line);
+            appendNewLine(line, forceUnicode);
         }
     }
 
-    public void addAll(Text[] lines) {
+    public void addAll(Text[] lines, boolean forceUnicode) {
         for (Text line : lines) {
-            appendNewLine(line);
+            appendNewLine(line, forceUnicode);
         }
     }
 
@@ -30,8 +30,8 @@ public class LineFactory {
         return this.lines;
     }
 
-    public LineFactory merge(LineFactory other) {
-        this.addAll(other.getLines());
+    public LineFactory merge(LineFactory other, boolean forceUnicode) {
+        this.addAll(other.getLines(), forceUnicode);
         return this;
     }
 
@@ -42,7 +42,7 @@ public class LineFactory {
     public void fillBlank(PlayerContext ctx) {
         int remaining = linesRemaining(ctx);
         while (remaining-- > 0) {
-            appendNewLine(Text.EMPTY);
+            appendNewLine(Text.EMPTY, ctx.forceUnicode);
         }
     }
 
@@ -53,7 +53,7 @@ public class LineFactory {
     public LineFactory fillThenMerge(PlayerContext ctx, LineFactory other) {
         List<Text> otherLines = other.getLines();
         fillBlank(ctx.withHeight(ctx.height - otherLines.size()));
-        addAll(otherLines);
+        addAll(otherLines, ctx.forceUnicode);
         return this;
     }
 

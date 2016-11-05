@@ -31,13 +31,8 @@ public class ChatUICommand implements CommandCallable {
         throw new CommandNotFoundException(arguments);
     }
 
-    // Forward-compatible API 5
-    public List<String> getSuggestions(CommandSource source, String arguments, @Nullable Location<World> targetPosition) throws CommandException {
-        return getSuggestions(source, arguments);
-    }
-
     @Override
-    public List<String> getSuggestions(CommandSource source, String arguments) throws CommandException {
+    public List<String> getSuggestions(CommandSource source, String arguments, @Nullable Location<World> targetPosition) throws CommandException {
         return Collections.emptyList();
     }
 

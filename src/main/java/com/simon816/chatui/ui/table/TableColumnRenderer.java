@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface TableColumnRenderer {
 
-    List<Text> renderCell(Object value, int row, int tableWidth);
+    List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode);
 
     int getPrefWidth();
 

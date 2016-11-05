@@ -115,9 +115,9 @@ public class PaginationSourceWrapper implements ProxySource {
         return this.actualSource.getParents(contexts);
     }
 
-    // Forward-compatible API 5
+    @Override
     public Optional<String> getOption(Set<Context> contexts, String key) {
-        return Optional.empty(); // this.actualSource.getOption(contexts, key);
+        return this.actualSource.getOption(contexts, key);
     }
 
     @Override

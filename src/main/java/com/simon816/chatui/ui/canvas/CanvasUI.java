@@ -51,7 +51,7 @@ public class CanvasUI implements UIComponent {
             layer.draw(drawContext);
         }
         Text[] rendered = drawContext.render();
-        lineFactory.addAll(rendered);
+        lineFactory.addAll(rendered, ctx.forceUnicode);
     }
 
     public enum Context {

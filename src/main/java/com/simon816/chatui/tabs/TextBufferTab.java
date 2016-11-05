@@ -51,7 +51,7 @@ public abstract class TextBufferTab extends BufferedTab {
         int remainingHeight = ctx.height;
         bufferLoop: for (int i = 0; i < this.buffer.size(); i++) {
             Text message = this.buffer.get(i);
-            List<Text> lines = TextUtils.splitLines(message, ctx.width, ctx.player.getLocale());
+            List<Text> lines = TextUtils.splitLines(message, ctx.width, ctx.getLocale(), ctx.forceUnicode);
             for (int j = 0; j < lines.size(); j++) {
                 Text line = lines.get(j);
                 if (--remainingHeight < 0) {

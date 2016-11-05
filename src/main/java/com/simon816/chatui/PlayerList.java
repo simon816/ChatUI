@@ -51,7 +51,7 @@ public class PlayerList {
                         scroll.canScrollUp() ? TextColors.WHITE : TextColors.DARK_GRAY, "[Scroll Up] "));
                 builder.append(Text.of(clickAction(scroll::scrollDown),
                         scroll.canScrollDown() ? TextColors.WHITE : TextColors.DARK_GRAY, "[Scroll Down] "));
-                lineFactory.appendNewLine(builder.build());
+                lineFactory.appendNewLine(builder.build(), ctx.forceUnicode);
             }
             @Override
             public int getPrefHeight(PlayerContext ctx) {

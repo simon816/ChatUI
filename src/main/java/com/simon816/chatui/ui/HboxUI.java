@@ -31,7 +31,7 @@ public class HboxUI extends UIPane {
                 }
             }
         }
-        lineFactory.merge(lf);
+        lineFactory.merge(lf, ctx.forceUnicode);
     }
 
     @Override

@@ -10,12 +10,15 @@ public class TextBuffer {
     private final ArrayList<Text> buffer = Lists.newArrayList();
     private int width;
 
-    public TextBuffer() {
+    private final boolean forceUnicode;
+
+    public TextBuffer(boolean forceUnicode) {
+        this.forceUnicode = forceUnicode;
     }
 
     public void append(Text text) {
         this.buffer.add(text);
-        this.width += TextUtils.getWidth(text);
+        this.width += TextUtils.getWidth(text, this.forceUnicode);
     }
 
     public int getWidth() {

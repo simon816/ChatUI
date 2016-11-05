@@ -67,7 +67,7 @@ public class ConfigEditTab extends Tab {
             if (ConfigEditTab.this.control.options.canDelete) {
                 builder.append(Text.of(clickAction(ConfigEditTab.this.control::setDeleteModeOrDeleteNode), TextColors.RED, " [Delete]"));
             }
-            lineFactory.appendNewLine(builder.build());
+            lineFactory.appendNewLine(builder.build(), ctx.forceUnicode);
         }
 
     }
@@ -97,7 +97,7 @@ public class ConfigEditTab extends Tab {
                     builder.append(Text.of("->"));
                 }
             }
-            lineFactory.addAll(TextUtils.splitLines(builder.build(), ctx.width));
+            lineFactory.addAll(TextUtils.splitLines(builder.build(), ctx.width, ctx.forceUnicode), ctx.forceUnicode);
         }
 
     }

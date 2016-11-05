@@ -16,13 +16,11 @@ import java.util.function.Consumer;
 public class Button implements UIComponent {
 
     private final String label;
-    private final int width;
     private boolean truncate;
     private Consumer<PlayerChatView> onClick;
 
     public Button(String label) {
         this.label = label;
-        this.width = TextUtils.getStringWidth(label, false);
     }
 
     public String getLabel() {
@@ -46,8 +44,8 @@ public class Button implements UIComponent {
         while (desiredWidth % 9 != 0) {
             desiredWidth -= 1;
         }
-        int barWidth = TextUtils.getWidth('│', false) * 2;
-        return TextUtils.splitLines(Text.of(this.label), desiredWidth - barWidth - 3).size();
+        int barWidth = TextUtils.getWidth('│', false, ctx.forceUnicode) * 2;
+        return TextUtils.splitLines(Text.of(this.label), desiredWidth - barWidth - 3, ctx.forceUnicode).size();
     }
 
     @Override
@@ -60,7 +58,7 @@ public class Button implements UIComponent {
         if (this.truncate) {
             return 6;
         }
-        return this.width;
+        return TextUtils.getStringWidth(this.label, false, ctx.forceUnicode);
     }
 
     @Override
@@ -69,7 +67,7 @@ public class Button implements UIComponent {
         while (desiredWidth % 9 != 0) {
             desiredWidth -= 1;
         }
-        int barWidth = TextUtils.getWidth('│', false) * 2;
+        int barWidth = TextUtils.getWidth('│', false, ctx.forceUnicode) * 2;
         HoverAction<?> hover = null;
         ClickAction<?> click = null;
         if (this.onClick != null) {
@@ -80,38 +78,39 @@ public class Button implements UIComponent {
 
         List<String> labelLines = null;
         String labelPart = this.label;
-        if (this.width > desiredWidth - barWidth - 3) {
+        int width = TextUtils.getStringWidth(this.label, false, ctx.forceUnicode);
+        if (width > desiredWidth - barWidth - 3) {
             if (this.truncate) {
-                int tWidth = this.width;
+                int tWidth = width;
                 // Trim down
                 String t = labelPart;
                 while (tWidth > desiredWidth - barWidth - 3 && t.length() > 0) {
                     t = t.substring(0, t.length() - 1);
                     // 6 is width of '...'
-                    tWidth = TextUtils.getStringWidth(t, false) + 6;
+                    tWidth = TextUtils.getStringWidth(t, false, ctx.forceUnicode) + 6;
                 }
                 labelPart = t + "...";
                 hover = TextActions.showText(Text.of(this.label));
             } else {
-                labelLines = TextUtils.splitLines(labelPart, desiredWidth - barWidth - 3);
+                labelLines = TextUtils.splitLines(labelPart, desiredWidth - barWidth - 3, ctx.forceUnicode);
             }
         }
         if (labelLines == null) {
             labelLines = Lists.newArrayList(labelPart);
         }
 
-        lineFactory.appendNewLine(TextUtils.startRepeatTerminate('┌', '─', '┐', desiredWidth));
+        lineFactory.appendNewLine(TextUtils.startRepeatTerminate('┌', '─', '┐', desiredWidth, ctx.forceUnicode), ctx.forceUnicode);
 
         for (String line : labelLines) {
-            int tWidth = TextUtils.getStringWidth(line, false);
+            int tWidth = TextUtils.getStringWidth(line, false, ctx.forceUnicode);
             StringBuilder spaces = new StringBuilder();
             spaces.append('│');
             TextUtils.padSpaces(spaces, desiredWidth - tWidth - barWidth - 3);
             spaces.append('│');
             String left = spaces.substring(0, spaces.length() / 2);
             String right = spaces.substring(left.length());
-            lineFactory.appendNewLine(Text.builder(left + line + right).onClick(click).onHover(hover).build());
+            lineFactory.appendNewLine(Text.builder(left + line + right).onClick(click).onHover(hover).build(), ctx.forceUnicode);
         }
-        lineFactory.appendNewLine(TextUtils.startRepeatTerminate('└', '─', '┘', desiredWidth));
+        lineFactory.appendNewLine(TextUtils.startRepeatTerminate('└', '─', '┘', desiredWidth, ctx.forceUnicode), ctx.forceUnicode);
     }
 }
