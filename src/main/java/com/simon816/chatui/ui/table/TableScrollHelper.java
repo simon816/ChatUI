@@ -40,8 +40,20 @@ public class TableScrollHelper {
         return this.scrollOffset;
     }
 
+    public boolean scrollToOffset(int offset) {
+        if (offset < 0 || offset >= this.model.getRowCount()) {
+            return false;
+        }
+        this.scrollOffset = offset;
+        return true;
+    }
+
     public void reset() {
         this.scrollOffset = 0;
+    }
+
+    public TableModel getModel() {
+        return this.model;
     }
 
     public TableViewport createViewport() {

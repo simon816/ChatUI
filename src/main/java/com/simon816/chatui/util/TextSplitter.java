@@ -3,7 +3,6 @@ package com.simon816.chatui.util;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import org.spongepowered.api.text.LiteralText;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.TranslatableText;
 import org.spongepowered.api.text.action.ClickAction;
@@ -86,13 +85,6 @@ class TextSplitter {
         output.add(((Text.Builder) ret[1]).build());
     }
 
-    private static String getString(Text text) {
-        if (text instanceof LiteralText) {
-            return ((LiteralText) text).getContent();
-        }
-        throw new IllegalArgumentException("Unsupported text " + text);
-    }
-
     private static Object[] apply(int currLineLength, Text.Builder currLineBuilder, Stack<Format> formatStack, Text text, List<Text> output,
             int maxWidth, Locale locale, boolean forceUnicode) {
         if (text instanceof TranslatableText) {
@@ -100,7 +92,7 @@ class TextSplitter {
         }
         Format format = pushFormat(formatStack, text);
 
-        String plainText = getString(text);
+        String plainText = text.toPlainSingle();
         List<String> lines = LINE_SPLITTER.splitToList(plainText);
         boolean first = true;
         String next = null;

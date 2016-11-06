@@ -4,15 +4,17 @@ import com.google.common.base.Objects;
 import com.simon816.chatui.impl.ImplementationConfig;
 import com.simon816.chatui.tabs.GlobalTab;
 import com.simon816.chatui.tabs.NewTab;
-import com.simon816.chatui.tabs.PermissionsTab;
 import com.simon816.chatui.tabs.SceneTab;
 import com.simon816.chatui.tabs.Tab;
 import com.simon816.chatui.tabs.TextBufferTab;
 import com.simon816.chatui.tabs.TextFileTab;
 import com.simon816.chatui.tabs.config.ConfigEditTab;
+import com.simon816.chatui.tabs.perm.PermissionsTab;
 import ninja.leaping.configurate.ConfigurationNode;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.service.permission.PermissionService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.chat.ChatType;
 
@@ -78,12 +80,15 @@ public class ActivePlayerChatView implements PlayerChatView {
             this.newTab.addButton("Edit Config", new NewTab.LaunchTabAction(() -> new ConfigEditTab(ImplementationConfig.getRootNode(),
                     Text.of("Sponge Config"), ConfigEditTab.Options.DEFAULTS, ImplementationConfig.getHandler())));
         }
-        this.newTab.addButton("Permissions", new NewTab.LaunchTabAction(() -> new PermissionsTab()));
+        Optional<PermissionService> optService = Sponge.getServiceManager().provide(PermissionService.class);
+        if (optService.isPresent()) {
+            this.newTab.addButton("Permissions", new NewTab.LaunchTabAction(() -> new PermissionsTab(optService.get())));
+        }
     }
 
     @Override
     public Player getPlayer() {
-        return this.playerContext.player;
+        return this.playerContext.getPlayer();
     }
 
     public PlayerContext getContext() {
@@ -103,7 +108,7 @@ public class ActivePlayerChatView implements PlayerChatView {
     @Override
     public void update() {
         this.isUpdating = true;
-        this.playerContext.player.sendMessage(this.window.draw(this.playerContext));
+        this.playerContext.getPlayer().sendMessage(this.window.draw(this.playerContext));
         this.isUpdating = false;
     }
 
@@ -166,7 +171,7 @@ public class ActivePlayerChatView implements PlayerChatView {
         // Force clear the screen
         this.isUpdating = true;
         for (int i = 0; i < this.playerContext.height; i++) {
-            this.playerContext.player.sendMessage(Text.NEW_LINE);
+            this.playerContext.getPlayer().sendMessage(Text.NEW_LINE);
         }
         this.isUpdating = false;
         ChatUI.instance().initialize(getPlayer());

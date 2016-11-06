@@ -4,7 +4,7 @@ import com.simon816.chatui.PlayerContext;
 
 import java.util.List;
 
-public class HboxUI extends UIPane {
+public class HBoxUI extends UIPane {
 
     @Override
     public void draw(PlayerContext ctx, LineFactory lineFactory) {

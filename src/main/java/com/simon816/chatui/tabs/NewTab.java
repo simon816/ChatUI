@@ -6,7 +6,7 @@ import com.google.common.collect.Lists;
 import com.simon816.chatui.PlayerChatView;
 import com.simon816.chatui.PlayerContext;
 import com.simon816.chatui.ui.Button;
-import com.simon816.chatui.ui.HboxUI;
+import com.simon816.chatui.ui.HBoxUI;
 import com.simon816.chatui.ui.VBoxUI;
 import org.spongepowered.api.text.Text;
 
@@ -42,7 +42,7 @@ public class NewTab extends Tab {
         while (maxButtonRows < Math.ceil(this.buttons.size() / (float) columns)) {
             columns++;
         }
-        HboxUI colBox = new HboxUI();
+        HBoxUI colBox = new HBoxUI();
         int index = 0;
         for (int i = 0; i < columns; i++) {
             VBoxUI rowBox = new VBoxUI();
