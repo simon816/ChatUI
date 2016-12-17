@@ -1,28 +1,32 @@
-
 buildscript {
     repositories {
         jcenter()
         maven {
-            name = "forge"
-            url = "http://files.minecraftforge.net/maven"
+            name = 'forge'
+            url = 'http://files.minecraftforge.net/maven'
         }
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-20160116.192356-17'
     }
 }
+
+plugins {
+    id 'com.github.johnrengelman.shadow' version '1.2.4'
+}
+
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'java'
 apply plugin: 'eclipse'
 
-sourceCompatibility = "1.8"
-targetCompatibility = "1.8"
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
 
-version = "0.3.0"
+version = '0.3.0'
 
-group = "com.simon816.chatui"
+group = 'com.simon816.chatui'
 
-archivesBaseName = "ChatUI"
+archivesBaseName = 'ChatUI'
 
 repositories {
     mavenCentral()
@@ -41,15 +45,24 @@ compileJava.options.encoding = 'UTF-8'
 compileJava.options.compilerArgs += '-proc:none'
 
 minecraft {
-    version = "2098"
-    runDir = "run"
-    mappings = "stable_26"
+    version = '2098'
+    runDir = 'run'
+    mappings = 'stable_26'
 }
 
 dependencies {
     compile 'org.spongepowered:spongeapi:5.0.0'
     compile 'net.sf.trove4j:trove4j:3.0.3' // From spongeforge
     compile 'org.spongepowered:spongeforge:1.10.2-2098-5.0.0-BETA-1808:dev'
+}
+
+shadowJar {
+    dependencies {
+        include dependency('net.sf.trove4j:trove4j')
+    }
+    
+    relocate 'gnu.trove', 'com.simon816.chatui.shaded.trove'
+    classifier = null // Remove '-all' suffix from output file name
 }
 
 processResources {
