@@ -6,6 +6,7 @@
     "url": "https://github.com/simon816/ChatUI",
     "authors": ["Simon816"],
     "requiredMods": [
+        "spongeapi@$apiVersionRange"
     ],
     "dependencies": [
     ],

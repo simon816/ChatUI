@@ -1,17 +1,4 @@
 
-buildscript {
-    repositories {
-        jcenter()
-        maven {
-            name = "forge"
-            url = "http://files.minecraftforge.net/maven"
-        }
-    }
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-20160116.192356-17'
-    }
-}
-apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'java'
 apply plugin: 'eclipse'
 
@@ -30,9 +17,10 @@ repositories {
         name = 'sponge'
         url = 'http://repo.spongepowered.org/maven'
     }
+    // For launcherwrapper needed by mixin
     maven {
-        name = 'forge'
-        url = 'http://files.minecraftforge.net/maven'
+        name = 'mojang'
+        url = 'https://libraries.minecraft.net/'
     }
 }
 
@@ -40,16 +28,36 @@ compileJava.options.encoding = 'UTF-8'
 // Stop AP generating a mcmod.info file
 compileJava.options.compilerArgs += '-proc:none'
 
-minecraft {
-    version = "2098"
-    runDir = "run"
-    mappings = "stable_26"
+configurations {
+    fastutil
 }
 
 dependencies {
     compile 'org.spongepowered:spongeapi:5.0.0'
-    compile 'net.sf.trove4j:trove4j:3.0.3' // From spongeforge
-    compile 'org.spongepowered:spongeforge:1.10.2-2098-5.0.0-BETA-1808:dev'
+    fastutil 'it.unimi.dsi:fastutil:7.0.12' // from spongecommon
+    compile 'org.spongepowered:spongecommon:5.0.0-SNAPSHOT:dev'
+}
+
+jar {
+    from(zipTree(configurations.fastutil.first())) {
+        include 'it/unimi/dsi/fastutil/chars/*Char2ObjectFunction.class'
+        include 'it/unimi/dsi/fastutil/chars/*Char2ObjectFunction$*'
+        include 'it/unimi/dsi/fastutil/chars/*Char2ObjectMap.class'
+        include 'it/unimi/dsi/fastutil/chars/*Char2ObjectMap$*'
+        include 'it/unimi/dsi/fastutil/chars/*Char2ObjectOpenHashMap*'
+        include 'it/unimi/dsi/fastutil/chars/*CharSet.class'
+        include 'it/unimi/dsi/fastutil/chars/*CharSet$*'
+        include 'it/unimi/dsi/fastutil/chars/*CharCollection.class'
+        include 'it/unimi/dsi/fastutil/chars/*CharCollection$*'
+        include 'it/unimi/dsi/fastutil/chars/*CharIterable.class'
+        include 'it/unimi/dsi/fastutil/chars/*CharIterable$*'
+
+        include 'it/unimi/dsi/fastutil/ints/*Int2CharFunction.class'
+        include 'it/unimi/dsi/fastutil/ints/*Int2CharFunction$*'
+        include 'it/unimi/dsi/fastutil/ints/*Int2CharMap.class'
+        include 'it/unimi/dsi/fastutil/ints/*Int2CharMap$*'
+        include 'it/unimi/dsi/fastutil/ints/*Int2CharOpenHashMap*'
+    }
 }
 
 processResources {

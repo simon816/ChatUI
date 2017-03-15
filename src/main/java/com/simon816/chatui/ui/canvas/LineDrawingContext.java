@@ -1,8 +1,10 @@
 package com.simon816.chatui.ui.canvas;
 
 import com.simon816.chatui.util.TextUtils;
-import gnu.trove.map.hash.TIntCharHashMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
+import it.unimi.dsi.fastutil.ints.Int2CharMap;
+import it.unimi.dsi.fastutil.ints.Int2CharOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.ClickAction;
@@ -135,8 +137,8 @@ public class LineDrawingContext {
 
     private static class Line {
 
-        private final TIntCharHashMap characters = new TIntCharHashMap();
-        final TIntObjectHashMap<PixelMetadata> metadata = new TIntObjectHashMap<>();
+        private final Int2CharMap characters = new Int2CharOpenHashMap();
+        final Int2ObjectMap<PixelMetadata> metadata = new Int2ObjectOpenHashMap<>();
 
         private final int cellWidth;
         private final char emptyChar;

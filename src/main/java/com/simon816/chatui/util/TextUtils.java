@@ -1,8 +1,8 @@
 package com.simon816.chatui.util;
 
 import com.google.common.collect.Lists;
-import gnu.trove.map.TCharObjectMap;
-import gnu.trove.map.hash.TCharObjectHashMap;
+import it.unimi.dsi.fastutil.chars.Char2ObjectMap;
+import it.unimi.dsi.fastutil.chars.Char2ObjectOpenHashMap;
 import org.spongepowered.api.text.LiteralText;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.translation.locale.Locales;
@@ -158,7 +158,7 @@ public class TextUtils {
         return output;
     }
 
-    private static final TCharObjectMap<Text> charTextCache = new TCharObjectHashMap<>();
+    private static final Char2ObjectMap<Text> charTextCache = new Char2ObjectOpenHashMap<>();
 
     public static Text charCache(char c) {
         Text t = charTextCache.get(c);
@@ -171,7 +171,6 @@ public class TextUtils {
     // Space is same width for both unicode and non-unicode
     private static final int SPACE_WIDTH = getWidth(' ', false, false);
     public static final char PIXEL_CHAR = '⁚'; // 1px wide character
-    // 900 712 716
 
     public static void padSpaces(StringBuilder builder, int width) {
         while (width >= SPACE_WIDTH) {

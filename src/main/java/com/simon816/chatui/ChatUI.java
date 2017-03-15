@@ -153,8 +153,11 @@ public class ChatUI {
         } else {
             view = new ActivePlayerChatView(player, playerSettings);
         }
-        this.playerViewMap.put(player.getUniqueId(), view);
+        PlayerChatView oldView = this.playerViewMap.put(player.getUniqueId(), view);
         for (AbstractFeature feature : this.features) {
+            if (oldView != null) {
+                feature.onViewClose(oldView);
+            }
             feature.onNewPlayerView(view);
         }
         view.update();

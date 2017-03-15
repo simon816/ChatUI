@@ -2,8 +2,8 @@ package com.simon816.chatui.ui;
 
 import com.google.common.collect.Lists;
 import com.simon816.chatui.PlayerContext;
-import gnu.trove.map.TObjectIntMap;
-import gnu.trove.map.hash.TObjectIntHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ public class AnchorPaneUI extends UIPane {
     public static final int ANCHOR_BOTTOM = 4;
     public static final int ANCHOR_LEFT = 8;
 
-    private final TObjectIntMap<UIComponent> constraints = new TObjectIntHashMap<>();
+    private final Object2IntMap<UIComponent> constraints = new Object2IntOpenHashMap<>();
 
     public AnchorPaneUI() {
     }
@@ -31,7 +31,7 @@ public class AnchorPaneUI extends UIPane {
         List<UIComponent> remainingUnrestraint = Lists.newArrayList();
         List<UIComponent> children = getChildren();
         for (UIComponent child : children) {
-            int constraint = this.constraints.get(child);
+            int constraint = this.constraints.getInt(child);
             int prefHeight = child.getPrefHeight(ctx);
             if (hasFlag(constraint, ANCHOR_BOTTOM)) {
                 child.draw(ctx.withHeight(prefHeight), bottom);
