@@ -7,7 +7,7 @@ import com.simon816.chatui.tabs.NewTab;
 import com.simon816.chatui.tabs.SceneTab;
 import com.simon816.chatui.tabs.Tab;
 import com.simon816.chatui.tabs.TextBufferTab;
-import com.simon816.chatui.tabs.TextFileTab;
+import com.simon816.chatui.tabs.TextEditorTab;
 import com.simon816.chatui.tabs.config.ConfigEditTab;
 import com.simon816.chatui.tabs.perm.PermissionsTab;
 import ninja.leaping.configurate.ConfigurationNode;
@@ -142,9 +142,8 @@ public class ActivePlayerChatView implements PlayerChatView {
             this.window.removeTab(Integer.parseInt(args[1]));
         } else if (cmd.equals("newtab")) {
             this.window.addTab(this.newTab, true);
-        } else if (cmd.equals("tf") && this.window.getActiveTab() instanceof TextFileTab) {
-            // TextFileTab specific behaviour, see TextFileTab#clickAction
-            ((TextFileTab) this.window.getActiveTab()).onCommand(this, Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+        } else if (cmd.equals("editor") && this.window.getActiveTab() instanceof TextEditorTab) {
+            ((TextEditorTab) this.window.getActiveTab()).onCommand(this, args[1]);
         } else {
             return false;
         }
@@ -172,8 +171,8 @@ public class ActivePlayerChatView implements PlayerChatView {
         for (int i = 0; i < this.playerContext.height; i++) {
             this.playerContext.getPlayer().sendMessage(Text.NEW_LINE);
         }
-        this.isUpdating = false;
         ChatUI.instance().initialize(getPlayer());
+        this.isUpdating = false;
     }
 
     @Override

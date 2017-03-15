@@ -79,9 +79,14 @@ public class Window implements ITextDrawable {
     }
 
     private Text getStatusBarText(int width, boolean forceUnicode) {
-        Text line = Text.of("╚Status: Nothing here yet");
-        return Text.builder().append(line, TextUtils.repeatAndTerminate('═', '╝', width - TextUtils.getWidth(line, forceUnicode), forceUnicode))
-                .build();
+        Text prefix = Text.of("╚Status: ");
+        Text content = getStatusBarContent(forceUnicode);
+        int remWidth = width - TextUtils.getWidth(prefix, forceUnicode) - TextUtils.getWidth(content, forceUnicode);
+        return Text.builder().append(prefix, content, TextUtils.repeatAndTerminate('═', '╝', remWidth, forceUnicode)).build();
+    }
+
+    private Text getStatusBarContent(boolean forceUnicode) {
+        return Text.EMPTY;
     }
 
     private static final LiteralText newTab = Text.builder("[+]")

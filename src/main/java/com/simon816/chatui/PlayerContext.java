@@ -52,6 +52,7 @@ public class PlayerContext {
                 .add("player", this.getPlayer())
                 .add("width", this.width)
                 .add("height", this.height)
+                .add("forceUnicode", this.forceUnicode)
                 .toString();
     }
 

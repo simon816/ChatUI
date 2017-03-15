@@ -3,7 +3,7 @@ package com.simon816.chatui;
 import com.simon816.chatui.tabs.NewTab;
 import com.simon816.chatui.tabs.SceneTab;
 import com.simon816.chatui.tabs.Tab;
-import com.simon816.chatui.tabs.TextFileTab;
+import com.simon816.chatui.tabs.TextEditorTab;
 import com.simon816.chatui.ui.AnchorPaneUI;
 import com.simon816.chatui.ui.canvas.BlockRenderContext;
 import com.simon816.chatui.ui.canvas.CanvasUI;
@@ -12,6 +12,8 @@ import org.spongepowered.api.Sponge;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+
+import java.util.Collections;
 
 public class DemoContent {
 
@@ -22,15 +24,19 @@ public class DemoContent {
     static final String[] TEXT_EDITOR_TEXT = new String[] {
             "This is a text editor",
             "",
-            "Click on a character to move the caret",
-            "Click on '::' to move to that line",
-            "Shift+click to get a text prompt"
+            "Click on a line to set the line as the active line",
+            "Click again on the active line to get a copy of the line in the text prompt",
+            "Type something and press enter while on an active line to set its content"
     };
 
     private static class DemoTab extends NewTab {
 
         public DemoTab() {
-            addButton("Text Editor", new NewTab.LaunchTabAction(() -> new TextFileTab(TEXT_EDITOR_TEXT)));
+            addButton("Text Editor", new NewTab.LaunchTabAction(() -> {
+                TextEditorTab tab = new TextEditorTab();
+                Collections.addAll(tab.getLines(), TEXT_EDITOR_TEXT);
+                return tab;
+            }));
             addButton("Sine Wave Animation", new SineWaveAnimLoader());
             addButton("Back", new NewTab.LaunchTabAction(PlayerChatView::getNewTab));
         }
