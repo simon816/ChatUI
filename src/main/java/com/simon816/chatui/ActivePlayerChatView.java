@@ -41,7 +41,6 @@ public class ActivePlayerChatView implements PlayerChatView {
         this.newTab = new NewTab();
         this.playerList = new PlayerList(player);
         initNewTab(player);
-        ChatUI.instance().loadFeatures(this);
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.simon816.chatui.tabs.NewTab;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.chat.ChatType;
 import org.spongepowered.api.text.format.TextColors;
 
@@ -16,7 +17,7 @@ public class DisabledChatView implements PlayerChatView {
         Text.Builder builder = Text.builder("ChatUI is disabled, type ");
         builder.append(Text.builder("/chatui enable")
                 .color(TextColors.GREEN)
-                .onClick(ChatUI.command("enable"))
+                .onClick(TextActions.suggestCommand("/chatui enable"))
                 .build(), Text.of(" to re-enable"));
         DISABLED_MESSAGE = builder.build();
     }
@@ -25,7 +26,7 @@ public class DisabledChatView implements PlayerChatView {
     private final Window stubWindow;
     private final NewTab stubNewTab;
 
-    public DisabledChatView(Player player) {
+    DisabledChatView(Player player) {
         this.player = player;
         this.stubPlayerList = new PlayerList(player);
         this.stubWindow = new Window();

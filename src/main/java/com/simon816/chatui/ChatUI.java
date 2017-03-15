@@ -1,6 +1,7 @@
 package com.simon816.chatui;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -36,8 +37,10 @@ import org.spongepowered.api.util.Tristate;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 @Plugin(id = "chatui", name = "Chat UI")
 public class ChatUI {
@@ -82,16 +85,22 @@ public class ChatUI {
         instance = this;
     }
 
+    private Map<String, Supplier<AbstractFeature>> featuresToLoad;
+
     @Listener
     public void onInit(GameInitializationEvent event) {
         Sponge.getGame().getCommandManager().register(this, new ChatUICommand(), "chatui");
         Config.init(this.confLoader, this.logger);
-        this.addFeature(new PrivateMessageFeature());
+
+        this.featuresToLoad = Maps.newHashMap();
+
+        this.registerFeature(this, "privmsg", PrivateMessageFeature::new);
     }
 
-    public void addFeature(AbstractFeature feature) {
-        this.features.add(feature);
-        feature.onInit();
+    public void registerFeature(Object plugin, String id, Supplier<AbstractFeature> featureLoader) {
+        checkState(this.featuresToLoad != null, "Not accepting new features to be registered");
+        String featureId = Sponge.getPluginManager().fromInstance(plugin).get().getId() + ":" + id;
+        this.featuresToLoad.putIfAbsent(featureId, featureLoader);
     }
 
     @Listener(order = Order.POST)
@@ -102,6 +111,28 @@ public class ChatUI {
         }
         PaginationService service = optService.get().getProvider();
         Sponge.getGame().getServiceManager().setProvider(this, PaginationService.class, new TabbedPaginationService(service));
+
+        for (Entry<String, Supplier<AbstractFeature>> entry : this.featuresToLoad.entrySet()) {
+            if (canLoad(entry.getKey())) {
+                AbstractFeature feature = entry.getValue().get();
+                feature.onInit();
+                this.features.add(feature);
+            }
+        }
+        this.featuresToLoad = null;
+    }
+
+    private boolean canLoad(String featureId) {
+        Map<Object, ? extends ConfigurationNode> confMap = Config.getRootNode().getNode("features").getChildrenMap();
+        ConfigurationNode node = confMap.get(featureId);
+        if (node == null) {
+            return true;
+        }
+        ConfigurationNode enabled = node.getNode("enabled");
+        if (enabled.isVirtual()) {
+            enabled.setValue(true);
+        }
+        return enabled.getBoolean(true);
     }
 
     @Listener
@@ -123,6 +154,9 @@ public class ChatUI {
             view = new ActivePlayerChatView(player, playerSettings);
         }
         this.playerViewMap.put(player.getUniqueId(), view);
+        for (AbstractFeature feature : this.features) {
+            feature.onNewPlayerView(view);
+        }
         view.update();
     }
 
@@ -161,12 +195,6 @@ public class ChatUI {
             source = (CommandSource) rootCause;
         }
         event.setChannel(new WrapOutputChannel(event.getChannel().get(), source));
-    }
-
-    void loadFeatures(PlayerChatView view) {
-        for (AbstractFeature feature : this.features) {
-            feature.onNewPlayerView(view);
-        }
     }
 
 }

@@ -52,6 +52,10 @@ public class Config {
         return settings;
     }
 
+    public static ConfigurationNode getRootNode() {
+        return config;
+    }
+
     public static void loadConfig() {
         try {
             config = confLoader.load();
