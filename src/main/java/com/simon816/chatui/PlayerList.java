@@ -15,7 +15,6 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.service.ban.BanService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.ClickAction;
-import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.format.TextFormat;
 import org.spongepowered.api.text.format.TextStyles;
@@ -128,7 +127,7 @@ public class PlayerList {
     }
 
     public ClickAction<?> clickAction(BooleanSupplier action) {
-        return TextActions.executeCallback(src -> {
+        return ChatUI.execClick(src -> {
 //            if (ChatUI.getView(src).getWindow().getActiveTab() != this) {
 //                return;
 //            }

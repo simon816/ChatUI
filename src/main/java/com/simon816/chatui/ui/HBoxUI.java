@@ -11,6 +11,9 @@ public class HBoxUI extends UIPane {
         // This is all very rough atm
         int preferedSize = 0;
         List<UIComponent> children = this.getChildren();
+        if (children.isEmpty()) {
+            return;
+        }
         for (UIComponent child : children) {
             preferedSize += child.getPrefWidth(ctx);
         }
@@ -22,8 +25,9 @@ public class HBoxUI extends UIPane {
                 lf.rewind();
             }
         } else {
+            int prefWidth = ctx.width / children.size();
             for (UIComponent child : children) {
-                child.draw(ctx.withWidth(remaining), lf);
+                child.draw(ctx.withWidth(prefWidth), lf);
                 remaining -= lf.getCurrentDrawWidth();
                 lf.rewind();
                 if (remaining <= 0) {

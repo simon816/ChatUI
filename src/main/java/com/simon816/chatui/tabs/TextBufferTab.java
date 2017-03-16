@@ -1,6 +1,7 @@
 package com.simon816.chatui.tabs;
 
 import com.google.common.collect.Lists;
+import com.simon816.chatui.ChatUI;
 import com.simon816.chatui.PlayerContext;
 import com.simon816.chatui.util.TextUtils;
 import org.spongepowered.api.text.Text;
@@ -8,15 +9,16 @@ import org.spongepowered.api.text.format.TextColors;
 
 import java.util.List;
 
-public abstract class TextBufferTab extends BufferedTab {
+public abstract class TextBufferTab extends Tab {
 
     private static final int MAX_BUFFER_SIZE = 100;
 
-    private final List<Text> buffer = Lists.newArrayList();
+    protected final List<Text> buffer = Lists.newArrayList();
     private int unread = 0;
     private boolean countUnread = true;
 
-    @Override
+    private int viewOffset;
+
     public void appendMessage(Text message) {
         this.buffer.add(0, message);
         if (this.buffer.size() > MAX_BUFFER_SIZE) {
@@ -48,8 +50,8 @@ public abstract class TextBufferTab extends BufferedTab {
     @Override
     public Text draw(PlayerContext ctx) {
         Text.Builder builder = Text.builder();
-        int remainingHeight = ctx.height;
-        bufferLoop: for (int i = 0; i < this.buffer.size(); i++) {
+        int remainingHeight = ctx.height - 1;
+        bufferLoop: for (int i = this.viewOffset; i < this.buffer.size(); i++) {
             Text message = this.buffer.get(i);
             List<Text> lines = TextUtils.splitLines(message, ctx.width, ctx.getLocale(), ctx.forceUnicode);
             for (int j = 0; j < lines.size(); j++) {
@@ -72,6 +74,27 @@ public abstract class TextBufferTab extends BufferedTab {
             }
             builder.insert(0, Text.of(spacing));
         }
+        Text.Builder toolbar = Text.builder();
+        Text.Builder scrollUpButton = Text.builder("[Scroll Up]");
+        if (this.viewOffset < this.buffer.size()) {
+            scrollUpButton.onClick(ChatUI.execClick(src -> {
+                this.viewOffset++;
+                ChatUI.getView(src).update();
+            }));
+        } else {
+            scrollUpButton.color(TextColors.GRAY);
+        }
+        Text.Builder scrollDownButton = Text.builder(" [Scroll Down]");
+        if (this.viewOffset > 0) {
+            scrollDownButton.onClick(ChatUI.execClick(src -> {
+                this.viewOffset--;
+                ChatUI.getView(src).update();
+            }));
+        } else {
+            scrollDownButton.color(TextColors.GRAY);
+        }
+        toolbar.append(scrollUpButton.build(), scrollDownButton.build());
+        builder.append(toolbar.build(), Text.NEW_LINE);
         return builder.build();
     }
 

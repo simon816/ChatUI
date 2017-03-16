@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.simon816.chatui.channel.WrapOutputChannel;
+import com.simon816.chatui.group.ChatGroupFeature;
 import com.simon816.chatui.pagination.TabbedPaginationService;
 import com.simon816.chatui.privmsg.PrivateMessageFeature;
 import ninja.leaping.configurate.ConfigurationNode;
@@ -31,15 +32,18 @@ import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.service.ProviderRegistration;
 import org.spongepowered.api.service.pagination.PaginationService;
 import org.spongepowered.api.text.action.ClickAction;
+import org.spongepowered.api.text.action.ClickAction.ExecuteCallback;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.util.Tristate;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @Plugin(id = "chatui", name = "Chat UI")
@@ -80,6 +84,12 @@ public class ChatUI {
         return TextActions.runCommand("/chatui " + subcommand);
     }
 
+    // Route all callbacks through here so it will be easy to make changes in
+    // the future
+    public static ExecuteCallback execClick(Consumer<CommandSource> handler) {
+        return TextActions.executeCallback(handler);
+    }
+
     @Listener
     public void onPreInit(GamePreInitializationEvent event) {
         instance = this;
@@ -95,6 +105,7 @@ public class ChatUI {
         this.featuresToLoad = Maps.newHashMap();
 
         this.registerFeature(this, "privmsg", PrivateMessageFeature::new);
+        this.registerFeature(this, "chatgroup", ChatGroupFeature::new);
     }
 
     public void registerFeature(Object plugin, String id, Supplier<AbstractFeature> featureLoader) {
@@ -115,6 +126,7 @@ public class ChatUI {
         for (Entry<String, Supplier<AbstractFeature>> entry : this.featuresToLoad.entrySet()) {
             if (canLoad(entry.getKey())) {
                 AbstractFeature feature = entry.getValue().get();
+                feature.setConfigRoot(featureConfig(entry.getKey()));
                 feature.onInit();
                 this.features.add(feature);
             }
@@ -122,13 +134,16 @@ public class ChatUI {
         this.featuresToLoad = null;
     }
 
-    private boolean canLoad(String featureId) {
-        Map<Object, ? extends ConfigurationNode> confMap = Config.getRootNode().getNode("features").getChildrenMap();
-        ConfigurationNode node = confMap.get(featureId);
-        if (node == null) {
-            return true;
+    private ConfigurationNode featureConfig(String featureId) {
+        ConfigurationNode config = Config.getRootNode().getNode("features", featureId, "config");
+        if (config.isVirtual()) {
+            config.setValue(Collections.emptyMap());
         }
-        ConfigurationNode enabled = node.getNode("enabled");
+        return config;
+    }
+
+    private boolean canLoad(String featureId) {
+        ConfigurationNode enabled = Config.getRootNode().getNode("features", featureId, "enabled");
         if (enabled.isVirtual()) {
             enabled.setValue(true);
         }

@@ -4,7 +4,7 @@ import com.simon816.chatui.PlayerContext;
 import com.simon816.chatui.pagination.PaginationSourceWrapper;
 import org.spongepowered.api.text.Text;
 
-public class PaginationTab extends BufferedTab {
+public class PaginationTab extends Tab {
 
     private Text currentPageText;
     private final PaginationSourceWrapper source;
@@ -21,9 +21,8 @@ public class PaginationTab extends BufferedTab {
         }
     }
 
-    @Override
-    public void appendMessage(Text message) {
-        this.currentPageText = message;
+    public void setText(Text text) {
+        this.currentPageText = text;
         update();
     }
 

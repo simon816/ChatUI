@@ -21,7 +21,7 @@ public class PaginationSourceWrapper extends ForwardingSource {
 
     @Override
     public void sendMessage(Text message) {
-        this.tab.appendMessage(message);
+        this.tab.setText(message);
     }
 
     @Override

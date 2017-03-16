@@ -13,7 +13,6 @@ public class PrivateMessageTab extends TextBufferTab {
     public PrivateMessageTab(PlayerPrivateView ownView, PlayerPrivateView otherView) {
         this.ownView = ownView;
         this.otherPlayerView = otherView;
-        bufferInput();
     }
 
     @Override
@@ -30,7 +29,8 @@ public class PrivateMessageTab extends TextBufferTab {
     @Override
     public void onTextEntered(PlayerChatView view, Text input) {
         Text formatted = Text.builder("<" + view.getPlayer().getName() + "> ").append(input).build();
-        super.onTextEntered(view, formatted);
+        appendMessage(formatted);
+        view.update();
         this.otherPlayerView.createPrivateMessageTab(view.getPlayer(), false).appendMessage(formatted);
         this.otherPlayerView.view.update();
     }

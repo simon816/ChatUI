@@ -4,6 +4,7 @@ import com.simon816.chatui.tabs.NewTab;
 import com.simon816.chatui.tabs.SceneTab;
 import com.simon816.chatui.tabs.Tab;
 import com.simon816.chatui.tabs.TextEditorTab;
+import com.simon816.chatui.tabs.UITest;
 import com.simon816.chatui.ui.AnchorPaneUI;
 import com.simon816.chatui.ui.canvas.BlockRenderContext;
 import com.simon816.chatui.ui.canvas.CanvasUI;
@@ -38,6 +39,7 @@ public class DemoContent {
                 return tab;
             }));
             addButton("Sine Wave Animation", new SineWaveAnimLoader());
+            addButton("UI Test", new NewTab.LaunchTabAction(() -> new UITest()));
             addButton("Back", new NewTab.LaunchTabAction(PlayerChatView::getNewTab));
         }
 

@@ -20,9 +20,13 @@ public class Window implements ITextDrawable {
     private int activeIndex = -1;
 
     public void addTab(Tab tab, boolean switchTab) {
-        this.tabs.add(tab);
+        int idx = this.tabs.indexOf(tab);
+        if (idx == -1) {
+            this.tabs.add(tab);
+            idx = this.tabs.size() - 1;
+        }
         if (switchTab) {
-            setTab(this.tabs.size() - 1);
+            setTab(idx);
         }
     }
 

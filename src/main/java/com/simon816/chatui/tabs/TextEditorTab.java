@@ -69,7 +69,7 @@ public class TextEditorTab extends Tab {
                 lineClick = TextActions.suggestCommand(line);
                 lineBuilder.style(TextStyles.UNDERLINE);
             } else {
-                lineClick = TextActions.executeCallback(this.setActiveLine(i));
+                lineClick = ChatUI.execClick(this.setActiveLine(i, false));
 
             }
             lineBuilder.onClick(lineClick);
@@ -102,8 +102,7 @@ public class TextEditorTab extends Tab {
                 break;
             }
         }
-
-        Text blankSide = Text.builder("*\n").color(TextColors.GRAY).onClick(TextActions.executeCallback(setActiveLine(this.lines.size()))).build();
+        Text blankSide = Text.builder("*\n").color(TextColors.GRAY).onClick(ChatUI.execClick(setActiveLine(this.lines.size(), remaining < 2))).build();
         while (remaining-- > 0) {
             builder.append(blankSide);
             blankSide = Text.NEW_LINE;
@@ -161,12 +160,14 @@ public class TextEditorTab extends Tab {
         }
     }
 
-    private Consumer<CommandSource> setActiveLine(int line) {
+    private Consumer<CommandSource> setActiveLine(int line, boolean scroll) {
         return src -> {
             this.activeLine = line;
             while (this.activeLine >= this.lines.size()) {
                 this.lines.add("");
-                this.viewOffset++;
+                if (scroll) {
+                    this.viewOffset++;
+                }
             }
             ChatUI.getView(src).update();
         };

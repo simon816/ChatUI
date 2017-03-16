@@ -14,7 +14,6 @@ import ninja.leaping.configurate.ConfigurationNode;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.ClickAction;
-import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
 
 import java.util.function.BooleanSupplier;
@@ -33,7 +32,7 @@ public class ConfigEditTab extends Tab {
     }
 
     ClickAction<?> clickAction(BooleanSupplier action) {
-        return TextActions.executeCallback(src -> {
+        return ChatUI.execClick(src -> {
             if (!isTabActive(src)) {
                 return;
             }

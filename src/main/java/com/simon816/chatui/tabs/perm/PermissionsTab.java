@@ -14,7 +14,6 @@ import org.spongepowered.api.service.permission.PermissionService;
 import org.spongepowered.api.service.permission.SubjectCollection;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.ClickAction.ExecuteCallback;
-import org.spongepowered.api.text.action.TextActions;
 
 import java.util.Map.Entry;
 import java.util.function.Consumer;
@@ -73,11 +72,11 @@ public class PermissionsTab extends Tab {
     }
 
     ExecuteCallback execClick(Runnable r) {
-        return TextActions.executeCallback(src -> onClick(r).accept(ChatUI.getView(src)));
+        return ChatUI.execClick(src -> onClick(r).accept(ChatUI.getView(src)));
     }
 
     ExecuteCallback execClick(Consumer<PlayerChatView> consumer) {
-        return TextActions.executeCallback(src -> onClick(consumer).accept(ChatUI.getView(src)));
+        return ChatUI.execClick(src -> onClick(consumer).accept(ChatUI.getView(src)));
     }
 
     private UIPane createDashboard() {

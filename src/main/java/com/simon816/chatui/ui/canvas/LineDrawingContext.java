@@ -1,5 +1,6 @@
 package com.simon816.chatui.ui.canvas;
 
+import com.simon816.chatui.ChatUI;
 import com.simon816.chatui.util.TextUtils;
 import it.unimi.dsi.fastutil.ints.Int2CharMap;
 import it.unimi.dsi.fastutil.ints.Int2CharOpenHashMap;
@@ -8,7 +9,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.ClickAction;
-import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColor;
 import org.spongepowered.api.text.format.TextColors;
 
@@ -108,7 +108,7 @@ public class LineDrawingContext {
 
         public PixelMetadata(TextColor color, Consumer<CommandSource> callback, boolean locked) {
             this.color = color;
-            this.clickHandler = callback == null ? null : TextActions.executeCallback(callback);
+            this.clickHandler = callback == null ? null : ChatUI.execClick(callback);
             this.locked = locked;
         }
 

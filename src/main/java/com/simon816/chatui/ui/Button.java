@@ -71,7 +71,7 @@ public class Button implements UIComponent {
         HoverAction<?> hover = null;
         ClickAction<?> click = null;
         if (this.onClick != null) {
-            click = TextActions.executeCallback(src -> {
+            click = ChatUI.execClick(src -> {
                 this.onClick.accept(ChatUI.getView(src));
             });
         }

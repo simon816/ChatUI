@@ -67,8 +67,8 @@ public class ActivePlayerChatView implements PlayerChatView {
 
             @Override
             public void onNodeChanged(ConfigurationNode node) {
-                Config.saveConfig();
                 onConfigChange(node);
+                Config.saveConfig();
             }
         };
         return new ConfigEditTab(config, Text.of("Settings"), opts, handler);
