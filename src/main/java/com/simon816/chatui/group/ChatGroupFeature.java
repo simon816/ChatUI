@@ -4,8 +4,8 @@ import com.simon816.chatui.AbstractFeature;
 import com.simon816.chatui.ChatUI;
 import com.simon816.chatui.PlayerChatView;
 import com.simon816.chatui.PlayerContext;
+import com.simon816.chatui.tabs.Tab;
 import com.simon816.chatui.tabs.NewTab;
-import com.simon816.chatui.tabs.SceneTab;
 import com.simon816.chatui.ui.AnchorPaneUI;
 import com.simon816.chatui.ui.LineFactory;
 import com.simon816.chatui.ui.UIComponent;
@@ -33,9 +33,6 @@ public class ChatGroupFeature extends AbstractFeature {
     @Override
     protected void onInit() {
         Map<Object, ? extends ConfigurationNode> groupMap = getConfigRoot().getNode("groups").getChildrenMap();
-        System.out.println(getConfigRoot());
-        System.out.println(getConfigRoot().getChildrenMap());
-        System.out.println(groupMap);
         for (Entry<Object, ? extends ConfigurationNode> entry : groupMap.entrySet()) {
             ChatGroup group = this.groupList.addGroup(entry.getKey().toString());
             group.setNode(entry.getValue());
@@ -68,7 +65,7 @@ public class ChatGroupFeature extends AbstractFeature {
         this.groupList.removePlayer(view.getPlayer());
     }
 
-    private static class ChatGroupTab extends SceneTab {
+    private static class ChatGroupTab extends Tab {
 
         boolean createGroup;
         private final ChatGroupFeature feature;
@@ -81,7 +78,7 @@ public class ChatGroupFeature extends AbstractFeature {
         }
 
         @Override
-        public void onTextEntered(PlayerChatView view, Text input) {
+        public void onTextInput(PlayerChatView view, Text input) {
             if (this.createGroup) {
                 this.createGroup = false;
                 this.feature.addGroup(input.toPlain());

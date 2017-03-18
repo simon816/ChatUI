@@ -23,6 +23,11 @@ public class MergingLineFactory extends LineFactory {
         this.currLineOverwrite++;
     }
 
+    @Override
+    public void insertNewLine(int index, Text text, boolean forceUnicode) {
+        throw new UnsupportedOperationException(); // This is a pain to implement
+    }
+
     private Text appendOnto(Text existing, Text newText, boolean forceUnicode) {
         if (newText.isEmpty()) {
             return existing == null ? newText : existing;

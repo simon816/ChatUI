@@ -1,6 +1,7 @@
 package com.simon816.chatui;
 
 import com.simon816.chatui.tabs.NewTab;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
@@ -9,6 +10,7 @@ import org.spongepowered.api.text.chat.ChatType;
 import org.spongepowered.api.text.format.TextColors;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public class DisabledChatView implements PlayerChatView {
 
@@ -21,13 +23,13 @@ public class DisabledChatView implements PlayerChatView {
                 .build(), Text.of(" to re-enable"));
         DISABLED_MESSAGE = builder.build();
     }
-    private final Player player;
+    private final UUID playerUuid;
     private final PlayerList stubPlayerList;
     private final Window stubWindow;
     private final NewTab stubNewTab;
 
     DisabledChatView(Player player) {
-        this.player = player;
+        this.playerUuid = player.getUniqueId();
         this.stubPlayerList = new PlayerList(player);
         this.stubWindow = new Window();
         this.stubNewTab = new NewTab();
@@ -41,7 +43,7 @@ public class DisabledChatView implements PlayerChatView {
 
     @Override
     public Player getPlayer() {
-        return this.player;
+        return Sponge.getServer().getPlayer(this.playerUuid).get();
     }
 
     @Override
@@ -71,9 +73,9 @@ public class DisabledChatView implements PlayerChatView {
     @Override
     public boolean handleCommand(String[] args) {
         if (args[0].equals("enable")) {
-            Config.playerConfig(this.player.getUniqueId()).getNode("enabled").setValue(true);
+            Config.playerConfig(this.playerUuid).getNode("enabled").setValue(true);
             Config.saveConfig();
-            ChatUI.instance().initialize(this.player);
+            ChatUI.instance().initialize(this.getPlayer());
             return true;
         }
         return false;

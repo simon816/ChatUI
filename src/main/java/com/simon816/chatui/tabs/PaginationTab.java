@@ -2,17 +2,46 @@ package com.simon816.chatui.tabs;
 
 import com.simon816.chatui.PlayerContext;
 import com.simon816.chatui.pagination.PaginationSourceWrapper;
+import com.simon816.chatui.ui.LineFactory;
+import com.simon816.chatui.ui.UIComponent;
+import com.simon816.chatui.ui.VBoxUI;
+import com.simon816.chatui.util.TextUtils;
 import org.spongepowered.api.text.Text;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 public class PaginationTab extends Tab {
 
-    private Text currentPageText;
+    private static class RawTextComonent implements UIComponent {
+
+        private Iterable<Text> origTextContent;
+
+        RawTextComonent() {
+        }
+
+        public void setTextContent(Iterable<Text> textContent) {
+            this.origTextContent = textContent;
+        }
+
+        @Override
+        public void draw(PlayerContext ctx, LineFactory lineFactory) {
+            if (this.origTextContent != null) {
+                for (Text origLine : this.origTextContent) {
+                    lineFactory.addAll(TextUtils.splitLines(origLine, ctx.width, ctx.forceUnicode), ctx.forceUnicode);
+                }
+            }
+        }
+    }
+
     private final PaginationSourceWrapper source;
-    private final Text title;
+    private final RawTextComonent rawText;
 
     public PaginationTab(PaginationSourceWrapper source, Text title) {
+        super(title, new VBoxUI());
         this.source = source;
-        this.title = title;
+        this.rawText = new RawTextComonent();
+        getRoot().getChildren().add(this.rawText);
     }
 
     private void update() {
@@ -22,37 +51,24 @@ public class PaginationTab extends Tab {
     }
 
     public void setText(Text text) {
-        this.currentPageText = text;
+        this.rawText.setTextContent(Collections.singletonList(text));
         update();
     }
 
     public void setPage(Iterable<Text> texts) {
-        this.currentPageText = Text.joinWith(Text.NEW_LINE, texts);
+        this.rawText.setTextContent(texts);
         update();
     }
 
     public void setPage(Text[] texts) {
-        this.currentPageText = Text.joinWith(Text.NEW_LINE, texts);
+        this.rawText.setTextContent(Arrays.asList(texts));
         update();
     }
 
     @Override
     public void onClose() {
         super.onClose();
-        this.currentPageText = null;
-    }
-
-    @Override
-    public Text draw(PlayerContext ctx) {
-        if (this.currentPageText == null) {
-            return super.draw(ctx);
-        }
-        return this.currentPageText;
-    }
-
-    @Override
-    public Text getTitle() {
-        return this.title;
+        this.rawText.setTextContent(null);
     }
 
 }

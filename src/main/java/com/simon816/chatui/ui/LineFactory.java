@@ -14,6 +14,10 @@ public class LineFactory {
         this.lines.add(text);
     }
 
+    public void insertNewLine(int index, Text text, boolean forceUnicode) {
+        this.lines.add(index, text);
+    }
+
     public void addAll(List<Text> lines, boolean forceUnicode) {
         for (Text line : lines) {
             appendNewLine(line, forceUnicode);
@@ -52,7 +56,10 @@ public class LineFactory {
 
     public LineFactory fillThenMerge(PlayerContext ctx, LineFactory other) {
         List<Text> otherLines = other.getLines();
-        fillBlank(ctx.withHeight(ctx.height - otherLines.size()));
+        int height = ctx.height - otherLines.size();
+        if (height > 0) {
+            fillBlank(ctx.withHeight(height));
+        }
         addAll(otherLines, ctx.forceUnicode);
         return this;
     }

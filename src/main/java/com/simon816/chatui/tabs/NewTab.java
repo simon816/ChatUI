@@ -1,16 +1,10 @@
 package com.simon816.chatui.tabs;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
-import com.google.common.collect.Lists;
 import com.simon816.chatui.PlayerChatView;
-import com.simon816.chatui.PlayerContext;
 import com.simon816.chatui.ui.Button;
-import com.simon816.chatui.ui.HBoxUI;
-import com.simon816.chatui.ui.VBoxUI;
+import com.simon816.chatui.ui.FlowPaneUI;
 import org.spongepowered.api.text.Text;
 
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -19,42 +13,15 @@ public class NewTab extends Tab {
 
     private static final Text TITLE = Text.of("New Tab");
 
-    private final List<Button> buttons = Lists.newArrayList();
+    public NewTab() {
+        super(TITLE, new FlowPaneUI(FlowPaneUI.WRAP_VERTICALLY));
+    }
 
     public void addButton(String label, ButtonAction action) {
         Button button = new Button(label);
         button.truncateOverflow(true);
         button.setClickHandler(action);
-        this.buttons.add(button);
-    }
-
-    @Override
-    public Text getTitle() {
-        return TITLE;
-    }
-
-    @Override
-    public Text draw(PlayerContext ctx) {
-        int buttonHeight = 3;
-        checkArgument(ctx.height >= buttonHeight, "Height must be at least %s", buttonHeight);
-        int maxButtonRows = ctx.height / buttonHeight;
-        int columns = 1;
-        while (maxButtonRows < Math.ceil(this.buttons.size() / (float) columns)) {
-            columns++;
-        }
-        HBoxUI colBox = new HBoxUI();
-        int index = 0;
-        for (int i = 0; i < columns; i++) {
-            VBoxUI rowBox = new VBoxUI();
-            for (int j = 0; j < maxButtonRows; j++) {
-                if (index >= this.buttons.size()) {
-                    break;
-                }
-                rowBox.getChildren().add(this.buttons.get(index++));
-            }
-            colBox.getChildren().add(rowBox);
-        }
-        return colBox.draw(ctx);
+        getRoot().getChildren().add(button);
     }
 
     public static abstract class ButtonAction implements Consumer<PlayerChatView> {

@@ -72,7 +72,6 @@ class NodeBuilder implements ITextDrawable {
                 this.tab.nodeBuilder = null;
             })).build());
         }
-        builder.append(Text.NEW_LINE);
         return builder.build();
     }
 

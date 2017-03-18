@@ -1,5 +1,6 @@
 package com.simon816.chatui.pagination;
 
+import com.simon816.chatui.ActivePlayerChatView;
 import com.simon816.chatui.ChatUI;
 import com.simon816.chatui.PlayerChatView;
 import com.simon816.chatui.impl.ImplementationPagination;
@@ -65,6 +66,10 @@ public class TabbedPaginationList implements PaginationList {
             return;
         }
         PlayerChatView view = ChatUI.getView(sendTo);
+        if (!(view instanceof ActivePlayerChatView)) {
+            this.list.sendTo(receiver);
+            return;
+        }
         CommandSource newReceiver = new PaginationSourceWrapper(view, (CommandSource) receiver, getTitle().orElse(null));
         this.list.sendTo(newReceiver);
         ImplementationPagination.modify(this.service, newReceiver, sendTo);

@@ -3,6 +3,9 @@ package com.simon816.chatui.tabs;
 import com.google.common.collect.Lists;
 import com.simon816.chatui.ChatUI;
 import com.simon816.chatui.PlayerContext;
+import com.simon816.chatui.ui.AnchorPaneUI;
+import com.simon816.chatui.ui.LineFactory;
+import com.simon816.chatui.ui.UIComponent;
 import com.simon816.chatui.util.TextUtils;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
@@ -11,19 +14,110 @@ import java.util.List;
 
 public abstract class TextBufferTab extends Tab {
 
-    private static final int MAX_BUFFER_SIZE = 100;
+    private static class LineBufferComponent implements UIComponent {
 
-    protected final List<Text> buffer = Lists.newArrayList();
+        private static final int MAX_BUFFER_SIZE = 100;
+
+        private final List<Text> buffer = Lists.newArrayList();
+
+        private int viewOffset;
+
+        LineBufferComponent() {
+        }
+
+        public boolean canScrollUp() {
+            return this.viewOffset < this.buffer.size();
+        }
+
+        public boolean canScrollDown() {
+            return this.viewOffset > 0;
+        }
+
+        public void scrollUp() {
+            this.viewOffset++;
+        }
+
+        public void scrollDown() {
+            this.viewOffset--;
+        }
+
+        @Override
+        public void draw(PlayerContext ctx, LineFactory lineFactory) {
+            int remainingHeight = ctx.height;
+            bufferLoop: for (int i = this.viewOffset; i < this.buffer.size(); i++) {
+                Text message = this.buffer.get(i);
+                List<Text> lines = TextUtils.splitLines(message, ctx.width, ctx.getLocale(), ctx.forceUnicode);
+                for (int j = 0; j < lines.size(); j++) {
+                    Text line = lines.get(j);
+                    if (--remainingHeight <= 0) {
+                        break bufferLoop;
+                    }
+                    lineFactory.insertNewLine(j, line, ctx.forceUnicode);
+                }
+            }
+        }
+
+        public void appendMessage(Text message) {
+            this.buffer.add(0, message);
+            if (this.buffer.size() > MAX_BUFFER_SIZE) {
+                this.buffer.remove(this.buffer.size() - 1);
+            }
+        }
+
+        public void clear() {
+            this.buffer.clear();
+        }
+
+    }
+
+    private static class Toolbar implements UIComponent {
+
+        private final LineBufferComponent buffer;
+
+        Toolbar(LineBufferComponent buffer) {
+            this.buffer = buffer;
+        }
+
+        @Override
+        public void draw(PlayerContext ctx, LineFactory lineFactory) {
+            Text.Builder toolbar = Text.builder();
+            Text.Builder scrollUpButton = Text.builder("[Scroll Up]");
+            if (this.buffer.canScrollUp()) {
+                scrollUpButton.onClick(ChatUI.execClick(src -> {
+                    this.buffer.scrollUp();
+                    ChatUI.getView(src).update();
+                }));
+            } else {
+                scrollUpButton.color(TextColors.GRAY);
+            }
+            Text.Builder scrollDownButton = Text.builder(" [Scroll Down]");
+            if (this.buffer.canScrollDown()) {
+                scrollDownButton.onClick(ChatUI.execClick(src -> {
+                    this.buffer.scrollDown();
+                    ChatUI.getView(src).update();
+                }));
+            } else {
+                scrollDownButton.color(TextColors.GRAY);
+            }
+            toolbar.append(scrollUpButton.build(), scrollDownButton.build());
+            lineFactory.appendNewLine(toolbar.build(), ctx.forceUnicode);
+        }
+    }
+
+    private final LineBufferComponent buffer;
+
     private int unread = 0;
     private boolean countUnread = true;
 
-    private int viewOffset;
+    public TextBufferTab() {
+        super(Text.of(), new AnchorPaneUI());
+        AnchorPaneUI pane = (AnchorPaneUI) getRoot();
+        pane.addWithConstraint(this.buffer = new LineBufferComponent(), AnchorPaneUI.ANCHOR_BOTTOM);
+        pane.addWithConstraint(new Toolbar(this.buffer), AnchorPaneUI.ANCHOR_BOTTOM);
+    }
 
     public void appendMessage(Text message) {
-        this.buffer.add(0, message);
-        if (this.buffer.size() > MAX_BUFFER_SIZE) {
-            this.buffer.remove(this.buffer.size() - 1);
-        }
+        this.buffer.appendMessage(message);
         if (this.countUnread) {
             this.unread++;
         }
@@ -48,55 +142,7 @@ public abstract class TextBufferTab extends Tab {
     }
 
     @Override
-    public Text draw(PlayerContext ctx) {
-        Text.Builder builder = Text.builder();
-        int remainingHeight = ctx.height - 1;
-        bufferLoop: for (int i = this.viewOffset; i < this.buffer.size(); i++) {
-            Text message = this.buffer.get(i);
-            List<Text> lines = TextUtils.splitLines(message, ctx.width, ctx.getLocale(), ctx.forceUnicode);
-            for (int j = 0; j < lines.size(); j++) {
-                Text line = lines.get(j);
-                if (--remainingHeight < 0) {
-                    break bufferLoop;
-                }
-                // The client will break content onto new lines so we don't need
-                // NEW_LINE for subsequent lines
-                if (j == 0) {
-                    builder.insert(0, Text.NEW_LINE);
-                }
-                builder.insert(j, line);
-            }
-        }
-        if (remainingHeight > 0) {
-            StringBuilder spacing = new StringBuilder();
-            while (remainingHeight-- > 0) {
-                spacing.append("\n");
-            }
-            builder.insert(0, Text.of(spacing));
-        }
-        Text.Builder toolbar = Text.builder();
-        Text.Builder scrollUpButton = Text.builder("[Scroll Up]");
-        if (this.viewOffset < this.buffer.size()) {
-            scrollUpButton.onClick(ChatUI.execClick(src -> {
-                this.viewOffset++;
-                ChatUI.getView(src).update();
-            }));
-        } else {
-            scrollUpButton.color(TextColors.GRAY);
-        }
-        Text.Builder scrollDownButton = Text.builder(" [Scroll Down]");
-        if (this.viewOffset > 0) {
-            scrollDownButton.onClick(ChatUI.execClick(src -> {
-                this.viewOffset--;
-                ChatUI.getView(src).update();
-            }));
-        } else {
-            scrollDownButton.color(TextColors.GRAY);
-        }
-        toolbar.append(scrollUpButton.build(), scrollDownButton.build());
-        builder.append(toolbar.build(), Text.NEW_LINE);
-        return builder.build();
-    }
+    public abstract Text getTitle();
 
     protected Text.Builder appendUnreadLabel(Text.Builder builder) {
         if (this.unread > 0) {

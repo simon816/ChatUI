@@ -61,7 +61,7 @@ public class TextUtils {
         img.getRGB(0, 0, width, height, imgData, 0, width);
         int charH = height / 16;
         int charW = width / 16;
-        float lvt_9_1_ = 8.0F / (float) charW;
+        double scaleFactor = 8.0D / charW;
         for (int idx = 0; idx < 256; ++idx) {
             if (idx == 32) {
                 ASCII_PNG_CHAR_WIDTHS[idx] = 4;
@@ -84,7 +84,7 @@ public class TextUtils {
                 }
             }
             ++offX;
-            ASCII_PNG_CHAR_WIDTHS[idx] = (int) (0.5D + (double) ((float) offX * lvt_9_1_)) + 1;
+            ASCII_PNG_CHAR_WIDTHS[idx] = (int) (0.5D + offX * scaleFactor) + 1;
         }
     }
 

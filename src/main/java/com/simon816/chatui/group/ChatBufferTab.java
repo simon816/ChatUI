@@ -27,7 +27,7 @@ class ChatBufferTab extends TextBufferTab {
     }
 
     @Override
-    public void onTextEntered(PlayerChatView view, Text input) {
+    public void onTextInput(PlayerChatView view, Text input) {
         Text formatted = Text.builder("<" + view.getPlayer().getName() + "> ").append(input).build();
         this.group.onMessage(formatted);
     }

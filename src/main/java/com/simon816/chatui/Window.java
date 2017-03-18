@@ -3,21 +3,32 @@ package com.simon816.chatui;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.simon816.chatui.tabs.Tab;
+import com.simon816.chatui.ui.AnchorPaneUI;
+import com.simon816.chatui.ui.LineFactory;
+import com.simon816.chatui.ui.UIComponent;
 import com.simon816.chatui.util.TextBuffer;
 import com.simon816.chatui.util.TextUtils;
 import org.spongepowered.api.text.LiteralText;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.Text.Builder;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.format.TextStyles;
 
 import java.util.List;
 
-public class Window implements ITextDrawable {
+public class Window implements TopWindow {
 
     private final List<Tab> tabs = Lists.newArrayList();
+    private final AnchorPaneUI pane;
     private int activeIndex = -1;
+
+    public Window() {
+        this.pane = new AnchorPaneUI();
+        this.pane.addWithConstraint(new TabBar(), AnchorPaneUI.ANCHOR_TOP);
+        this.pane.getChildren().add(new TabHolder());
+        this.pane.addWithConstraint(new StatusBar(), AnchorPaneUI.ANCHOR_BOTTOM);
+
+    }
 
     public void addTab(Tab tab, boolean switchTab) {
         int idx = this.tabs.indexOf(tab);
@@ -70,89 +81,162 @@ public class Window implements ITextDrawable {
     }
 
     @Override
-    public Text draw(PlayerContext ctx) {
-        if (ctx.height < 5) {
-            throw new IllegalArgumentException("Height too small");
+    public void onClose() {
+        if (this.activeIndex != -1) {
+            this.tabs.get(this.activeIndex).onClose();
         }
-        Builder builder = Text.builder();
-        builder.append(getTabListText(ctx.width, ctx.forceUnicode));
-        builder.append(Text.NEW_LINE);
-        builder.append(getActiveTab().draw(ctx.withHeight(ctx.height - this.tabListLines - 1)));
-        builder.append(getStatusBarText(ctx.width, ctx.forceUnicode));
-        return builder.build();
     }
 
-    private Text getStatusBarText(int width, boolean forceUnicode) {
-        Text prefix = Text.of("╚Status: ");
-        Text content = getStatusBarContent(forceUnicode);
-        int remWidth = width - TextUtils.getWidth(prefix, forceUnicode) - TextUtils.getWidth(content, forceUnicode);
-        return Text.builder().append(prefix, content, TextUtils.repeatAndTerminate('═', '╝', remWidth, forceUnicode)).build();
+    @Override
+    public boolean onCommand(PlayerChatView view, String[] args) {
+        String cmd = args[0];
+        if (cmd.equals("settab")) {
+            this.setTab(Integer.parseInt(args[1]));
+        } else if (cmd.equals("closetab")) {
+            this.removeTab(Integer.parseInt(args[1]));
+        } else if (this.activeIndex != -1) {
+            return this.tabs.get(this.activeIndex).onCommand(view, args);
+        } else {
+            return false;
+        }
+        return true;
     }
 
-    private Text getStatusBarContent(boolean forceUnicode) {
-        return Text.EMPTY;
+    @Override
+    public void onTextInput(PlayerChatView view, Text input) {
+        if (this.activeIndex != -1) {
+            this.tabs.get(this.activeIndex).onTextInput(view, input);
+        }
     }
 
-    private static final LiteralText newTab = Text.builder("[+]")
+    @Override
+    public Text draw(PlayerContext ctx) {
+        LineFactory factory = new LineFactory();
+        this.pane.draw(ctx, factory);
+        factory.fillBlank(ctx);
+        return Text.builder().append(Text.joinWith(Text.NEW_LINE, factory.getLines())).build();
+    }
+
+    List<Tab> getTabs() {
+        return this.tabs;
+    }
+
+    static final LiteralText newTab = Text.builder("[+]")
             .color(TextColors.GREEN)
             .onClick(ChatUI.command("newtab"))
             .onHover(TextActions.showText(Text.of("New Tab")))
             .build();
 
-    private int tabListLines;
+    private class TabBar implements UIComponent {
 
-    private Text getTabListText(int maxWidth, boolean forceUnicode) {
-        Text.Builder builder = Text.builder();
-        int currentLineWidth = 0;
-        TextBuffer buffer = new TextBuffer(forceUnicode);
-        buffer.append(TextUtils.charCache('╔'));
-        this.tabListLines = 1;
-        for (int i = 0; i < this.tabs.size(); i++) {
-            Tab tab = this.tabs.get(i);
-            buffer.append(createTabButton(i));
-            if (tab.hasCloseButton()) {
-                buffer.append(createCloseButton(i));
+        private int tabListLines = 1;
+
+        TabBar() {
+        }
+
+        @Override
+        public void draw(PlayerContext ctx, LineFactory lineFactory) {
+            boolean forceUnicode = ctx.forceUnicode;
+            int maxWidth = ctx.width;
+            Text.Builder builder = Text.builder();
+            int currentLineWidth = 0;
+            TextBuffer buffer = new TextBuffer(forceUnicode);
+            buffer.append(TextUtils.charCache('╔'));
+            this.tabListLines = 1;
+            for (int i = 0; i < getTabs().size(); i++) {
+                Tab tab = getTabs().get(i);
+                buffer.append(createTabButton(i));
+                if (tab.hasCloseButton()) {
+                    buffer.append(createCloseButton(i));
+                }
+                buffer.append(TextUtils.charCache('═'));
+                currentLineWidth = addTabElement(lineFactory, buffer, builder, currentLineWidth, maxWidth, forceUnicode);
+                buffer.clear();
             }
-            buffer.append(TextUtils.charCache('═'));
-            currentLineWidth = addTabElement(buffer, builder, currentLineWidth, maxWidth, forceUnicode);
-            buffer.clear();
-        }
-        buffer.append(newTab);
-        currentLineWidth = addTabElement(buffer, builder, currentLineWidth, maxWidth, forceUnicode);
-        builder.append(TextUtils.repeatAndTerminate('═', this.tabListLines == 1 ? '╗' : '╣', maxWidth - currentLineWidth, forceUnicode));
-        return builder.build();
-    }
-
-    private int addTabElement(TextBuffer buffer, Text.Builder builder, int currentLineWidth, int maxWidth, boolean forceUnicode) {
-        if (currentLineWidth + buffer.getWidth() > maxWidth) {
-            // Overspilled - finish this line and move to another one
+            buffer.append(newTab);
+            currentLineWidth = addTabElement(lineFactory, buffer, builder, currentLineWidth, maxWidth, forceUnicode);
             builder.append(TextUtils.repeatAndTerminate('═', this.tabListLines == 1 ? '╗' : '╣', maxWidth - currentLineWidth, forceUnicode));
-            Text newLineStart = Text.of("\n╠");
-            currentLineWidth = TextUtils.getWidth(newLineStart, forceUnicode);
-            builder.append(newLineStart);
-            this.tabListLines++;
+            lineFactory.appendNewLine(builder.build(), forceUnicode);
         }
-        currentLineWidth += buffer.getWidth();
-        builder.append(buffer.getContents());
-        return currentLineWidth;
+
+        private int addTabElement(LineFactory lineFactory, TextBuffer buffer, Text.Builder builder, int currentLineWidth, int maxWidth,
+                boolean forceUnicode) {
+            if (currentLineWidth + buffer.getWidth() > maxWidth) {
+                // Overspilled - finish this line and move to another one
+                builder.append(TextUtils.repeatAndTerminate('═', this.tabListLines == 1 ? '╗' : '╣', maxWidth - currentLineWidth, forceUnicode));
+                lineFactory.appendNewLine(builder.build(), forceUnicode);
+                char startChar = '╠';
+                builder.removeAll();
+                currentLineWidth = TextUtils.getWidth(startChar, false, forceUnicode);
+                builder.append(TextUtils.charCache(startChar));
+                this.tabListLines++;
+            }
+            currentLineWidth += buffer.getWidth();
+            builder.append(buffer.getContents());
+            return currentLineWidth;
+        }
+
+        private Text createTabButton(int tabIndex) {
+            Text.Builder button = getTabs().get(tabIndex).getTitle().toBuilder();
+            button.color(TextColors.GREEN);
+            if (tabIndex == getActiveIndex()) {
+                button.style(TextStyles.BOLD);
+            } else {
+                button.onClick(ChatUI.command("settab " + tabIndex));
+            }
+            return button.build();
+        }
+
+        private Text createCloseButton(int tabIndex) {
+            return Text.builder("[x]").color(TextColors.RED)
+                    .onClick(ChatUI.command("closetab " + tabIndex))
+                    .onHover(TextActions.showText(Text.of("Close")))
+                    .build();
+        }
+
+        @Override
+        public int getPrefHeight(PlayerContext ctx) {
+            return this.tabListLines;
+        }
+
     }
 
-    private Text createTabButton(int tabIndex) {
-        Text.Builder button = this.tabs.get(tabIndex).getTitle().toBuilder();
-        button.color(TextColors.GREEN);
-        if (tabIndex == this.activeIndex) {
-            button.style(TextStyles.BOLD);
-        } else {
-            button.onClick(ChatUI.command("settab " + tabIndex));
+    private class TabHolder implements UIComponent {
+
+        TabHolder() {
         }
-        return button.build();
+
+        @Override
+        public void draw(PlayerContext ctx, LineFactory lineFactory) {
+            if (getActiveIndex() != -1) {
+                getActiveTab().draw(ctx, lineFactory);
+            }
+        }
     }
 
-    private Text createCloseButton(int tabIndex) {
-        return Text.builder("[x]").color(TextColors.RED)
-                .onClick(ChatUI.command("closetab " + tabIndex))
-                .onHover(TextActions.showText(Text.of("Close")))
-                .build();
+    private class StatusBar implements UIComponent {
+
+        StatusBar() {
+        }
+
+        @Override
+        public void draw(PlayerContext ctx, LineFactory lineFactory) {
+            Text prefix = Text.of("╚Status: ");
+            Text content = getStatusBarContent(ctx.forceUnicode);
+            int remWidth = ctx.width - TextUtils.getWidth(prefix, ctx.forceUnicode) - TextUtils.getWidth(content, ctx.forceUnicode);
+            Text line = Text.builder().append(prefix, content, TextUtils.repeatAndTerminate('═', '╝', remWidth, ctx.forceUnicode)).build();
+            lineFactory.appendNewLine(line, ctx.forceUnicode);
+        }
+
+        private Text getStatusBarContent(boolean forceUnicode) {
+            return Text.EMPTY;
+        }
+
+        @Override
+        public int getPrefHeight(PlayerContext ctx) {
+            return 1;
+        }
+
     }
 
     void closeAll() {

@@ -258,9 +258,9 @@ class SubjectViewer extends AnchorPaneUI {
                                                     .getOptions(SubjectViewer.this.activeContext),
                                                     (key, value) -> createOption(view.getPlayer(), key, value),
                                                     key -> removeOption(view.getPlayer(), key),
-                                                    () -> tab.setActive(SubjectViewer.this));
+                                                    () -> tab.setRoot(SubjectViewer.this));
 
-                                    tab.setActive(tab.getEntryDisplayer());
+                                    tab.setRoot(tab.getEntryDisplayer());
                                 }),
                                 simpleLink(" Default: " + getDefault().toString(), view -> {
                                     cycleDefault(view.getPlayer());
@@ -308,7 +308,7 @@ class SubjectViewer extends AnchorPaneUI {
             setActive(this.history.remove(this.history.size() - 1), false);
         } else {
             this.tab.getSubjListPane().setSubjectList(SubjectViewer.this.activeSubj.getContainingCollection());
-            this.tab.setActive(this.tab.getSubjListPane());
+            this.tab.setRoot(this.tab.getSubjListPane());
         }
     }
 

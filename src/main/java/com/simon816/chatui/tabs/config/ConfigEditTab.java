@@ -132,9 +132,7 @@ public class ConfigEditTab extends Tab {
         }
     }
 
-    private final AnchorPaneUI pane;
     final ConfigTabControl control;
-    private final Text title;
     final TableScrollHelper scroll;
 
     NodeBuilder nodeBuilder;
@@ -144,31 +142,30 @@ public class ConfigEditTab extends Tab {
     }
 
     public ConfigEditTab(ConfigurationNode rootNode, Text title, Options options, ActionHandler handler) {
-        this.title = title;
+        super(title, new AnchorPaneUI());
         this.control = new ConfigTabControl(this, rootNode, options, handler);
         ConfigTableModel model = this.control.createTableModel();
         this.scroll = new TableScrollHelper(model);
-        this.pane = new AnchorPaneUI();
-        this.pane.addWithConstraint(new Breadcrumb(), AnchorPaneUI.ANCHOR_TOP);
-        this.pane.getChildren().add(new TableUI(model, this.control.createTableRenderer()));
-        this.pane.addWithConstraint(new ButtonBar(), AnchorPaneUI.ANCHOR_BOTTOM);
+        AnchorPaneUI pane = (AnchorPaneUI) getRoot();
+        pane.addWithConstraint(new Breadcrumb(), AnchorPaneUI.ANCHOR_TOP);
+        pane.getChildren().add(new TableUI(model, this.control.createTableRenderer()));
+        pane.addWithConstraint(new ButtonBar(), AnchorPaneUI.ANCHOR_BOTTOM);
+        setRoot(pane);
     }
 
     @Override
-    public Text getTitle() {
-        return this.title;
-    }
-
-    @Override
-    public Text draw(PlayerContext ctx) {
+    public void draw(PlayerContext ctx, LineFactory lineFactory) {
         if (this.nodeBuilder != null) {
-            return this.nodeBuilder.draw(ctx);
+            Text rendered = this.nodeBuilder.draw(ctx);
+            lineFactory.addAll(TextUtils.splitLines(rendered, ctx.width, ctx.forceUnicode), ctx.forceUnicode);
+            return;
         }
-        return this.pane.draw(ctx);
+        super.draw(ctx, lineFactory);
     }
 
+
     @Override
-    public void onTextEntered(PlayerChatView view, Text input) {
+    public void onTextInput(PlayerChatView view, Text input) {
         if (this.nodeBuilder != null) {
             this.nodeBuilder.recieveInput(view, input.toPlain());
             return;

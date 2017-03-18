@@ -1,22 +1,54 @@
 package com.simon816.chatui.tabs;
 
-import com.simon816.chatui.ITextDrawable;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.simon816.chatui.PlayerChatView;
 import com.simon816.chatui.PlayerContext;
+import com.simon816.chatui.TopWindow;
+import com.simon816.chatui.ui.LineFactory;
+import com.simon816.chatui.ui.UIComponent;
+import com.simon816.chatui.ui.UIPane;
 import org.spongepowered.api.text.Text;
 
-public abstract class Tab implements ITextDrawable {
+public class Tab implements UIComponent, TopWindow {
 
-    @Override
-    public Text draw(PlayerContext ctx) {
-        Text.Builder builder = Text.builder();
-        for (int i = 0; i < ctx.height; i++) {
-            builder.append(Text.NEW_LINE);
-        }
-        return builder.build();
+    private Text title;
+    private UIPane root;
+    private boolean hasCloseButton = true;
+
+    public Tab(Text title, UIPane root) {
+        setTitle(title);
+        setRoot(root);
     }
 
-    public abstract Text getTitle();
+    public Text getTitle() {
+        return this.title;
+    }
+
+    public void setTitle(Text title) {
+        this.title = checkNotNull(title, "title");
+    }
+
+    public UIPane getRoot() {
+        return this.root;
+    }
+
+    public void setRoot(UIPane root) {
+        this.root = checkNotNull(root, "root");
+    }
+
+    public boolean hasCloseButton() {
+        return this.hasCloseButton;
+    }
+
+    public void setHasCloseButton(boolean hasCloseButton) {
+        this.hasCloseButton = hasCloseButton;
+    }
+
+    @Override
+    public void draw(PlayerContext ctx, LineFactory lineFactory) {
+        this.root.draw(ctx, lineFactory);
+    }
 
     public void onBlur() {
     }
@@ -24,13 +56,17 @@ public abstract class Tab implements ITextDrawable {
     public void onFocus() {
     }
 
-    public boolean hasCloseButton() {
-        return true;
-    }
-
+    @Override
     public void onClose() {
     }
 
-    public void onTextEntered(PlayerChatView view, Text input) {
+    @Override
+    public void onTextInput(PlayerChatView view, Text input) {
     }
+
+    @Override
+    public boolean onCommand(PlayerChatView view, String[] args) {
+        return false;
+    }
+
 }

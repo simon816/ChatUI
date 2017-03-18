@@ -1,9 +1,7 @@
 package com.simon816.chatui;
 
 import com.simon816.chatui.tabs.NewTab;
-import com.simon816.chatui.tabs.SceneTab;
 import com.simon816.chatui.tabs.Tab;
-import com.simon816.chatui.tabs.TextEditorTab;
 import com.simon816.chatui.tabs.UITest;
 import com.simon816.chatui.ui.AnchorPaneUI;
 import com.simon816.chatui.ui.canvas.BlockRenderContext;
@@ -34,9 +32,9 @@ public class DemoContent {
 
         public DemoTab() {
             addButton("Text Editor", new NewTab.LaunchTabAction(() -> {
-                TextEditorTab tab = new TextEditorTab();
-                Collections.addAll(tab.getLines(), TEXT_EDITOR_TEXT);
-                return tab;
+                TextEditorWindow te = new TextEditorWindow();
+                Collections.addAll(te.getLines(), TEXT_EDITOR_TEXT);
+                return te.createTab(Text.of("Text Editor"));
             }));
             addButton("Sine Wave Animation", new SineWaveAnimLoader());
             addButton("UI Test", new NewTab.LaunchTabAction(() -> new UITest()));
@@ -57,7 +55,7 @@ public class DemoContent {
         @Override
         protected void onClick(PlayerChatView view) {
             CanvasUI canvas = new CanvasUI();
-            Tab sineWaveTab = new SceneTab(Text.of("Sine Wave Demo"), new AnchorPaneUI(canvas)) {
+            Tab sineWaveTab = new Tab(Text.of("Sine Wave Demo"), new AnchorPaneUI(canvas)) {
 
                 private Task task;
 

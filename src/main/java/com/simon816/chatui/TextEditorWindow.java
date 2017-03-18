@@ -1,12 +1,12 @@
-package com.simon816.chatui.tabs;
+package com.simon816.chatui;
 
 import com.google.common.collect.Lists;
-import com.simon816.chatui.ChatUI;
-import com.simon816.chatui.PlayerChatView;
-import com.simon816.chatui.PlayerContext;
+import com.simon816.chatui.tabs.Tab;
+import com.simon816.chatui.ui.AnchorPaneUI;
+import com.simon816.chatui.ui.LineFactory;
+import com.simon816.chatui.ui.UIComponent;
 import com.simon816.chatui.util.TextUtils;
 import org.spongepowered.api.command.CommandSource;
-import org.spongepowered.api.text.LiteralText;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.ClickAction;
 import org.spongepowered.api.text.action.TextActions;
@@ -16,21 +16,19 @@ import org.spongepowered.api.text.format.TextStyles;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class TextEditorTab extends Tab {
+public class TextEditorWindow implements TopWindow {
+
+    private final AnchorPaneUI pane;
 
     private final List<String> lines = Lists.newArrayList();
 
     private int viewOffset = 0;
     private int activeLine = -1;
 
-    private final Text title;
-
-    public TextEditorTab() {
-        this(Text.of("Text Editor"));
-    }
-
-    public TextEditorTab(Text title) {
-        this.title = title;
+    public TextEditorWindow() {
+        this.pane = new AnchorPaneUI();
+        this.pane.getChildren().add(new TextArea());
+        this.pane.addWithConstraint(new Toolbar(), AnchorPaneUI.ANCHOR_BOTTOM);
     }
 
     public List<String> getLines() {
@@ -38,21 +36,85 @@ public class TextEditorTab extends Tab {
     }
 
     @Override
-    public void onTextEntered(PlayerChatView view, Text input) {
+    public void onClose() {
+    }
+
+    @Override
+    public void onTextInput(PlayerChatView view, Text input) {
         if (this.activeLine != -1) {
             this.lines.set(this.activeLine, input.toPlain());
+            view.update();
         }
     }
 
     @Override
-    public Text getTitle() {
-        return this.title;
+    public boolean onCommand(PlayerChatView view, String[] args) {
+        String prefix = args[0];
+        if (!prefix.equals("editor")) {
+            return false;
+        }
+        String action = args[1];
+        if (action.equals("scrUp")) {
+            this.viewOffset--;
+        } else if (action.equals("scrDown")) {
+            this.viewOffset++;
+        } else if (action.equals("delete")) {
+            this.lines.remove(this.activeLine--);
+            if (this.activeLine == -1 && !this.lines.isEmpty()) {
+                this.activeLine = 0;
+            }
+            if (this.activeLine != -1 && this.activeLine < this.viewOffset) {
+                this.viewOffset = this.activeLine;
+            }
+        } else if (action.equals("insert")) {
+            this.lines.add(this.activeLine++, "");
+        } else {
+            return false;
+        }
+        return true;
+    }
+
+    private Consumer<CommandSource> setActiveLine(int line, boolean scroll) {
+        return src -> {
+            this.activeLine = line;
+            while (this.activeLine >= this.lines.size()) {
+                this.lines.add("");
+                if (scroll) {
+                    this.viewOffset++;
+                }
+            }
+            ChatUI.getView(src).update();
+        };
     }
 
     @Override
     public Text draw(PlayerContext ctx) {
-        Text.Builder builder = Text.builder();
-        int remaining = ctx.height - 1;
+        return this.pane.draw(ctx);
+    }
+
+    public Tab createTab(Text title) {
+        TextEditorWindow self = this;
+        return new Tab(title, this.pane) {
+
+            @Override
+            public void onClose() {
+                self.onClose();
+            }
+
+            @Override
+            public boolean onCommand(PlayerChatView view, String[] args) {
+                return self.onCommand(view, args);
+            }
+
+            @Override
+            public void onTextInput(PlayerChatView view, Text input) {
+                self.onTextInput(view, input);
+            }
+        };
+    }
+
+    void drawTextArea(PlayerContext ctx, LineFactory lineFactory) {
+        int remaining = ctx.height;
         int largestLineNum = Math.min(this.lines.size(), this.viewOffset + ctx.height);
         int largestNumWidth = TextUtils.getStringWidth(String.valueOf(largestLineNum), false, ctx.forceUnicode);
         char sp = ' ';
@@ -69,7 +131,7 @@ public class TextEditorTab extends Tab {
                 lineClick = TextActions.suggestCommand(line);
                 lineBuilder.style(TextStyles.UNDERLINE);
             } else {
-                lineClick = ChatUI.execClick(this.setActiveLine(i, false));
+                lineClick = ChatUI.execClick(setActiveLine(i, false));
 
             }
             lineBuilder.onClick(lineClick);
@@ -87,27 +149,27 @@ public class TextEditorTab extends Tab {
                 }
                 sideLine.append(sp);
                 lineBuilder.append(Text.builder(sideLine.toString()).color(TextColors.GRAY).build());
-
-                LiteralText lineText = Text.builder(outputLine)
-                        .append(Text.NEW_LINE)
-                        .build();
-                lineBuilder.append(lineText);
+                lineBuilder.append(Text.of(outputLine));
+                lineFactory.appendNewLine(lineBuilder.build(), ctx.forceUnicode);
+                lineBuilder.removeAll();
                 remaining--;
                 if (remaining == 0) {
                     break;
                 }
             }
-            builder.append(lineBuilder.build());
             if (remaining == 0) {
                 break;
             }
         }
-        Text blankSide = Text.builder("*\n").color(TextColors.GRAY).onClick(ChatUI.execClick(setActiveLine(this.lines.size(), remaining < 2))).build();
-        while (remaining-- > 0) {
-            builder.append(blankSide);
-            blankSide = Text.NEW_LINE;
+        if (remaining > 0) {
+            Text newlineButton = Text.builder("*").color(TextColors.GRAY)
+                    .onClick(ChatUI.execClick(setActiveLine(this.lines.size(), remaining < 2)))
+                    .build();
+            lineFactory.appendNewLine(newlineButton, ctx.forceUnicode);
         }
+    }
 
+    void drawToolbar(PlayerContext ctx, LineFactory lineFactory) {
         Text.Builder toolbar = Text.builder();
 
         Text.Builder insertButton = Text.builder("[Insert Line]");
@@ -136,41 +198,30 @@ public class TextEditorTab extends Tab {
             scrollDownButton.color(TextColors.GRAY);
         }
         toolbar.append(insertButton.build(), deleteButton.build(), scrollUpButton.build(), scrollDownButton.build());
-
-        builder.append(toolbar.build(), Text.NEW_LINE);
-
-        return builder.build();
+        lineFactory.appendNewLine(toolbar.build(), ctx.forceUnicode);
     }
 
-    public void onCommand(PlayerChatView view, String action) {
-        if (action.equals("scrUp")) {
-            this.viewOffset--;
-        } else if (action.equals("scrDown")) {
-            this.viewOffset++;
-        } else if (action.equals("delete")) {
-            this.lines.remove(this.activeLine--);
-            if (this.activeLine == -1 && !this.lines.isEmpty()) {
-                this.activeLine = 0;
-            }
-            if (this.activeLine != -1 && this.activeLine < this.viewOffset) {
-                this.viewOffset = this.activeLine;
-            }
-        } else if (action.equals("insert")) {
-            this.lines.add(this.activeLine++, "");
+    private class TextArea implements UIComponent {
+
+        TextArea() {
         }
+
+        @Override
+        public void draw(PlayerContext ctx, LineFactory lineFactory) {
+            drawTextArea(ctx, lineFactory);
+        }
+
     }
 
-    private Consumer<CommandSource> setActiveLine(int line, boolean scroll) {
-        return src -> {
-            this.activeLine = line;
-            while (this.activeLine >= this.lines.size()) {
-                this.lines.add("");
-                if (scroll) {
-                    this.viewOffset++;
-                }
-            }
-            ChatUI.getView(src).update();
-        };
+    private class Toolbar implements UIComponent {
+
+        Toolbar() {
+        }
+
+        @Override
+        public void draw(PlayerContext ctx, LineFactory lineFactory) {
+            drawToolbar(ctx, lineFactory);
+        }
     }
 
 }

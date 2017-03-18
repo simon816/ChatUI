@@ -172,7 +172,7 @@ class TextSplitter {
             sections.add(arguments.get(index));
             prevPos = m.end();
         }
-        if (prevPos != patched.length() - 1) {
+        if (prevPos != patched.length() - 1 || prevPos == 0) {
             sections.add(patched.substring(prevPos));
         }
         Text.Builder builder = new Format(text).applyToBuilder(Text.builder());
@@ -187,7 +187,7 @@ class TextSplitter {
         int currLen = 0;
         int pos = 0;
         while (currLen < maxWidth && pos < text.length()) {
-            currLen += TextUtils.getWidth(text.charAt(pos++), bold, forceUnicode);
+            currLen += TextUtils.getWidth(text.codePointAt(pos++), bold, forceUnicode);
         }
         if (currLen > maxWidth) {
             pos--;
@@ -218,59 +218,5 @@ class TextSplitter {
             output.add(part);
         }
     }
-/*
-    public static void split(String original, List<String> output, Iterator<String> iterator, Strategy strategy) {
-        strategy.init();
-        String next = null;
-        while (iterator.hasNext() || next != null) {
-            String part = next != null ? next : iterator.next();
-            String[] nextArr = new String[1];
-            part = strategy.apply(part, nextArr);
-            next = nextArr[0];
-            if (part == null) {
-                break;
-            }
-            output.add(part);
-        }
-    }
 
-    private static class MaxWidthStrategy implements Strategy {
-
-        private int currLineWidth;
-        private final int maxWidth;
-
-        public MaxWidthStrategy(int width) {
-            this.maxWidth = width;
-        }
-
-        @Override
-        public void init() {
-            this.currLineWidth = 0;
-        }
-
-        @Override
-        public String apply(String part, String[] nextRef) {
-            int partW = TextUtils.getStringWidth(part, false);
-            if (partW + this.currLineWidth > this.maxWidth) {
-                String[] trimmed = trimToMaxWidth(part, false, this.maxWidth - this.currLineWidth);
-                part = trimmed[0];
-                if (this.currLineWidth == 0 && part.isEmpty()) {
-                    return null;
-                }
-                nextRef[0] = trimmed[1];
-                this.currLineWidth = 0;
-            } else {
-                this.currLineWidth += partW;
-            }
-            return part;
-        }
-    }
-
-    private interface Strategy {
-
-        void init();
-
-        String apply(String part, String[] nextRef);
-    }
-*/
 }

@@ -4,10 +4,8 @@ import com.google.common.base.Objects;
 import com.simon816.chatui.impl.ImplementationConfig;
 import com.simon816.chatui.tabs.GlobalTab;
 import com.simon816.chatui.tabs.NewTab;
-import com.simon816.chatui.tabs.SceneTab;
 import com.simon816.chatui.tabs.Tab;
 import com.simon816.chatui.tabs.TextBufferTab;
-import com.simon816.chatui.tabs.TextEditorTab;
 import com.simon816.chatui.tabs.config.ConfigEditTab;
 import com.simon816.chatui.tabs.perm.PermissionsTab;
 import ninja.leaping.configurate.ConfigurationNode;
@@ -49,7 +47,7 @@ public class ActivePlayerChatView implements PlayerChatView {
     }
 
     private void initNewTab(Player player) {
-        this.newTab.addButton("Player List", new NewTab.LaunchTabAction(() -> new SceneTab(Text.of("Player List"), this.playerList.getRoot())));
+        this.newTab.addButton("Player List", new NewTab.LaunchTabAction(() -> new Tab(Text.of("Player List"), this.playerList.getRoot())));
         UUID uuid = player.getUniqueId();
         this.newTab.addButton("Settings", new NewTab.LaunchTabAction(() -> createSettingsTab(uuid)));
         if (player.hasPermission(ChatUI.ADMIN_PERMISSON)) {
@@ -114,7 +112,7 @@ public class ActivePlayerChatView implements PlayerChatView {
     @Override
     public boolean handleIncoming(Text message) {
         try {
-            this.window.getActiveTab().onTextEntered(this, message);
+            this.window.onTextInput(this, message);
             // Only allow normal chat to get processed if on the global tab
             return this.window.getActiveTab() != this.globalTab;
         } catch (Exception e) {
@@ -136,14 +134,12 @@ public class ActivePlayerChatView implements PlayerChatView {
     @Override
     public boolean handleCommand(String[] args) {
         String cmd = args[0];
-        if (cmd.equals("settab")) {
-            this.window.setTab(Integer.parseInt(args[1]));
-        } else if (cmd.equals("closetab")) {
-            this.window.removeTab(Integer.parseInt(args[1]));
+        if (cmd.equals("disable")) {
+            Config.playerConfig(getPlayer().getUniqueId()).getNode("enabled").setValue(false);
+            disable();
         } else if (cmd.equals("newtab")) {
             this.window.addTab(this.newTab, true);
-        } else if (cmd.equals("editor") && this.window.getActiveTab() instanceof TextEditorTab) {
-            ((TextEditorTab) this.window.getActiveTab()).onCommand(this, args[1]);
+        } else if (this.window.onCommand(this, args)) {
         } else {
             return false;
         }

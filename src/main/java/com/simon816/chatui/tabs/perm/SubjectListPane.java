@@ -56,7 +56,7 @@ class SubjectListPane extends AnchorPaneUI {
                 lineFactory.appendNewLine(Text.builder()
                         .append(
                                 Text.builder("[Return]").onClick(SubjectListPane.this.tab.execClick(() -> {
-                                    SubjectListPane.this.tab.setActive(SubjectListPane.this.tab.getDashboard());
+                                    SubjectListPane.this.tab.setRoot(SubjectListPane.this.tab.getDashboard());
                                 })).build(),
                                 Text.builder(SubjectListPane.this.addMode ? " [Cancel]" : " [Add]")
                                         .onClick(SubjectListPane.this.tab
@@ -112,7 +112,7 @@ class SubjectListPane extends AnchorPaneUI {
                 .onHover(hover)
                 .onClick(this.tab.execClick(() -> {
                     this.tab.getSubjViewer().setActive(subject, true);
-                    this.tab.setActive(this.tab.getSubjViewer());
+                    this.tab.setRoot(this.tab.getSubjViewer());
                 })).build();
     }
 

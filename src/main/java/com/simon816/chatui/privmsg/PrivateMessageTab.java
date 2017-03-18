@@ -27,7 +27,7 @@ public class PrivateMessageTab extends TextBufferTab {
     }
 
     @Override
-    public void onTextEntered(PlayerChatView view, Text input) {
+    public void onTextInput(PlayerChatView view, Text input) {
         Text formatted = Text.builder("<" + view.getPlayer().getName() + "> ").append(input).build();
         appendMessage(formatted);
         view.update();

@@ -10,13 +10,24 @@ public class VBoxUI extends UIPane {
     public void draw(PlayerContext ctx, LineFactory lineFactory) {
         int preferedSize = 0;
         List<UIComponent> children = this.getChildren();
-        for (UIComponent child : children) {
-            preferedSize += child.getPrefHeight(ctx);
-        }
         int remaining = ctx.height;
+        for (UIComponent child : children) {
+            if (preferedSize >= remaining) {
+                // cannot fit, make sure preferedSize is larger than remaining
+                preferedSize++;
+                break;
+            }
+            preferedSize += child.getPrefHeight(ctx.withHeight(remaining - preferedSize));
+        }
         if (preferedSize <= ctx.height) {
             for (UIComponent child : children) {
-                child.draw(ctx.withHeight(child.getPrefHeight(ctx.withHeight(remaining))), lineFactory);
+                PlayerContext remCtx = ctx.withHeight(remaining);
+                int prefHeight = child.getPrefHeight(remCtx);
+                child.draw(ctx.withHeight(prefHeight), lineFactory);
+                remaining -= child.getMinHeight(ctx);
+                if (remaining <= 0) {
+                    break;
+                }
             }
         } else {
             for (UIComponent child : children) {

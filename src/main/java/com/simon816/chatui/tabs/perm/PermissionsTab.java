@@ -24,19 +24,19 @@ public class PermissionsTab extends Tab {
     private final SubjectListPane subjListPane;
     private final SubjectViewer subjViewer;
     private final EntryDisplayer entryDisplayer;
-    private UIPane active;
 
     private final PermissionService service;
     private final PermissionActions actions;
 
     public PermissionsTab(PermissionService service) {
+        super(Text.of("Permissions"), new VBoxUI()); // Just a random root node
         this.service = service;
         this.actions = findActions(service);
         this.dashboard = createDashboard();
         this.subjListPane = new SubjectListPane(this);
         this.subjViewer = new SubjectViewer(this);
         this.entryDisplayer = new EntryDisplayer(this);
-        this.active = this.dashboard;
+        this.setRoot(this.dashboard);
     }
 
     private static PermissionActions findActions(PermissionService service) {
@@ -93,7 +93,7 @@ public class PermissionsTab extends Tab {
             };
             button.setClickHandler(onClick(() -> {
                 this.subjListPane.setSubjectList(subjEntry.getValue());
-                this.active = this.subjListPane;
+                this.setRoot(this.subjListPane);
             }));
             if (left) {
                 col1.addChildren(button);
@@ -108,22 +108,8 @@ public class PermissionsTab extends Tab {
         return dashboard;
     }
 
-    @Override
-    public Text getTitle() {
-        return Text.of("Permissions");
-    }
-
-    @Override
-    public Text draw(PlayerContext ctx) {
-        return this.active.draw(ctx);
-    }
-
     public SubjectViewer getSubjViewer() {
         return this.subjViewer;
-    }
-
-    void setActive(UIPane pane) {
-        this.active = pane;
     }
 
     public UIPane getDashboard() {
@@ -131,12 +117,12 @@ public class PermissionsTab extends Tab {
     }
 
     @Override
-    public void onTextEntered(PlayerChatView view, Text input) {
-        if (this.active == this.subjViewer) {
+    public void onTextInput(PlayerChatView view, Text input) {
+        if (this.getRoot() == this.subjViewer) {
             this.subjViewer.onTextEntered(view, input);
-        } else if (this.active == this.subjListPane) {
+        } else if (this.getRoot() == this.subjListPane) {
             this.subjListPane.onTextEntered(view, input);
-        } else if (this.active == this.entryDisplayer) {
+        } else if (this.getRoot() == this.entryDisplayer) {
             this.entryDisplayer.onTextEntered(view, input);
         }
     }

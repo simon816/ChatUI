@@ -45,7 +45,7 @@ public class Button implements UIComponent {
             desiredWidth -= 1;
         }
         int barWidth = TextUtils.getWidth('│', false, ctx.forceUnicode) * 2;
-        return TextUtils.splitLines(Text.of(this.label), desiredWidth - barWidth - 3, ctx.forceUnicode).size();
+        return TextUtils.splitLines(Text.of(this.label), desiredWidth - barWidth - 3, ctx.forceUnicode).size() + 2;
     }
 
     @Override

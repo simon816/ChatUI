@@ -1,10 +1,10 @@
 package com.simon816.chatui.tabs;
 
 import com.simon816.chatui.PlayerContext;
-import com.simon816.chatui.ui.AnchorPaneUI;
 import com.simon816.chatui.ui.Button;
 import com.simon816.chatui.ui.HBoxUI;
 import com.simon816.chatui.ui.LineFactory;
+import com.simon816.chatui.ui.VBoxUI;
 import com.simon816.chatui.ui.canvas.BlockRenderContext;
 import com.simon816.chatui.ui.canvas.BrailleRenderContext;
 import com.simon816.chatui.ui.canvas.CanvasUI;
@@ -51,14 +51,10 @@ public class UITest extends Tab {
 
     }
 
-    @Override
-    public Text getTitle() {
-        return Text.of("UI");
-    }
+    PlayerContext currCtx;
 
-    @Override
-    public Text draw(PlayerContext ctx) {
-        AnchorPaneUI pane = new AnchorPaneUI();
+    public UITest() {
+        super(Text.of("UI"), new VBoxUI());
         HBoxUI box = new HBoxUI();
         TableModel table1 = new SimpleTable(6, 2);
         TableModel table2 = new SimpleTable(3, 3);
@@ -87,7 +83,7 @@ public class UITest extends Tab {
                                         rctx.setVisualCorrections(true);
                                         rctx.drawCircle(8, 8, 8, true);
                                         LineFactory factory = new LineFactory();
-                                        canvas.draw(new PlayerContext(ctx.getPlayer(), 100, 4, false), factory);
+                                        canvas.draw(new PlayerContext(UITest.this.currCtx.getPlayer(), 100, 4, false), factory);
                                         return factory.getLines();
                                     }
                                     return super.renderCell(value, row, tableWidth, forceUnicode);
@@ -101,7 +97,7 @@ public class UITest extends Tab {
                                 public List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode) {
                                     if (row == 1) {
                                         LineFactory factory = new LineFactory();
-                                        new Button("Click Me").draw(new PlayerContext(ctx.getPlayer(), 60, 3, false), factory);
+                                        new Button("Click Me").draw(new PlayerContext(UITest.this.currCtx.getPlayer(), 60, 3, false), factory);
                                         return factory.getLines();
                                     }
                                     return super.renderCell(value, row, tableWidth, forceUnicode);
@@ -130,8 +126,14 @@ public class UITest extends Tab {
                 }));
         Button button = new Button("Test Button");
         button.setClickHandler(view -> System.out.println("Clicked"));
-        pane.addChildren(button, box);
-        return pane.draw(ctx);
+        getRoot().getChildren().clear();
+        getRoot().addChildren(button, box);
+    }
+
+    @Override
+    public void draw(PlayerContext ctx, LineFactory lineFactory) {
+        this.currCtx = ctx;
+        super.draw(ctx, lineFactory);
     }
 
 }
