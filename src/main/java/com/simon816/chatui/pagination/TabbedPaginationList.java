@@ -70,7 +70,7 @@ public class TabbedPaginationList implements PaginationList {
             this.list.sendTo(receiver);
             return;
         }
-        CommandSource newReceiver = new PaginationSourceWrapper(view, (CommandSource) receiver, getTitle().orElse(null));
+        CommandSource newReceiver = new PaginationSourceWrapper((ActivePlayerChatView) view, (CommandSource) receiver, getTitle().orElse(null));
         this.list.sendTo(newReceiver);
         ImplementationPagination.modify(this.service, newReceiver, sendTo);
     }

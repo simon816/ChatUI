@@ -41,7 +41,6 @@ public class ActivePlayerChatView implements PlayerChatView {
         initNewTab(player);
     }
 
-    @Override
     public PlayerList getPlayerList() {
         return this.playerList;
     }
@@ -97,7 +96,6 @@ public class ActivePlayerChatView implements PlayerChatView {
         return this.window;
     }
 
-    @Override
     public NewTab getNewTab() {
         return this.newTab;
     }
@@ -169,6 +167,11 @@ public class ActivePlayerChatView implements PlayerChatView {
         }
         ChatUI.instance().initialize(getPlayer());
         this.isUpdating = false;
+    }
+
+    @Override
+    public void onRemove() {
+        this.window.closeAll();
     }
 
     @Override

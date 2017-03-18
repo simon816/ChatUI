@@ -63,7 +63,7 @@ class ChatGroup {
     public void onRemoved() {
         this.ignoreClose = true;
         for (Entry<UUID, ChatBufferTab> entry : this.tabs.entrySet()) {
-            ChatUI.getView(entry.getKey()).getWindow().removeTab(entry.getValue());
+            ChatUI.getActiveView(entry.getKey()).getWindow().removeTab(entry.getValue());
             ChatUI.getView(entry.getKey()).update();
         }
         this.players.clear();

@@ -1,5 +1,6 @@
 package com.simon816.chatui.tabs.perm;
 
+import com.simon816.chatui.ActivePlayerChatView;
 import com.simon816.chatui.ChatUI;
 import com.simon816.chatui.PlayerChatView;
 import com.simon816.chatui.PlayerContext;
@@ -63,7 +64,7 @@ public class PermissionsTab extends Tab {
 
     Consumer<PlayerChatView> onClick(Consumer<PlayerChatView> consumer) {
         return view -> {
-            if (view.getWindow().getActiveTab() != this) {
+            if (!(view instanceof ActivePlayerChatView) || ((ActivePlayerChatView) view).getWindow().getActiveTab() != this) {
                 return;
             }
             consumer.accept(view);

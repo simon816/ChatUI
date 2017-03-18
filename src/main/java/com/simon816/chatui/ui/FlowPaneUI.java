@@ -49,6 +49,9 @@ public class FlowPaneUI extends UIPane {
                     break;
                 }
             }
+            if (prefPane.getChildren().isEmpty()) {
+                break; // Could not fit anymore on
+            }
             masterPane.getChildren().add(prefPane);
         }
         masterPane.draw(ctx, lineFactory);

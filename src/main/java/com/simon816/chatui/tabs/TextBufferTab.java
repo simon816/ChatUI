@@ -6,6 +6,7 @@ import com.simon816.chatui.PlayerContext;
 import com.simon816.chatui.ui.AnchorPaneUI;
 import com.simon816.chatui.ui.LineFactory;
 import com.simon816.chatui.ui.UIComponent;
+import com.simon816.chatui.util.TextBuffer;
 import com.simon816.chatui.util.TextUtils;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
@@ -34,11 +35,15 @@ public abstract class TextBufferTab extends Tab {
         }
 
         public void scrollUp() {
-            this.viewOffset++;
+            if (++this.viewOffset > this.buffer.size()) {
+                this.viewOffset = this.buffer.size();
+            }
         }
 
         public void scrollDown() {
-            this.viewOffset--;
+            if (--this.viewOffset < 0) {
+                this.viewOffset = 0;
+            }
         }
 
         @Override
@@ -80,7 +85,7 @@ public abstract class TextBufferTab extends Tab {
 
         @Override
         public void draw(PlayerContext ctx, LineFactory lineFactory) {
-            Text.Builder toolbar = Text.builder();
+            TextBuffer toolbar = new TextBuffer(ctx.forceUnicode);
             Text.Builder scrollUpButton = Text.builder("[Scroll Up]");
             if (this.buffer.canScrollUp()) {
                 scrollUpButton.onClick(ChatUI.execClick(src -> {
@@ -99,8 +104,11 @@ public abstract class TextBufferTab extends Tab {
             } else {
                 scrollDownButton.color(TextColors.GRAY);
             }
-            toolbar.append(scrollUpButton.build(), scrollDownButton.build());
-            lineFactory.appendNewLine(toolbar.build(), ctx.forceUnicode);
+            toolbar.append(scrollUpButton.build());
+            toolbar.append(scrollDownButton.build());
+            StringBuilder spaces = new StringBuilder();
+            TextUtils.padSpaces(spaces, ctx.width - toolbar.getWidth());
+            lineFactory.appendNewLine(Text.builder(spaces.toString()).append(toolbar.getContents()).build(), ctx.forceUnicode);
         }
     }
 

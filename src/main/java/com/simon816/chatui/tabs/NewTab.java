@@ -1,5 +1,6 @@
 package com.simon816.chatui.tabs;
 
+import com.simon816.chatui.ActivePlayerChatView;
 import com.simon816.chatui.PlayerChatView;
 import com.simon816.chatui.ui.Button;
 import com.simon816.chatui.ui.FlowPaneUI;
@@ -28,36 +29,36 @@ public class NewTab extends Tab {
 
         @Override
         public final void accept(PlayerChatView view) {
-            if (!(view.getWindow().getActiveTab() instanceof NewTab)) {
+            if (!(view instanceof ActivePlayerChatView) || !(((ActivePlayerChatView) view).getWindow().getActiveTab() instanceof NewTab)) {
                 return; // Expired link
             }
-            onClick(view);
+            onClick((ActivePlayerChatView) view);
         }
 
-        protected final void replaceWith(Tab replacement, PlayerChatView view) {
+        protected final void replaceWith(Tab replacement, ActivePlayerChatView view) {
             int oldIndex = view.getWindow().getActiveIndex();
             view.getWindow().addTab(replacement, true);
             view.getWindow().removeTab(oldIndex);
             view.update();
         }
 
-        protected abstract void onClick(PlayerChatView view);
+        protected abstract void onClick(ActivePlayerChatView view);
     }
 
     public static class LaunchTabAction extends ButtonAction {
 
-        private final Function<PlayerChatView, Tab> tabOpenFunc;
+        private final Function<ActivePlayerChatView, Tab> tabOpenFunc;
 
         public LaunchTabAction(Supplier<Tab> tabOpenFunc) {
             this(view -> tabOpenFunc.get());
         }
 
-        public LaunchTabAction(Function<PlayerChatView, Tab> tabOpenFunc) {
+        public LaunchTabAction(Function<ActivePlayerChatView, Tab> tabOpenFunc) {
             this.tabOpenFunc = tabOpenFunc;
         }
 
         @Override
-        protected void onClick(PlayerChatView view) {
+        protected void onClick(ActivePlayerChatView view) {
             replaceWith(this.tabOpenFunc.apply(view), view);
         }
     }

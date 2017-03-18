@@ -65,7 +65,11 @@ public class Config {
         }
         CommentedConfigurationNode playerSettings = config.getNode("playerSettings");
         if (playerSettings.isVirtual()) {
-            playerSettings.setValue(Collections.EMPTY_MAP);
+            playerSettings.setValue(Collections.emptyMap());
+        }
+        CommentedConfigurationNode enabled = config.getNode("interfaceEnabled");
+        if (enabled.isVirtual()) {
+            enabled.setValue(true);
         }
     }
 

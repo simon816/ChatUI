@@ -1,6 +1,6 @@
 package com.simon816.chatui.pagination;
 
-import com.simon816.chatui.PlayerChatView;
+import com.simon816.chatui.ActivePlayerChatView;
 import com.simon816.chatui.tabs.PaginationTab;
 import com.simon816.chatui.util.ForwardingSource;
 import org.spongepowered.api.command.CommandSource;
@@ -8,10 +8,10 @@ import org.spongepowered.api.text.Text;
 
 public class PaginationSourceWrapper extends ForwardingSource {
 
-    public final PlayerChatView view;
+    public final ActivePlayerChatView view;
     private final PaginationTab tab;
 
-    public PaginationSourceWrapper(PlayerChatView view, CommandSource actualSource, Text title) {
+    public PaginationSourceWrapper(ActivePlayerChatView view, CommandSource actualSource, Text title) {
         super(actualSource);
         this.view = view;
         this.tab = new PaginationTab(this, title == null ? Text.of("Pagination") : title);

@@ -1,6 +1,5 @@
 package com.simon816.chatui;
 
-import com.simon816.chatui.tabs.NewTab;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.living.player.Player;
@@ -24,21 +23,10 @@ public class DisabledChatView implements PlayerChatView {
         DISABLED_MESSAGE = builder.build();
     }
     private final UUID playerUuid;
-    private final PlayerList stubPlayerList;
-    private final Window stubWindow;
-    private final NewTab stubNewTab;
 
     DisabledChatView(Player player) {
         this.playerUuid = player.getUniqueId();
-        this.stubPlayerList = new PlayerList(player);
-        this.stubWindow = new Window();
-        this.stubNewTab = new NewTab();
         player.sendMessage(DISABLED_MESSAGE);
-    }
-
-    @Override
-    public PlayerList getPlayerList() {
-        return this.stubPlayerList;
     }
 
     @Override
@@ -47,13 +35,9 @@ public class DisabledChatView implements PlayerChatView {
     }
 
     @Override
-    public Window getWindow() {
-        return this.stubWindow;
-    }
-
-    @Override
-    public NewTab getNewTab() {
-        return this.stubNewTab;
+    public TopWindow getWindow() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     @Override
@@ -79,6 +63,10 @@ public class DisabledChatView implements PlayerChatView {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void onRemove() {
     }
 
 }

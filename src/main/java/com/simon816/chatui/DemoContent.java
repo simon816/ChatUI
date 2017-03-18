@@ -38,7 +38,7 @@ public class DemoContent {
             }));
             addButton("Sine Wave Animation", new SineWaveAnimLoader());
             addButton("UI Test", new NewTab.LaunchTabAction(() -> new UITest()));
-            addButton("Back", new NewTab.LaunchTabAction(PlayerChatView::getNewTab));
+            addButton("Back", new NewTab.LaunchTabAction(ActivePlayerChatView::getNewTab));
         }
 
         @Override
@@ -53,7 +53,7 @@ public class DemoContent {
         }
 
         @Override
-        protected void onClick(PlayerChatView view) {
+        protected void onClick(ActivePlayerChatView view) {
             CanvasUI canvas = new CanvasUI();
             Tab sineWaveTab = new Tab(Text.of("Sine Wave Demo"), new AnchorPaneUI(canvas)) {
 

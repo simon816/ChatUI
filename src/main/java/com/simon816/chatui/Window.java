@@ -111,10 +111,7 @@ public class Window implements TopWindow {
 
     @Override
     public Text draw(PlayerContext ctx) {
-        LineFactory factory = new LineFactory();
-        this.pane.draw(ctx, factory);
-        factory.fillBlank(ctx);
-        return Text.builder().append(Text.joinWith(Text.NEW_LINE, factory.getLines())).build();
+        return this.pane.draw(ctx);
     }
 
     List<Tab> getTabs() {

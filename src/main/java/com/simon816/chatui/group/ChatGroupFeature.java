@@ -1,11 +1,12 @@
 package com.simon816.chatui.group;
 
 import com.simon816.chatui.AbstractFeature;
+import com.simon816.chatui.ActivePlayerChatView;
 import com.simon816.chatui.ChatUI;
 import com.simon816.chatui.PlayerChatView;
 import com.simon816.chatui.PlayerContext;
-import com.simon816.chatui.tabs.Tab;
 import com.simon816.chatui.tabs.NewTab;
+import com.simon816.chatui.tabs.Tab;
 import com.simon816.chatui.ui.AnchorPaneUI;
 import com.simon816.chatui.ui.LineFactory;
 import com.simon816.chatui.ui.UIComponent;
@@ -56,7 +57,10 @@ public class ChatGroupFeature extends AbstractFeature {
 
     @Override
     protected void onNewPlayerView(PlayerChatView view) {
-        view.getNewTab().addButton("Chat Groups",
+        if (!(view instanceof ActivePlayerChatView)) {
+            return;
+        }
+        ((ActivePlayerChatView) view).getNewTab().addButton("Chat Groups",
                 new NewTab.LaunchTabAction(() -> new ChatGroupTab(this, view, new AnchorPaneUI())));
     }
 
@@ -135,7 +139,7 @@ public class ChatGroupFeature extends AbstractFeature {
                     public List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode) {
                         ChatGroup group = (ChatGroup) value;
                         return TextUtils.splitLines(Text.of(ChatUI.execClick(src -> {
-                            ChatUI.getView(src).getWindow().addTab(group.getTab((Player) src), true);
+                            ChatUI.getActiveView(src).getWindow().addTab(group.getTab((Player) src), true);
                             ChatUI.getView(src).update();
                         }), group.getName()), getPrefWidth(), forceUnicode);
                     }

@@ -45,6 +45,9 @@ public class AnchorPaneUI extends UIPane {
         }
         int remaining = lineFactory.linesRemaining(ctx) - top.currentLineCount() - bottom.currentLineCount();
         for (UIComponent child : remainingUnrestraint) {
+            if (remaining <= 0) {
+                break;
+            }
             child.draw(ctx.withHeight(remaining), unrestraint);
             remaining = unrestraint.linesRemaining(ctx);
         }

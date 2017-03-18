@@ -21,7 +21,7 @@ import java.util.function.BooleanSupplier;
 public class ConfigEditTab extends Tab {
 
     boolean isTabActive(CommandSource src) {
-        return ChatUI.getView(src).getWindow().getActiveTab() == this;
+        return ChatUI.getActiveView(src).getWindow().getActiveTab() == this;
     }
 
     ClickAction<?> clickAction(Runnable action) {

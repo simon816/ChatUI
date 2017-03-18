@@ -1,6 +1,5 @@
 package com.simon816.chatui;
 
-import com.simon816.chatui.tabs.NewTab;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
@@ -10,13 +9,9 @@ import java.util.Optional;
 
 public interface PlayerChatView {
 
-    public PlayerList getPlayerList();
-
     public Player getPlayer();
 
-    public Window getWindow();
-
-    public NewTab getNewTab();
+    public TopWindow getWindow();
 
     public void update();
 
@@ -25,5 +20,7 @@ public interface PlayerChatView {
     public Optional<Text> transformOutgoing(CommandSource sender, Text originalOutgoing, ChatType type);
 
     public boolean handleCommand(String[] args);
+
+    public void onRemove();
 
 }

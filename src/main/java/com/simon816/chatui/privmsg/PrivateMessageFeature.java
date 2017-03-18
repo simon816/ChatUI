@@ -2,6 +2,7 @@ package com.simon816.chatui.privmsg;
 
 import com.google.common.collect.Maps;
 import com.simon816.chatui.AbstractFeature;
+import com.simon816.chatui.ActivePlayerChatView;
 import com.simon816.chatui.PlayerChatView;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
@@ -17,11 +18,15 @@ public class PrivateMessageFeature extends AbstractFeature {
 
     @Override
     protected void onNewPlayerView(PlayerChatView view) {
-        privateView.put(view.getPlayer().getUniqueId(), new PlayerPrivateView(view));
-        view.getPlayerList().addAddon(player -> {
+        if (!(view instanceof ActivePlayerChatView)) {
+            return;
+        }
+        ActivePlayerChatView activeView = (ActivePlayerChatView) view;
+        privateView.put(view.getPlayer().getUniqueId(), new PlayerPrivateView(activeView));
+        activeView.getPlayerList().addAddon(player -> {
             Text.Builder builder = Text.builder("Message");
             if (player != view.getPlayer()) {
-                builder.onClick(view.getPlayerList()
+                builder.onClick(activeView.getPlayerList()
                         .clickAction(() -> newPrivateMessage(view.getPlayer(), player)))
                         .color(TextColors.BLUE).style(TextStyles.UNDERLINE);
             } else {
@@ -34,6 +39,9 @@ public class PrivateMessageFeature extends AbstractFeature {
     @Override
     protected void onViewClose(PlayerChatView view) {
         PlayerPrivateView privView = privateView.remove(view.getPlayer().getUniqueId());
+        if (privView == null) {
+            return;
+        }
         for (PrivateMessageTab chat : privView.privateChatTabs.values()) {
             PrivateMessageTab otherTab = chat.otherPlayerView.privateChatTabs.remove(view.getPlayer().getUniqueId());
             if (otherTab != null) {
@@ -50,9 +58,9 @@ public class PrivateMessageFeature extends AbstractFeature {
     static class PlayerPrivateView {
 
         final Map<UUID, PrivateMessageTab> privateChatTabs = Maps.newHashMap();
-        final PlayerChatView view;
+        final ActivePlayerChatView view;
 
-        PlayerPrivateView(PlayerChatView view) {
+        PlayerPrivateView(ActivePlayerChatView view) {
             this.view = view;
         }
 

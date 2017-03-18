@@ -26,6 +26,7 @@ import org.spongepowered.api.event.game.GameReloadEvent;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePostInitializationEvent;
 import org.spongepowered.api.event.game.state.GamePreInitializationEvent;
+import org.spongepowered.api.event.game.state.GameStoppingServerEvent;
 import org.spongepowered.api.event.message.MessageChannelEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
 import org.spongepowered.api.plugin.Plugin;
@@ -56,6 +57,8 @@ public class ChatUI {
 
     private static ChatUI instance;
 
+    private boolean enabledAsService = false;
+
     @Inject
     @DefaultConfig(sharedRoot = true)
     private ConfigurationLoader<CommentedConfigurationNode> confLoader;
@@ -80,6 +83,14 @@ public class ChatUI {
         return instance.playerViewMap.get(uuid);
     }
 
+    public static ActivePlayerChatView getActiveView(CommandSource source) {
+        return (ActivePlayerChatView) getView(source);
+    }
+
+    public static ActivePlayerChatView getActiveView(UUID uuid) {
+        return (ActivePlayerChatView) getView(uuid);
+    }
+
     public static ClickAction<?> command(String subcommand) {
         return TextActions.runCommand("/chatui " + subcommand);
     }
@@ -102,10 +113,20 @@ public class ChatUI {
         Sponge.getGame().getCommandManager().register(this, new ChatUICommand(), "chatui");
         Config.init(this.confLoader, this.logger);
 
+        this.enabledAsService = !Config.getRootNode().getNode("interfaceEnabled").getBoolean(true);
+
+        if (this.enabledAsService) {
+            return;
+        }
+
         this.featuresToLoad = Maps.newHashMap();
 
         this.registerFeature(this, "privmsg", PrivateMessageFeature::new);
         this.registerFeature(this, "chatgroup", ChatGroupFeature::new);
+    }
+
+    public boolean isServiceOnlyMode() {
+        return this.enabledAsService;
     }
 
     public void registerFeature(Object plugin, String id, Supplier<AbstractFeature> featureLoader) {
@@ -116,6 +137,9 @@ public class ChatUI {
 
     @Listener(order = Order.POST)
     public void onPostInit(GamePostInitializationEvent event) {
+        if (this.enabledAsService) {
+            return;
+        }
         Optional<ProviderRegistration<PaginationService>> optService = Sponge.getGame().getServiceManager().getRegistration(PaginationService.class);
         if (!optService.isPresent()) {
             return;
@@ -157,6 +181,10 @@ public class ChatUI {
 
     @Listener
     public void onPlayerJoin(ClientConnectionEvent.Join event) {
+        if (this.enabledAsService) {
+            this.playerViewMap.put(event.getTargetEntity().getUniqueId(), new ExternalServiceView(event.getTargetEntity()));
+            return;
+        }
         initialize(event.getTargetEntity());
     }
 
@@ -169,6 +197,9 @@ public class ChatUI {
             view = new ActivePlayerChatView(player, playerSettings);
         }
         PlayerChatView oldView = this.playerViewMap.put(player.getUniqueId(), view);
+        if (oldView != null) {
+            oldView.onRemove();
+        }
         for (AbstractFeature feature : this.features) {
             if (oldView != null) {
                 feature.onViewClose(oldView);
@@ -182,10 +213,12 @@ public class ChatUI {
     public void onPlayerQuit(ClientConnectionEvent.Disconnect event) {
         PlayerChatView view = this.playerViewMap.remove(event.getTargetEntity().getUniqueId());
         Config.saveConfig();
-        for (AbstractFeature feature : this.features) {
-            feature.onViewClose(view);
+        if (!this.enabledAsService) {
+            for (AbstractFeature feature : this.features) {
+                feature.onViewClose(view);
+            }
         }
-        view.getWindow().closeAll();
+        view.onRemove();
         // TODO Offline message buffering?
     }
 
@@ -199,6 +232,11 @@ public class ChatUI {
             event.setCancelled(true);
             event.setChannel(MessageChannel.TO_NONE);
         }
+    }
+
+    @Listener
+    public void onServerStop(GameStoppingServerEvent event) {
+        Config.saveConfig();
     }
 
     // Try to be last so we can wrap around any messages sent
