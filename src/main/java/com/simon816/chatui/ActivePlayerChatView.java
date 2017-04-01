@@ -21,6 +21,9 @@ import java.util.UUID;
 
 public class ActivePlayerChatView implements PlayerChatView {
 
+    private static final String PERM_CONFIG = ChatUI.ADMIN_PERMISSON + ".config";
+    private static final String PERM_PERMISSIONS = ChatUI.ADMIN_PERMISSON + ".permissions";
+
     private PlayerContext playerContext;
     private final Window window;
     private final TextBufferTab globalTab;
@@ -31,9 +34,9 @@ public class ActivePlayerChatView implements PlayerChatView {
 
     ActivePlayerChatView(Player player, ConfigurationNode settings) {
         this.playerContext = new PlayerContext(player,
-                settings.getNode("displayWidth").getInt(),
-                settings.getNode("displayHeight").getInt(),
-                settings.getNode("forceUnicode").getBoolean());
+                settings.getNode("display-width").getInt(),
+                settings.getNode("display-height").getInt(),
+                settings.getNode("force-unicode").getBoolean());
         this.window = new Window();
         this.window.addTab(this.globalTab = new GlobalTab(), true);
         this.newTab = new NewTab();
@@ -47,14 +50,24 @@ public class ActivePlayerChatView implements PlayerChatView {
 
     private void initNewTab(Player player) {
         this.newTab.addButton("Player List", new NewTab.LaunchTabAction(() -> new Tab(Text.of("Player List"), this.playerList.getRoot())));
+        if (ImplementationConfig.isSupported()) {
+            if (player.hasPermission(PERM_CONFIG)) {
+                ConfigEditTab.Options opts = new ConfigEditTab.Options(
+                        player.hasPermission(PERM_CONFIG + ".add"),
+                        player.hasPermission(PERM_CONFIG + ".edit"),
+                        player.hasPermission(PERM_CONFIG + ".delete"), null);
+                this.newTab.addButton("Edit Config", new NewTab.LaunchTabAction(() -> new ConfigEditTab(ImplementationConfig.getRootNode(),
+                        ImplementationConfig.getTitle(), opts, ImplementationConfig.getHandler())));
+            }
+        }
+        if (player.hasPermission(PERM_PERMISSIONS)) {
+            Optional<PermissionService> optService = Sponge.getServiceManager().provide(PermissionService.class);
+            if (optService.isPresent()) {
+                this.newTab.addButton("Permissions", new NewTab.LaunchTabAction(() -> new PermissionsTab(optService.get())));
+            }
+        }
         UUID uuid = player.getUniqueId();
         this.newTab.addButton("Settings", new NewTab.LaunchTabAction(() -> createSettingsTab(uuid)));
-        if (player.hasPermission(ChatUI.ADMIN_PERMISSON)) {
-            showNewTabAdminButtons();
-        }
-        if (DemoContent.ENABLE_DEMO) {
-            this.newTab.addButton("Demo Content", new NewTab.LaunchTabAction(() -> DemoContent.TAB));
-        }
     }
 
     private Tab createSettingsTab(UUID uuid) {
@@ -63,23 +76,12 @@ public class ActivePlayerChatView implements PlayerChatView {
         ConfigEditTab.ActionHandler handler = new ConfigEditTab.ActionHandler() {
 
             @Override
-            public void onNodeChanged(ConfigurationNode node) {
+            public void onNodeChanged(ConfigEditTab tab, ConfigurationNode node) {
                 onConfigChange(node);
                 Config.saveConfig();
             }
         };
         return new ConfigEditTab(config, Text.of("Settings"), opts, handler);
-    }
-
-    private void showNewTabAdminButtons() {
-        if (ImplementationConfig.isSupported()) {
-            this.newTab.addButton("Edit Config", new NewTab.LaunchTabAction(() -> new ConfigEditTab(ImplementationConfig.getRootNode(),
-                    Text.of("Sponge Config"), ConfigEditTab.Options.DEFAULTS, ImplementationConfig.getHandler())));
-        }
-        Optional<PermissionService> optService = Sponge.getServiceManager().provide(PermissionService.class);
-        if (optService.isPresent()) {
-            this.newTab.addButton("Permissions", new NewTab.LaunchTabAction(() -> new PermissionsTab(optService.get())));
-        }
     }
 
     @Override
@@ -146,11 +148,11 @@ public class ActivePlayerChatView implements PlayerChatView {
     }
 
     public void onConfigChange(ConfigurationNode node) {
-        if (node.getKey().equals("displayWidth")) {
+        if (node.getKey().equals("display-width")) {
             this.playerContext = this.playerContext.withWidth(node.getInt());
-        } else if (node.getKey().equals("displayHeight")) {
+        } else if (node.getKey().equals("display-height")) {
             this.playerContext = this.playerContext.withHeight(node.getInt());
-        } else if (node.getKey().equals("forceUnicode")) {
+        } else if (node.getKey().equals("force-unicode")) {
             this.playerContext = this.playerContext.withUnicode(node.getBoolean());
         } else if (node.getKey().equals("enabled")) {
             if (!node.getBoolean()) {
@@ -171,7 +173,7 @@ public class ActivePlayerChatView implements PlayerChatView {
 
     @Override
     public void onRemove() {
-        this.window.closeAll();
+        this.window.onClose();
     }
 
     @Override

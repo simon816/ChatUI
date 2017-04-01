@@ -67,7 +67,7 @@ class NodeBuilder implements ITextDrawable {
         if (hasKey() && this.value != null) {
             builder.append(Text.builder(" [Add Node]").color(TextColors.GREEN).onClick(onClick(() -> {
                 ConfigurationNode newNode = submitValue();
-                this.tab.control.handler.onNodeAdded(newNode);
+                this.tab.control.onNodeAdded(newNode);
                 this.tab.control.refresh();
                 this.tab.nodeBuilder = null;
             })).build());

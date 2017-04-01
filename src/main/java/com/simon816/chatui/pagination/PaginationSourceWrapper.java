@@ -1,7 +1,6 @@
 package com.simon816.chatui.pagination;
 
 import com.simon816.chatui.ActivePlayerChatView;
-import com.simon816.chatui.tabs.PaginationTab;
 import com.simon816.chatui.util.ForwardingSource;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.text.Text;

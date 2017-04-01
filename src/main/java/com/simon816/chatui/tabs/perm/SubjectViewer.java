@@ -62,6 +62,7 @@ class SubjectViewer extends AnchorPaneUI {
                 this.permList.add(entry);
             }
         }
+        this.permList.sort((a, b) -> a.getKey().compareToIgnoreCase(b.getKey()));
         return this.permList;
     }
 
@@ -234,25 +235,28 @@ class SubjectViewer extends AnchorPaneUI {
             public void draw(PlayerContext ctx, LineFactory lineFactory) {
                 lineFactory.appendNewLine(Text.builder()
                         .append(
-                                simpleLink(SubjectViewer.this.addMode ? "[Cancel]" : "[Add]", () -> {
-                                    SubjectViewer.this.addMode = !SubjectViewer.this.addMode;
-                                }),
-                                simpleLink(SubjectViewer.this.addParentMode ? " [Cancel]" : " [Add Parent]", () -> {
-                                    SubjectViewer.this.addParentMode = !SubjectViewer.this.addParentMode;
-                                }),
-                                simpleLink(" [Scroll Up]", () -> {
+                                simpleLink(SubjectViewer.this.addMode ? TextColors.RED : TextColors.GREEN,
+                                        SubjectViewer.this.addMode ? "[Cancel]" : "[Add]", () -> {
+                                            SubjectViewer.this.addMode = !SubjectViewer.this.addMode;
+                                        }),
+                                simpleLink(SubjectViewer.this.addParentMode ? TextColors.RED : TextColors.DARK_GREEN,
+                                        SubjectViewer.this.addParentMode ? " [Cancel]" : " [Add Parent]", () -> {
+                                            SubjectViewer.this.addParentMode = !SubjectViewer.this.addParentMode;
+                                        }),
+                                simpleLink(SubjectViewer.this.tableScroll.canScrollUp() ? TextColors.WHITE : TextColors.GRAY, " [Scroll Up]", () -> {
                                     SubjectViewer.this.tableScroll.scrollUp();
                                 }),
-                                simpleLink(" [Scroll Down]", () -> {
-                                    SubjectViewer.this.tableScroll.scrollDown();
-                                }))
+                                simpleLink(SubjectViewer.this.tableScroll.canScrollDown() ? TextColors.WHITE : TextColors.GRAY, " [Scroll Down]",
+                                        () -> {
+                                            SubjectViewer.this.tableScroll.scrollDown();
+                                        }))
                         .build(), ctx.forceUnicode);
                 lineFactory.appendNewLine(Text.builder()
                         .append(
-                                simpleLink("[Return]", () -> {
+                                simpleLink(TextColors.BLUE, "[Return]", () -> {
                                     goBack();
                                 }),
-                                simpleLink(" [Options]", view -> {
+                                simpleLink(TextColors.GOLD, " [Options]", view -> {
                                     tab.getEntryDisplayer()
                                             .setData(SubjectViewer.this.activeSubj.getSubjectData()
                                                     .getOptions(SubjectViewer.this.activeContext),
@@ -262,18 +266,18 @@ class SubjectViewer extends AnchorPaneUI {
 
                                     tab.setRoot(tab.getEntryDisplayer());
                                 }),
-                                simpleLink(" Default: " + getDefault().toString(), view -> {
+                                simpleLink(TextColors.DARK_AQUA, " Default: " + getDefault().toString(), view -> {
                                     cycleDefault(view.getPlayer());
                                 }))
                         .build(), ctx.forceUnicode);
             }
 
-            private Text simpleLink(String text, Runnable r) {
-                return Text.builder(text).onClick(tab.execClick(r)).build();
+            private Text simpleLink(TextColor color, String text, Runnable r) {
+                return Text.builder(text).color(color).onClick(tab.execClick(r)).build();
             }
 
-            private Text simpleLink(String text, Consumer<PlayerChatView> c) {
-                return Text.builder(text).onClick(tab.execClick(c)).build();
+            private Text simpleLink(TextColor color, String text, Consumer<PlayerChatView> c) {
+                return Text.builder(text).color(color).onClick(tab.execClick(c)).build();
             }
 
         };
@@ -327,7 +331,6 @@ class SubjectViewer extends AnchorPaneUI {
         if (this.addMode) {
             add(view.getPlayer(), input.toPlain());
             this.addMode = false;
-            this.tableScroll.scrollToOffset(this.tableScroll.getModel().getRowCount() - 1);
         } else if (this.addParentMode) {
             addParent(view.getPlayer(), input.toPlain());
             this.addParentMode = false;

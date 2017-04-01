@@ -144,17 +144,18 @@ class EntryDisplayer extends AnchorPaneUI {
             public void draw(PlayerContext ctx, LineFactory lineFactory) {
                 lineFactory.appendNewLine(Text.builder()
                         .append(
-                                Text.builder("[Return]")
+                                Text.builder("[Return]").color(TextColors.BLUE)
                                         .onClick(EntryDisplayer.this.tab.execClick(() -> {
                                             EntryDisplayer.this.goBack.run();
                                         })).build(),
                                 Text.builder(EntryDisplayer.this.addMode ? " [Cancel]" : " [Add]")
+                                        .color(EntryDisplayer.this.addMode ? TextColors.RED : TextColors.GREEN)
                                         .onClick(EntryDisplayer.this.tab.execClick(() -> EntryDisplayer.this.addMode = !EntryDisplayer.this.addMode))
                                         .build(),
-                                Text.builder(" [Scroll Up]")
+                                Text.builder(" [Scroll Up]").color(EntryDisplayer.this.scroll.canScrollUp() ? TextColors.WHITE : TextColors.GRAY)
                                         .onClick(EntryDisplayer.this.tab.execClick(EntryDisplayer.this.scroll::scrollUp))
                                         .build(),
-                                Text.builder(" [Scroll Down]")
+                                Text.builder(" [Scroll Down]").color(EntryDisplayer.this.scroll.canScrollDown() ? TextColors.WHITE : TextColors.GRAY)
                                         .onClick(EntryDisplayer.this.tab.execClick(EntryDisplayer.this.scroll::scrollDown))
                                         .build())
                         .build(), ctx.forceUnicode);

@@ -6,9 +6,8 @@ import com.simon816.chatui.PlayerChatView;
 import com.simon816.chatui.PlayerContext;
 import com.simon816.chatui.tabs.Tab;
 import com.simon816.chatui.ui.Button;
-import com.simon816.chatui.ui.HBoxUI;
+import com.simon816.chatui.ui.FlowPaneUI;
 import com.simon816.chatui.ui.UIPane;
-import com.simon816.chatui.ui.VBoxUI;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.service.ProviderRegistration;
 import org.spongepowered.api.service.permission.PermissionService;
@@ -30,7 +29,7 @@ public class PermissionsTab extends Tab {
     private final PermissionActions actions;
 
     public PermissionsTab(PermissionService service) {
-        super(Text.of("Permissions"), new VBoxUI()); // Just a random root node
+        super(Text.of("Permissions"));
         this.service = service;
         this.actions = findActions(service);
         this.dashboard = createDashboard();
@@ -42,7 +41,7 @@ public class PermissionsTab extends Tab {
 
     private static PermissionActions findActions(PermissionService service) {
         ProviderRegistration<PermissionService> reg = Sponge.getServiceManager().getRegistration(PermissionService.class).get();
-        if (reg.getPlugin().getId().endsWith("permissionsex")) {
+        if (reg.getPlugin().getId().equals("permissionsex")) {
             // Ensure loaded
             service.getSubjects(PermissionService.SUBJECTS_COMMAND_BLOCK);
             service.getSubjects(PermissionService.SUBJECTS_GROUP);
@@ -81,9 +80,7 @@ public class PermissionsTab extends Tab {
     }
 
     private UIPane createDashboard() {
-        VBoxUI col1 = new VBoxUI();
-        VBoxUI col2 = new VBoxUI();
-        boolean left = true;
+        FlowPaneUI dashboard = new FlowPaneUI(FlowPaneUI.WRAP_HORIZONALLY);
         for (Entry<String, SubjectCollection> subjEntry : this.service.getKnownSubjects().entrySet()) {
             Button button = new Button(subjEntry.getKey()) {
 
@@ -96,16 +93,9 @@ public class PermissionsTab extends Tab {
                 this.subjListPane.setSubjectList(subjEntry.getValue());
                 this.setRoot(this.subjListPane);
             }));
-            if (left) {
-                col1.addChildren(button);
-            } else {
-                col2.addChildren(button);
-            }
-            left = !left;
+            dashboard.getChildren().add(button);
         }
 
-        HBoxUI dashboard = new HBoxUI();
-        dashboard.addChildren(col1, col2);
         return dashboard;
     }
 

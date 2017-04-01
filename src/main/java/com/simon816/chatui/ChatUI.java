@@ -6,7 +6,6 @@ import static com.google.common.base.Preconditions.checkState;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
-import com.simon816.chatui.channel.WrapOutputChannel;
 import com.simon816.chatui.group.ChatGroupFeature;
 import com.simon816.chatui.pagination.TabbedPaginationService;
 import com.simon816.chatui.privmsg.PrivateMessageFeature;
@@ -113,7 +112,7 @@ public class ChatUI {
         Sponge.getGame().getCommandManager().register(this, new ChatUICommand(), "chatui");
         Config.init(this.confLoader, this.logger);
 
-        this.enabledAsService = !Config.getRootNode().getNode("interfaceEnabled").getBoolean(true);
+        this.enabledAsService = !Config.getRootNode().getNode("interface-enabled").getBoolean(true);
 
         if (this.enabledAsService) {
             return;

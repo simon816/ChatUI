@@ -3,6 +3,7 @@ package com.simon816.chatui;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.simon816.chatui.tabs.Tab;
+import com.simon816.chatui.tabs.TextBufferTab;
 import com.simon816.chatui.ui.AnchorPaneUI;
 import com.simon816.chatui.ui.LineFactory;
 import com.simon816.chatui.ui.UIComponent;
@@ -82,9 +83,11 @@ public class Window implements TopWindow {
 
     @Override
     public void onClose() {
-        if (this.activeIndex != -1) {
-            this.tabs.get(this.activeIndex).onClose();
+        for (Tab tab : this.tabs) {
+            tab.onClose();
         }
+        this.tabs.clear();
+        this.activeIndex = -1;
     }
 
     @Override
@@ -219,14 +222,21 @@ public class Window implements TopWindow {
         @Override
         public void draw(PlayerContext ctx, LineFactory lineFactory) {
             Text prefix = Text.of("╚Status: ");
-            Text content = getStatusBarContent(ctx.forceUnicode);
+            Text content = getStatusBarContent();
             int remWidth = ctx.width - TextUtils.getWidth(prefix, ctx.forceUnicode) - TextUtils.getWidth(content, ctx.forceUnicode);
             Text line = Text.builder().append(prefix, content, TextUtils.repeatAndTerminate('═', '╝', remWidth, ctx.forceUnicode)).build();
             lineFactory.appendNewLine(line, ctx.forceUnicode);
         }
 
-        private Text getStatusBarContent(boolean forceUnicode) {
-            return Text.EMPTY;
+        private Text getStatusBarContent() {
+            int unread = 0;
+            for (Tab tab : getTabs()) {
+                if (tab instanceof TextBufferTab) {
+                    unread += ((TextBufferTab) tab).getUnread();
+                }
+            }
+            return Text.builder(String.valueOf(unread)).color(TextColors.RED)
+                    .append(Text.builder(" unread messages").color(TextColors.RESET).build()).build();
         }
 
         @Override
@@ -234,14 +244,6 @@ public class Window implements TopWindow {
             return 1;
         }
 
-    }
-
-    void closeAll() {
-        for (Tab tab : this.tabs) {
-            tab.onClose();
-        }
-        this.tabs.clear();
-        this.activeIndex = -1;
     }
 
     @Override

@@ -28,6 +28,9 @@ import javax.swing.SwingConstants;
 
 public class PlayerList {
 
+    private static final String PERM_KICK = ChatUI.ADMIN_PERMISSON + ".player.kick";
+    private static final String PERM_BAN = ChatUI.ADMIN_PERMISSON + ".player.ban";
+
     private final AnchorPaneUI root;
     final List<Addon> addons = Lists.newArrayList();
 
@@ -52,6 +55,7 @@ public class PlayerList {
                         scroll.canScrollDown() ? TextColors.WHITE : TextColors.DARK_GRAY, "[Scroll Down] "));
                 lineFactory.appendNewLine(builder.build(), ctx.forceUnicode);
             }
+
             @Override
             public int getPrefHeight(PlayerContext ctx) {
                 return 1;
@@ -142,9 +146,11 @@ public class PlayerList {
     }
 
     private void addDefaultAddons(Player player) {
-        if (player.hasPermission(ChatUI.ADMIN_PERMISSON)) {
-            TextFormat link = TextFormat.of(TextColors.BLUE, TextStyles.UNDERLINE);
+        TextFormat link = TextFormat.of(TextColors.BLUE, TextStyles.UNDERLINE);
+        if (player.hasPermission(PERM_KICK)) {
             addAddon(listPlayer -> Text.builder("Kick").format(link).onClick(clickAction(() -> listPlayer.kick())).build());
+        }
+        if (player.hasPermission(PERM_BAN)) {
             addAddon(listPlayer -> Text.builder("Ban").format(link)
                     .onClick(clickAction(() -> Sponge.getServiceManager().provideUnchecked(BanService.class).addBan(Ban.of(listPlayer.getProfile()))))
                     .build());

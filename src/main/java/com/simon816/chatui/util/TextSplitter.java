@@ -172,7 +172,7 @@ class TextSplitter {
             sections.add(arguments.get(index));
             prevPos = m.end();
         }
-        if (prevPos != patched.length() - 1 || prevPos == 0) {
+        if (prevPos != patched.length() || prevPos == 0) {
             sections.add(patched.substring(prevPos));
         }
         Text.Builder builder = new Format(text).applyToBuilder(Text.builder());

@@ -1,7 +1,5 @@
-package com.simon816.chatui.channel;
+package com.simon816.chatui;
 
-import com.simon816.chatui.PlayerChatView;
-import com.simon816.chatui.ChatUI;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;

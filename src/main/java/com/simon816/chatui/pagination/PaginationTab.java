@@ -1,7 +1,7 @@
-package com.simon816.chatui.tabs;
+package com.simon816.chatui.pagination;
 
 import com.simon816.chatui.PlayerContext;
-import com.simon816.chatui.pagination.PaginationSourceWrapper;
+import com.simon816.chatui.tabs.Tab;
 import com.simon816.chatui.ui.LineFactory;
 import com.simon816.chatui.ui.UIComponent;
 import com.simon816.chatui.ui.VBoxUI;

@@ -122,13 +122,13 @@ public class ConfigEditTab extends Tab {
         public static final ActionHandler NONE = new ActionHandler() {
         };
 
-        public void onNodeChanged(ConfigurationNode node) {
+        public void onNodeChanged(ConfigEditTab tab, ConfigurationNode node) {
         }
 
-        public void onNodeRemoved(Object key) {
+        public void onNodeRemoved(ConfigEditTab tab, ConfigurationNode parent, Object key) {
         }
 
-        public void onNodeAdded(ConfigurationNode node) {
+        public void onNodeAdded(ConfigEditTab tab, ConfigurationNode node) {
         }
     }
 
@@ -150,7 +150,6 @@ public class ConfigEditTab extends Tab {
         pane.addWithConstraint(new Breadcrumb(), AnchorPaneUI.ANCHOR_TOP);
         pane.getChildren().add(new TableUI(model, this.control.createTableRenderer()));
         pane.addWithConstraint(new ButtonBar(), AnchorPaneUI.ANCHOR_BOTTOM);
-        setRoot(pane);
     }
 
     @Override
@@ -176,9 +175,14 @@ public class ConfigEditTab extends Tab {
         ConfigurationNode node = this.control.getNode().getNode(this.control.getActiveEntry().key);
         Object value = this.control.getActiveEntry().value.onSetValue(input.toPlain());
         node.setValue(value);
-        this.control.handler.onNodeChanged(node);
+        this.control.onNodeChanged(node);
         this.control.closeActiveEntry();
         view.update();
     }
+
+    public void reloadRootNode(ConfigurationNode root) {
+        this.control.reloadRoot(root.getNode(this.control.getNode().getPath()));
+    }
+
 
 }

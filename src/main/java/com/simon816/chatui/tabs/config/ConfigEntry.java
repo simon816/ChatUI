@@ -112,7 +112,7 @@ class ConfigEntry {
                 ConfigurationNode node = tab.control.getNode().getNode(entry.key);
                 Object value = entry.value.onSetValue(Boolean.toString(!this.<Boolean>checkType(node.getValue())));
                 node.setValue(value);
-                tab.control.handler.onNodeChanged(node);
+                tab.control.onNodeChanged(node);
             }
 
             @Override

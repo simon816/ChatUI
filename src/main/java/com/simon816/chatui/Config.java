@@ -26,9 +26,9 @@ public class Config {
     static {
         DEFAULTS = Maps.newHashMap();
         DEFAULTS.put("enabled", true);
-        DEFAULTS.put("displayWidth", DEFAULT_BUFFER_WIDTH);
-        DEFAULTS.put("displayHeight", DEFAULT_BUFFER_HEIGHT);
-        DEFAULTS.put("forceUnicode", false);
+        DEFAULTS.put("display-width", DEFAULT_BUFFER_WIDTH);
+        DEFAULTS.put("display-height", DEFAULT_BUFFER_HEIGHT);
+        DEFAULTS.put("force-unicode", false);
     }
 
     public static void init(ConfigurationLoader<CommentedConfigurationNode> confLoader, Logger logger) {
@@ -38,7 +38,7 @@ public class Config {
     }
 
     public static ConfigurationNode playerConfig(UUID uuid) {
-        CommentedConfigurationNode settings = config.getNode("playerSettings", uuid);
+        CommentedConfigurationNode settings = config.getNode("player-settings", uuid);
         if (settings.isVirtual()) {
             settings.setValue(DEFAULTS);
         } else {
@@ -63,11 +63,11 @@ public class Config {
             logger.error("Error while loading config", e);
             config = confLoader.createEmptyNode();
         }
-        CommentedConfigurationNode playerSettings = config.getNode("playerSettings");
+        CommentedConfigurationNode playerSettings = config.getNode("player-settings");
         if (playerSettings.isVirtual()) {
             playerSettings.setValue(Collections.emptyMap());
         }
-        CommentedConfigurationNode enabled = config.getNode("interfaceEnabled");
+        CommentedConfigurationNode enabled = config.getNode("interface-enabled");
         if (enabled.isVirtual()) {
             enabled.setValue(true);
         }

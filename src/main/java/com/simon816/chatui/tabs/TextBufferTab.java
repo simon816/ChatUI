@@ -131,6 +131,10 @@ public abstract class TextBufferTab extends Tab {
         }
     }
 
+    public int getUnread() {
+        return this.unread;
+    }
+
     @Override
     public void onFocus() {
         this.unread = 0;

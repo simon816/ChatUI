@@ -23,20 +23,12 @@ class GroupList implements TableModel {
 
     @Override
     public int getColumnCount() {
-        return 3;
+        return 2;
     }
 
     @Override
     public Object getCellValue(int row, int column) {
-        ChatGroup group = this.groupList.get(row);
-        if (column == 0) {
-            return group;
-        } else if (column == 1) {
-            return Integer.toString(group.getPlayerCount());
-        } else if (column == 2) {
-            return group;
-        }
-        return null;
+        return this.groupList.get(row);
     }
 
     public ChatGroup addGroup(String name) {
@@ -49,10 +41,12 @@ class GroupList implements TableModel {
         return group;
     }
 
-    public void removeGroup(ChatGroup group) {
+    public int removeGroup(ChatGroup group) {
         this.groups.remove(group.getName());
-        this.groupList.remove(group);
+        int index = this.groupList.indexOf(group);
+        this.groupList.remove(index);
         group.onRemoved();
+        return index;
     }
 
     public void removePlayer(Player player) {

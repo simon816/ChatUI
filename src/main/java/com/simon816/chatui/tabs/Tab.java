@@ -21,6 +21,10 @@ public class Tab implements UIComponent, TopWindow {
         setRoot(root);
     }
 
+    protected Tab(Text title) {
+        setTitle(title);
+    }
+
     public Text getTitle() {
         return this.title;
     }

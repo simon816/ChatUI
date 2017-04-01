@@ -10,7 +10,7 @@ class ConfigTabControl {
 
     private final List<ConfigEntry> entryList = Lists.newArrayList();
     final ConfigEditTab.Options options;
-    final ConfigEditTab.ActionHandler handler;
+    private final ConfigEditTab.ActionHandler handler;
     private final Object[] ignoredPath;
     final ConfigEditTab tab;
 
@@ -38,6 +38,7 @@ class ConfigTabControl {
                 ConfigEntry confEntry = new ConfigEntry(entry.getKey(), nodeToValue(entry.getValue()));
                 this.entryList.add(confEntry);
             }
+            this.entryList.sort((a, b) -> a.key.toString().compareToIgnoreCase(b.key.toString()));
         } else if (node.hasListChildren()) {
             List<? extends ConfigurationNode> children = node.getChildrenList();
             for (int i = 0; i < children.size(); i++) {
@@ -92,10 +93,18 @@ class ConfigTabControl {
 
     public void deleteNode(Object key) {
         this.currentNode.removeChild(key);
-        this.handler.onNodeRemoved(key);
+        this.handler.onNodeRemoved(this.tab, this.currentNode, key);
         this.deleteMode = false;
         this.activeEntry = null;
         refresh();
+    }
+
+    void onNodeChanged(ConfigurationNode node) {
+        this.handler.onNodeChanged(this.tab, node);
+    }
+
+    void onNodeAdded(ConfigurationNode node) {
+        this.handler.onNodeAdded(this.tab, node);
     }
 
     public boolean inDeleteMode() {
@@ -128,6 +137,10 @@ class ConfigTabControl {
         this.currentNode = node;
         updateEntryList(node);
         this.tab.scroll.reset();
+    }
+
+    void reloadRoot(ConfigurationNode node) {
+        updateEntryList(this.currentNode = node);
     }
 
     public List<ConfigEntry> getEntries() {

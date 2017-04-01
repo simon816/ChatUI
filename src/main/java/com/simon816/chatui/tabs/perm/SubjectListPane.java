@@ -55,17 +55,20 @@ class SubjectListPane extends AnchorPaneUI {
             public void draw(PlayerContext ctx, LineFactory lineFactory) {
                 lineFactory.appendNewLine(Text.builder()
                         .append(
-                                Text.builder("[Return]").onClick(SubjectListPane.this.tab.execClick(() -> {
+                                Text.builder("[Return]").color(TextColors.BLUE).onClick(SubjectListPane.this.tab.execClick(() -> {
                                     SubjectListPane.this.tab.setRoot(SubjectListPane.this.tab.getDashboard());
                                 })).build(),
                                 Text.builder(SubjectListPane.this.addMode ? " [Cancel]" : " [Add]")
+                                        .color(SubjectListPane.this.addMode ? TextColors.RED : TextColors.GREEN)
                                         .onClick(SubjectListPane.this.tab
                                                 .execClick(() -> SubjectListPane.this.addMode = !SubjectListPane.this.addMode))
                                         .build(),
                                 Text.builder(" [Scroll Up]")
+                                        .color(SubjectListPane.this.tableScroll.canScrollUp() ? TextColors.WHITE : TextColors.GRAY)
                                         .onClick(SubjectListPane.this.tab.execClick(SubjectListPane.this.tableScroll::scrollUp))
                                         .build(),
                                 Text.builder(" [Scroll Down]")
+                                        .color(SubjectListPane.this.tableScroll.canScrollDown() ? TextColors.WHITE : TextColors.GRAY)
                                         .onClick(SubjectListPane.this.tab.execClick(SubjectListPane.this.tableScroll::scrollDown))
                                         .build())
                         .build(), ctx.forceUnicode);

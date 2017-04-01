@@ -4,8 +4,8 @@ import com.google.common.collect.Maps;
 import com.simon816.chatui.AbstractFeature;
 import com.simon816.chatui.ActivePlayerChatView;
 import com.simon816.chatui.PlayerChatView;
-import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.format.TextStyles;
 
@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public class PrivateMessageFeature extends AbstractFeature {
 
-    static final Map<UUID, PlayerPrivateView> privateView = Maps.newHashMap();
+    private final Map<UUID, PlayerPrivateView> privateView = Maps.newHashMap();
 
     @Override
     protected void onNewPlayerView(PlayerChatView view) {
@@ -22,15 +22,29 @@ public class PrivateMessageFeature extends AbstractFeature {
             return;
         }
         ActivePlayerChatView activeView = (ActivePlayerChatView) view;
-        privateView.put(view.getPlayer().getUniqueId(), new PlayerPrivateView(activeView));
-        activeView.getPlayerList().addAddon(player -> {
+        this.privateView.put(view.getPlayer().getUniqueId(), new PlayerPrivateView(activeView));
+        installMessageButton(activeView);
+    }
+
+    private void installMessageButton(ActivePlayerChatView view) {
+        UUID playerId = view.getPlayer().getUniqueId();
+        view.getPlayerList().addAddon(player -> {
+            UUID otherId = player.getUniqueId();
             Text.Builder builder = Text.builder("Message");
-            if (player != view.getPlayer()) {
-                builder.onClick(activeView.getPlayerList()
-                        .clickAction(() -> newPrivateMessage(view.getPlayer(), player)))
-                        .color(TextColors.BLUE).style(TextStyles.UNDERLINE);
+            if (!otherId.equals(playerId)) {
+                if (this.privateView.containsKey(otherId)) {
+                    builder.onClick(view.getPlayerList()
+                            .clickAction(() -> newPrivateMessage(playerId, otherId)))
+                            .onHover(TextActions.showText(Text.of("Send a private message")))
+                            .color(TextColors.BLUE).style(TextStyles.UNDERLINE);
+                } else {
+                    builder.color(TextColors.GRAY)
+                            .onHover(TextActions.showText(Text.of("This player doesn't have Chat UI enabled")));
+                }
+
             } else {
-                builder.color(TextColors.GRAY);
+                builder.color(TextColors.GRAY)
+                        .onHover(TextActions.showText(Text.of("Cannot send message to yourself")));
             }
             return builder.build();
         });
@@ -38,47 +52,21 @@ public class PrivateMessageFeature extends AbstractFeature {
 
     @Override
     protected void onViewClose(PlayerChatView view) {
-        PlayerPrivateView privView = privateView.remove(view.getPlayer().getUniqueId());
+        PlayerPrivateView privView = this.privateView.remove(view.getPlayer().getUniqueId());
         if (privView == null) {
             return;
         }
-        for (PrivateMessageTab chat : privView.privateChatTabs.values()) {
-            PrivateMessageTab otherTab = chat.otherPlayerView.privateChatTabs.remove(view.getPlayer().getUniqueId());
-            if (otherTab != null) {
-                chat.otherPlayerView.view.getWindow().removeTab(otherTab);
-                chat.otherPlayerView.view.update();
-            }
-        }
+        privView.onClose();
     }
 
-    private void newPrivateMessage(Player sourcePlayer, Player destPlayer) {
-        privateView.get(sourcePlayer.getUniqueId()).createPrivateMessageTab(destPlayer, true);
+    private PlayerPrivateView getView(UUID uuid) {
+        return this.privateView.get(uuid);
     }
 
-    static class PlayerPrivateView {
-
-        final Map<UUID, PrivateMessageTab> privateChatTabs = Maps.newHashMap();
-        final ActivePlayerChatView view;
-
-        PlayerPrivateView(ActivePlayerChatView view) {
-            this.view = view;
-        }
-
-        PrivateMessageTab createPrivateMessageTab(Player other, boolean switchTab) {
-            PrivateMessageTab tab = this.privateChatTabs.get(other.getUniqueId());
-            if (tab == null) {
-                this.privateChatTabs.put(other.getUniqueId(), tab = new PrivateMessageTab(this, privateView.get(other.getUniqueId())));
-                this.view.getWindow().addTab(tab, switchTab);
-            } else {
-                if (switchTab) {
-                    this.view.getWindow().setTab(tab);
-                }
-            }
-            return tab;
-        }
-
-        void removeTab(UUID otherPlayerUuid) {
-            this.privateChatTabs.remove(otherPlayerUuid);
+    private void newPrivateMessage(UUID sourcePlayer, UUID destPlayer) {
+        PlayerPrivateView other = getView(destPlayer);
+        if (other != null) {
+            getView(sourcePlayer).createPrivateMessageTab(other, true);
         }
     }
 }
