@@ -6,12 +6,14 @@ import static com.google.common.base.Preconditions.checkState;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.simon816.chatui.group.ChatGroupFeature;
 import com.simon816.chatui.pagination.TabbedPaginationService;
 import com.simon816.chatui.privmsg.PrivateMessageFeature;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
+import org.bstats.MetricsLite;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
@@ -65,6 +67,9 @@ public class ChatUI {
     @Inject
     private Logger logger;
 
+    @Inject
+    private Injector injector;
+
     public static ChatUI instance() {
         return instance;
     }
@@ -103,6 +108,11 @@ public class ChatUI {
     @Listener
     public void onPreInit(GamePreInitializationEvent event) {
         instance = this;
+        try {
+            this.injector.getInstance(MetricsLite.class);
+        } catch (ExceptionInInitializerError e) {
+            // in development mode - metrics class is not relocated
+        }
     }
 
     private Map<String, Supplier<AbstractFeature>> featuresToLoad;

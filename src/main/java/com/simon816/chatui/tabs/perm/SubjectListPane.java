@@ -179,7 +179,6 @@ class SubjectListPane extends AnchorPaneUI {
         }
         this.addMode = false;
         if (add(view.getPlayer(), input.toPlain())) {
-            this.tableScroll.scrollToOffset(this.tableScroll.getModel().getRowCount() - 1);
             view.update();
         }
     }

@@ -1,6 +1,16 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
+    }
+}
 
 apply plugin: 'java'
 apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 sourceCompatibility = "1.8"
 targetCompatibility = "1.8"
@@ -22,6 +32,10 @@ repositories {
         name = 'mojang'
         url = 'https://libraries.minecraft.net/'
     }
+    maven {
+        name = 'bstats'
+        url = 'http://repo.bstats.org/content/repositories/releases/'
+    }
 }
 
 compileJava.options.encoding = 'UTF-8'
@@ -30,16 +44,30 @@ compileJava.options.compilerArgs += '-proc:none'
 
 configurations {
     fastutil
+    shaded
+    compile.extendsFrom shaded
 }
 
 dependencies {
     compile 'org.spongepowered:spongeapi:5.0.0'
     fastutil 'it.unimi.dsi:fastutil:7.0.12' // from spongecommon
     compile 'org.spongepowered:spongecommon:5.0.0-SNAPSHOT:dev'
+    shaded 'org.bstats:bstats-sponge-lite:1.1'
+}
+
+processResources {
+    from('src/main/resources') {
+        include 'mcmod.info'
+        expand(version: project.version, apiVersionRange: '[5.0.0,6.0.0)')
+    }
 }
 
 jar {
-    from(zipTree(configurations.fastutil.first())) {
+    classifier = 'dev'
+}
+
+shadowJar {
+    from(zipTree(project.configurations.fastutil.first())) {
         include 'it/unimi/dsi/fastutil/chars/*Char2ObjectFunction.class'
         include 'it/unimi/dsi/fastutil/chars/*Char2ObjectFunction$*'
         include 'it/unimi/dsi/fastutil/chars/*Char2ObjectMap.class'
@@ -58,11 +86,9 @@ jar {
         include 'it/unimi/dsi/fastutil/ints/*Int2CharMap$*'
         include 'it/unimi/dsi/fastutil/ints/*Int2CharOpenHashMap*'
     }
+    configurations = [project.configurations.shaded]
+    classifier = ''
+    relocate 'org.bstats', 'com.simon816.chatui.bstats'
 }
 
-processResources {
-    from('src/main/resources') {
-        include 'mcmod.info'
-        expand(version: project.version, apiVersionRange: '[5.0.0,6.0.0)')
-    }
-}
+assemble.dependsOn = [shadowJar]
