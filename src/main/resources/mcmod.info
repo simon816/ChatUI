@@ -1,9 +1,9 @@
 [{
     "modid": "chatui",
     "name": "Chat UI",
-    "description": "A UI Toolkit for the chat box to draw GUIs on.",
+    "description": "A User Interface library and plugin for creating GUIs in the chat box",
     "version": "$version",
-    "url": "https://github.com/simon816/ChatUI",
+    "url": "https://ore.spongepowered.org/simon816/Chat-UI",
     "authors": ["Simon816"],
     "requiredMods": [
         "spongeapi@$apiVersionRange"
