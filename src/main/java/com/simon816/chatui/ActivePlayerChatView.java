@@ -1,15 +1,19 @@
 package com.simon816.chatui;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.base.Objects;
 import com.simon816.chatui.impl.ImplementationConfig;
 import com.simon816.chatui.lib.PlayerChatView;
 import com.simon816.chatui.lib.PlayerContext;
+import com.simon816.chatui.lib.TopWindow;
 import com.simon816.chatui.lib.config.LibConfig;
 import com.simon816.chatui.lib.config.PlayerSettings;
 import com.simon816.chatui.tabs.GlobalTab;
 import com.simon816.chatui.tabs.NewTab;
 import com.simon816.chatui.tabs.Tab;
 import com.simon816.chatui.tabs.TextBufferTab;
+import com.simon816.chatui.tabs.WindowTab;
 import com.simon816.chatui.tabs.config.ConfigEditTab;
 import com.simon816.chatui.tabs.perm.PermissionsTab;
 import ninja.leaping.configurate.ConfigurationNode;
@@ -36,6 +40,7 @@ public class ActivePlayerChatView implements PlayerChatView {
     boolean isUpdating;
 
     private final PlayerList playerList;
+    private WindowTab shownWindow;
 
     ActivePlayerChatView(Player player, PlayerSettings settings) {
         setContextFromSettings(player, settings);
@@ -46,7 +51,7 @@ public class ActivePlayerChatView implements PlayerChatView {
     }
 
     public void setContextFromSettings(Player player, PlayerSettings settings) {
-        this.playerContext = new PlayerContext(player, settings.getWidth(), settings.getHeightLines(), settings.getForceUnicode());
+        this.playerContext = settings.createContext(player);
     }
 
     @Override
@@ -115,6 +120,27 @@ public class ActivePlayerChatView implements PlayerChatView {
     @Override
     public Window getWindow() {
         return this.window;
+    }
+
+    @Override
+    public boolean showWindow(TopWindow window) {
+        checkNotNull(window, "window");
+        if (this.shownWindow != null) {
+            return false;
+        }
+        this.shownWindow = new WindowTab(window);
+        this.window.addTab(this.shownWindow, true);
+        return true;
+    }
+
+    @Override
+    public boolean removeShownWindow() {
+        if (this.shownWindow == null) {
+            return false;
+        }
+        this.window.removeTab(this.shownWindow);
+        this.shownWindow = null;
+        return true;
     }
 
     public NewTab getNewTab() {

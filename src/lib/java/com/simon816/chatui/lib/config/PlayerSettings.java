@@ -1,8 +1,10 @@
 package com.simon816.chatui.lib.config;
 
 import com.google.common.base.Objects;
+import com.simon816.chatui.lib.PlayerContext;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
+import org.spongepowered.api.entity.living.player.Player;
 
 @ConfigSerializable
 public class PlayerSettings {
@@ -56,6 +58,10 @@ public class PlayerSettings {
 
     public PlayerSettings withUnicode(boolean forceUnicode) {
         return new PlayerSettings(this.width, this.height, forceUnicode);
+    }
+
+    public PlayerContext createContext(Player player) {
+        return new PlayerContext(player, getWidth(), getHeightLines(), getForceUnicode());
     }
 
     @Override

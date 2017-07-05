@@ -13,6 +13,10 @@ public interface PlayerChatView {
 
     public TopWindow getWindow();
 
+    public boolean showWindow(TopWindow window);
+
+    public boolean removeShownWindow();
+
     public void update();
 
     public boolean handleIncoming(Text message);

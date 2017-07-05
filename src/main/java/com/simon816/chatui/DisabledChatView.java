@@ -42,8 +42,17 @@ public class DisabledChatView implements PlayerChatView {
 
     @Override
     public TopWindow getWindow() {
-        // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public boolean showWindow(TopWindow window) {
+        return false;
+    }
+
+    @Override
+    public boolean removeShownWindow() {
+        return false;
     }
 
     @Override

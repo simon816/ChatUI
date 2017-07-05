@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.simon816.chatui.lib.config.LibConfig;
 import com.simon816.chatui.lib.event.CreatePlayerViewEvent;
+import com.simon816.chatui.lib.event.PlayerChangeConfigEvent;
 import com.simon816.chatui.lib.internal.ClickCallback;
 import com.simon816.chatui.lib.internal.WrapOutputChannel;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
@@ -119,6 +120,14 @@ public class ChatUILib {
         Sponge.getEventManager().post(createEvent);
         this.playerViewMap.put(player.getUniqueId(), createEvent.getView());
         createEvent.getView().initialize();
+    }
+
+    @Listener
+    public void onConfigChange(PlayerChangeConfigEvent event) {
+        PlayerChatView view = getView(event.getPlayer());
+        if (view instanceof DefaultChatView) {
+            ((DefaultChatView) view).updateContext(event.getNewSettings().createContext(event.getPlayer()));
+        }
     }
 
     @Listener

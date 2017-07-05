@@ -3,6 +3,7 @@ package com.simon816.chatui.lib;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.collect.Lists;
+import com.simon816.chatui.lib.config.LibConfig;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.living.player.Player;
@@ -30,6 +31,11 @@ public class DefaultChatView implements PlayerChatView {
 
     @Override
     public void initialize() {
+        this.context = LibConfig.playerConfig(this.playerUUID).createContext(getPlayer());
+    }
+
+    void updateContext(PlayerContext context) {
+        this.context = context;
     }
 
     @Override
@@ -42,16 +48,33 @@ public class DefaultChatView implements PlayerChatView {
         return this.window;
     }
 
-    public void setWindow(TopWindow window, PlayerContext context) {
+    @Override
+    public boolean showWindow(TopWindow window) {
+        checkNotNull(window, "window");
+        if (this.window != null) {
+            return false;
+        }
+        setWindow(window);
+        return true;
+    }
+
+    @Override
+    public boolean removeShownWindow() {
+        if (this.window == null) {
+            return false;
+        }
+        setWindow(null);
+        return true;
+    }
+
+    public void setWindow(TopWindow window) {
         if (this.window != null) {
             this.window.onClose();
         }
         this.window = window;
         if (window != null) {
-            this.context = checkNotNull(context, "context");
             update();
         } else {
-            this.context = null;
             flushBuffer();
         }
     }

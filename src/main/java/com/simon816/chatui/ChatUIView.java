@@ -33,6 +33,16 @@ class ChatUIView implements PlayerChatView {
     }
 
     @Override
+    public boolean showWindow(TopWindow window) {
+        return this.actualView.showWindow(window);
+    }
+
+    @Override
+    public boolean removeShownWindow() {
+        return this.actualView.removeShownWindow();
+    }
+
+    @Override
     public void update() {
         this.actualView.update();
     }
