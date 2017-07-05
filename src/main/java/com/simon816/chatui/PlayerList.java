@@ -1,6 +1,7 @@
 package com.simon816.chatui;
 
 import com.google.common.collect.Lists;
+import com.simon816.chatui.lib.PlayerContext;
 import com.simon816.chatui.ui.AnchorPaneUI;
 import com.simon816.chatui.ui.LineFactory;
 import com.simon816.chatui.ui.UIComponent;
@@ -10,11 +11,11 @@ import com.simon816.chatui.ui.table.TableModel;
 import com.simon816.chatui.ui.table.TableRenderer;
 import com.simon816.chatui.ui.table.TableScrollHelper;
 import com.simon816.chatui.ui.table.TableUI;
+import com.simon816.chatui.util.Utils;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.service.ban.BanService;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.action.ClickAction;
 import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.format.TextFormat;
 import org.spongepowered.api.text.format.TextStyles;
@@ -22,7 +23,6 @@ import org.spongepowered.api.util.ban.Ban;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 
 import javax.swing.SwingConstants;
 
@@ -49,9 +49,9 @@ public class PlayerList {
             @Override
             public void draw(PlayerContext ctx, LineFactory lineFactory) {
                 Text.Builder builder = Text.builder();
-                builder.append(Text.of(clickAction(scroll::scrollUp),
+                builder.append(Text.of(Utils.execClick(scroll::scrollUp),
                         scroll.canScrollUp() ? TextColors.WHITE : TextColors.DARK_GRAY, "[Scroll Up] "));
-                builder.append(Text.of(clickAction(scroll::scrollDown),
+                builder.append(Text.of(Utils.execClick(scroll::scrollDown),
                         scroll.canScrollDown() ? TextColors.WHITE : TextColors.DARK_GRAY, "[Scroll Down] "));
                 lineFactory.appendNewLine(builder.build(), ctx.forceUnicode);
             }
@@ -123,24 +123,6 @@ public class PlayerList {
         };
     }
 
-    public ClickAction<?> clickAction(Runnable action) {
-        return clickAction(() -> {
-            action.run();
-            return true;
-        });
-    }
-
-    public ClickAction<?> clickAction(BooleanSupplier action) {
-        return ChatUI.execClick(src -> {
-//            if (ChatUI.getView(src).getWindow().getActiveTab() != this) {
-//                return;
-//            }
-            if (action.getAsBoolean()) {
-                ChatUI.getView(src).update();
-            }
-        });
-    }
-
     public void addAddon(Addon addon) {
         this.addons.add(addon);
     }
@@ -148,11 +130,11 @@ public class PlayerList {
     private void addDefaultAddons(Player player) {
         TextFormat link = TextFormat.of(TextColors.BLUE, TextStyles.UNDERLINE);
         if (player.hasPermission(PERM_KICK)) {
-            addAddon(listPlayer -> Text.builder("Kick").format(link).onClick(clickAction(() -> listPlayer.kick())).build());
+            addAddon(listPlayer -> Text.builder("Kick").format(link).onClick(Utils.execClick(() -> listPlayer.kick())).build());
         }
         if (player.hasPermission(PERM_BAN)) {
             addAddon(listPlayer -> Text.builder("Ban").format(link)
-                    .onClick(clickAction(() -> Sponge.getServiceManager().provideUnchecked(BanService.class).addBan(Ban.of(listPlayer.getProfile()))))
+                    .onClick(Utils.execClick(() -> Sponge.getServiceManager().provideUnchecked(BanService.class).addBan(Ban.of(listPlayer.getProfile()))))
                     .build());
         }
     }

@@ -1,10 +1,10 @@
 package com.simon816.chatui.ui;
 
 import com.google.common.collect.Lists;
-import com.simon816.chatui.ChatUI;
-import com.simon816.chatui.PlayerChatView;
-import com.simon816.chatui.PlayerContext;
+import com.simon816.chatui.lib.PlayerChatView;
+import com.simon816.chatui.lib.PlayerContext;
 import com.simon816.chatui.util.TextUtils;
+import com.simon816.chatui.util.Utils;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.ClickAction;
 import org.spongepowered.api.text.action.HoverAction;
@@ -71,9 +71,7 @@ public class Button implements UIComponent {
         HoverAction<?> hover = null;
         ClickAction<?> click = null;
         if (this.onClick != null) {
-            click = ChatUI.execClick(src -> {
-                this.onClick.accept(ChatUI.getView(src));
-            });
+            click = Utils.execClick(this.onClick);
         }
 
         List<String> labelLines = null;

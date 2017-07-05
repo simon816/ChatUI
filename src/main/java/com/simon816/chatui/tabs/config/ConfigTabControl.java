@@ -22,9 +22,15 @@ class ConfigTabControl {
         this.tab = tab;
         this.currentNode = rootNode;
         updateEntryList(rootNode);
-        Object[] ignore = rootNode.getParent().getPath();
-        if (ignore.length == 1 && ignore[0] == null) {
+        ConfigurationNode parent = rootNode.getParent();
+        Object[] ignore;
+        if (parent == null) {
             ignore = new Object[0];
+        } else {
+            ignore = parent.getPath();
+            if (ignore.length == 1 && ignore[0] == null) {
+                ignore = new Object[0];
+            }
         }
         this.ignoredPath = ignore;
         this.options = options;

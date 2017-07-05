@@ -2,9 +2,9 @@ package com.simon816.chatui.tabs;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.simon816.chatui.PlayerChatView;
-import com.simon816.chatui.PlayerContext;
-import com.simon816.chatui.TopWindow;
+import com.simon816.chatui.lib.PlayerChatView;
+import com.simon816.chatui.lib.PlayerContext;
+import com.simon816.chatui.lib.TopWindow;
 import com.simon816.chatui.ui.LineFactory;
 import com.simon816.chatui.ui.UIComponent;
 import com.simon816.chatui.ui.UIPane;

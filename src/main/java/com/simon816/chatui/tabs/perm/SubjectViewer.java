@@ -2,8 +2,8 @@ package com.simon816.chatui.tabs.perm;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.simon816.chatui.PlayerChatView;
-import com.simon816.chatui.PlayerContext;
+import com.simon816.chatui.lib.PlayerChatView;
+import com.simon816.chatui.lib.PlayerContext;
 import com.simon816.chatui.ui.AnchorPaneUI;
 import com.simon816.chatui.ui.LineFactory;
 import com.simon816.chatui.ui.UIComponent;
@@ -13,6 +13,7 @@ import com.simon816.chatui.ui.table.TableColumnRenderer;
 import com.simon816.chatui.ui.table.TableModel;
 import com.simon816.chatui.ui.table.TableScrollHelper;
 import com.simon816.chatui.ui.table.TableUI;
+import com.simon816.chatui.util.ExtraUtils;
 import com.simon816.chatui.util.TextUtils;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.service.context.Context;
@@ -119,9 +120,9 @@ class SubjectViewer extends AnchorPaneUI {
 
                         @Override
                         public List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode) {
-                            return TextUtils.splitLines(Text.of(SubjectViewer.this.tab.execClick(view -> {
+                            return TextUtils.splitLines(Text.of(ExtraUtils.clickAction(view -> {
                                 toggle(view.getPlayer(), row);
-                            }), value), tableWidth - getPrefWidth(), forceUnicode);
+                            }, SubjectViewer.this.tab), value), tableWidth - getPrefWidth(), forceUnicode);
                         }
                     };
                 }
@@ -132,9 +133,9 @@ class SubjectViewer extends AnchorPaneUI {
                         public List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode) {
                             boolean v = (Boolean) value;
                             TextColor color = v ? TextColors.GREEN : TextColors.RED;
-                            return TextUtils.splitLines(Text.of(color, SubjectViewer.this.tab.execClick(view -> {
+                            return TextUtils.splitLines(Text.of(color, ExtraUtils.clickAction(view -> {
                                 toggle(view.getPlayer(), row);
-                            }), value), getPrefWidth(), forceUnicode);
+                            }, SubjectViewer.this.tab), value), getPrefWidth(), forceUnicode);
                         }
                     };
                 }
@@ -143,9 +144,9 @@ class SubjectViewer extends AnchorPaneUI {
 
                         @Override
                         public List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode) {
-                            return Collections.singletonList(Text.of(TextColors.RED, SubjectViewer.this.tab.execClick(view -> {
+                            return Collections.singletonList(Text.of(TextColors.RED, ExtraUtils.clickAction(view -> {
                                 delete(view.getPlayer(), row);
-                            }), "X"));
+                            }, SubjectViewer.this.tab), "X"));
                         }
                     };
                 }
@@ -191,7 +192,7 @@ class SubjectViewer extends AnchorPaneUI {
 
     Text hyperlink(String text, Runnable r, String hoverText) {
         Text.Builder b = Text.builder(text).color(TextColors.BLUE).style(TextStyles.UNDERLINE)
-                .onClick(this.tab.execClick(r));
+                .onClick(ExtraUtils.clickAction(r, this.tab));
         if (hoverText != null) {
             b.onHover(TextActions.showText(Text.of(hoverText)));
         }
@@ -211,7 +212,9 @@ class SubjectViewer extends AnchorPaneUI {
                 for (Subject parent : SubjectViewer.this.activeSubj.getParents(SubjectViewer.this.activeContext)) {
                     builder.append(hyperlink(parent.getIdentifier(), () -> setActive(parent, false)));
                     builder.append(Text.builder("[x]").color(TextColors.RED)
-                            .onClick(SubjectViewer.this.tab.execClick(view -> removeParent(view.getPlayer(), parent))).build());
+                            .onClick(ExtraUtils.clickAction((Consumer<PlayerChatView>) view -> removeParent(view.getPlayer(), parent),
+                                    SubjectViewer.this.tab))
+                            .build());
                     builder.append(Text.of(", "));
                 }
                 lineFactory.appendNewLine(builder.build(), ctx.forceUnicode);
@@ -273,11 +276,11 @@ class SubjectViewer extends AnchorPaneUI {
             }
 
             private Text simpleLink(TextColor color, String text, Runnable r) {
-                return Text.builder(text).color(color).onClick(tab.execClick(r)).build();
+                return Text.builder(text).color(color).onClick(ExtraUtils.clickAction(r, tab)).build();
             }
 
             private Text simpleLink(TextColor color, String text, Consumer<PlayerChatView> c) {
-                return Text.builder(text).color(color).onClick(tab.execClick(c)).build();
+                return Text.builder(text).color(color).onClick(ExtraUtils.clickAction(c, tab)).build();
             }
 
         };

@@ -1,12 +1,12 @@
 package com.simon816.chatui.group;
 
 import com.simon816.chatui.ChatUI;
-import com.simon816.chatui.PlayerChatView;
+import com.simon816.chatui.lib.PlayerChatView;
 import com.simon816.chatui.ui.table.DefaultColumnRenderer;
 import com.simon816.chatui.ui.table.DefaultTableRenderer;
 import com.simon816.chatui.ui.table.TableColumnRenderer;
 import com.simon816.chatui.util.TextUtils;
-import org.spongepowered.api.entity.living.player.Player;
+import com.simon816.chatui.util.Utils;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
@@ -54,9 +54,9 @@ class GroupListRenderer extends DefaultTableRenderer {
         @Override
         public List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode) {
             ChatGroup group = (ChatGroup) value;
-            return TextUtils.splitLines(Text.of(ChatUI.execClick(src -> {
-                ChatUI.getActiveView(src).getWindow().addTab(group.getTab((Player) src), true);
-                ChatUI.getView(src).update();
+            return TextUtils.splitLines(Text.of(Utils.execClick(view -> {
+                ChatUI.getActiveView(view).getWindow().addTab(group.getTab(view.getPlayer()), true);
+                view.update();
             }), group.getName()), getPrefWidth(), forceUnicode);
         }
     }
@@ -78,9 +78,9 @@ class GroupListRenderer extends DefaultTableRenderer {
             builder.onHover(TextActions.showText(Text.of("Delete Group")));
             if (this.feature.canDeleteGroup(group, this.view.getPlayer())) {
                 builder.color(TextColors.RED);
-                builder.onClick(ChatUI.execClick(src -> {
+                builder.onClick(Utils.execClick(view -> {
                     this.feature.removeGroup(group);
-                    ChatUI.getView(src).update();
+                    view.update();
                 }));
             } else {
                 builder.color(TextColors.GRAY);

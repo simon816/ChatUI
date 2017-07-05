@@ -2,8 +2,8 @@ package com.simon816.chatui.tabs.perm;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.simon816.chatui.PlayerChatView;
-import com.simon816.chatui.PlayerContext;
+import com.simon816.chatui.lib.PlayerChatView;
+import com.simon816.chatui.lib.PlayerContext;
 import com.simon816.chatui.ui.AnchorPaneUI;
 import com.simon816.chatui.ui.LineFactory;
 import com.simon816.chatui.ui.UIComponent;
@@ -13,6 +13,7 @@ import com.simon816.chatui.ui.table.TableColumnRenderer;
 import com.simon816.chatui.ui.table.TableModel;
 import com.simon816.chatui.ui.table.TableScrollHelper;
 import com.simon816.chatui.ui.table.TableUI;
+import com.simon816.chatui.util.ExtraUtils;
 import com.simon816.chatui.util.TextUtils;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
@@ -55,21 +56,21 @@ class SubjectListPane extends AnchorPaneUI {
             public void draw(PlayerContext ctx, LineFactory lineFactory) {
                 lineFactory.appendNewLine(Text.builder()
                         .append(
-                                Text.builder("[Return]").color(TextColors.BLUE).onClick(SubjectListPane.this.tab.execClick(() -> {
+                                Text.builder("[Return]").color(TextColors.BLUE).onClick(ExtraUtils.clickAction(() -> {
                                     SubjectListPane.this.tab.setRoot(SubjectListPane.this.tab.getDashboard());
-                                })).build(),
+                                }, SubjectListPane.this.tab)).build(),
                                 Text.builder(SubjectListPane.this.addMode ? " [Cancel]" : " [Add]")
                                         .color(SubjectListPane.this.addMode ? TextColors.RED : TextColors.GREEN)
-                                        .onClick(SubjectListPane.this.tab
-                                                .execClick(() -> SubjectListPane.this.addMode = !SubjectListPane.this.addMode))
+                                        .onClick(ExtraUtils.clickAction(() -> SubjectListPane.this.addMode = !SubjectListPane.this.addMode,
+                                                SubjectListPane.this.tab))
                                         .build(),
                                 Text.builder(" [Scroll Up]")
                                         .color(SubjectListPane.this.tableScroll.canScrollUp() ? TextColors.WHITE : TextColors.GRAY)
-                                        .onClick(SubjectListPane.this.tab.execClick(SubjectListPane.this.tableScroll::scrollUp))
+                                        .onClick(ExtraUtils.clickAction(SubjectListPane.this.tableScroll::scrollUp, SubjectListPane.this.tab))
                                         .build(),
                                 Text.builder(" [Scroll Down]")
                                         .color(SubjectListPane.this.tableScroll.canScrollDown() ? TextColors.WHITE : TextColors.GRAY)
-                                        .onClick(SubjectListPane.this.tab.execClick(SubjectListPane.this.tableScroll::scrollDown))
+                                        .onClick(ExtraUtils.clickAction(SubjectListPane.this.tableScroll::scrollDown, SubjectListPane.this.tab))
                                         .build())
                         .build(), ctx.forceUnicode);
             }
@@ -113,10 +114,10 @@ class SubjectListPane extends AnchorPaneUI {
         }
         return Text.builder(subject.getIdentifier())
                 .onHover(hover)
-                .onClick(this.tab.execClick(() -> {
+                .onClick(ExtraUtils.clickAction(() -> {
                     this.tab.getSubjViewer().setActive(subject, true);
                     this.tab.setRoot(this.tab.getSubjViewer());
-                })).build();
+                }, SubjectListPane.this.tab)).build();
     }
 
     private TableUI createTable() {
@@ -149,9 +150,9 @@ class SubjectListPane extends AnchorPaneUI {
 
                         @Override
                         public List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode) {
-                            return Collections.singletonList(Text.of(TextColors.RED, SubjectListPane.this.tab.execClick(view -> {
+                            return Collections.singletonList(Text.of(TextColors.RED, ExtraUtils.clickAction(view -> {
                                 delete(view.getPlayer(), row);
-                            }), "X"));
+                            }, SubjectListPane.this.tab), "X"));
                         }
                     };
                 }

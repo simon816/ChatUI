@@ -1,8 +1,8 @@
 package com.simon816.chatui.tabs.perm;
 
 import com.google.common.collect.Lists;
-import com.simon816.chatui.PlayerChatView;
-import com.simon816.chatui.PlayerContext;
+import com.simon816.chatui.lib.PlayerChatView;
+import com.simon816.chatui.lib.PlayerContext;
 import com.simon816.chatui.ui.AnchorPaneUI;
 import com.simon816.chatui.ui.LineFactory;
 import com.simon816.chatui.ui.UIComponent;
@@ -12,6 +12,7 @@ import com.simon816.chatui.ui.table.TableColumnRenderer;
 import com.simon816.chatui.ui.table.TableModel;
 import com.simon816.chatui.ui.table.TableScrollHelper;
 import com.simon816.chatui.ui.table.TableUI;
+import com.simon816.chatui.util.ExtraUtils;
 import com.simon816.chatui.util.TextUtils;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColor;
@@ -92,9 +93,9 @@ class EntryDisplayer extends AnchorPaneUI {
 
                         @Override
                         public List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode) {
-                            return Collections.singletonList(Text.of(TextColors.RED, EntryDisplayer.this.tab.execClick(() -> {
+                            return Collections.singletonList(Text.of(TextColors.RED, ExtraUtils.clickAction(() -> {
                                 remove(row);
-                            }), "X"));
+                            }, EntryDisplayer.this.tab), "X"));
                         }
                     };
                 }
@@ -107,9 +108,9 @@ class EntryDisplayer extends AnchorPaneUI {
                             color = TextColors.GRAY;
                         }
                         return TextUtils.splitLines(Text.builder((String) value)
-                                .onClick(EntryDisplayer.this.tab.execClick(() -> {
+                                .onClick(ExtraUtils.clickAction(() -> {
                                     setEdit(columnIndex, row);
-                                }))
+                                }, EntryDisplayer.this.tab))
                                 .color(color)
                                 .build(), (tableWidth / 2) - 20, forceUnicode);
                     }
@@ -145,18 +146,18 @@ class EntryDisplayer extends AnchorPaneUI {
                 lineFactory.appendNewLine(Text.builder()
                         .append(
                                 Text.builder("[Return]").color(TextColors.BLUE)
-                                        .onClick(EntryDisplayer.this.tab.execClick(() -> {
+                                        .onClick(ExtraUtils.clickAction(() -> {
                                             EntryDisplayer.this.goBack.run();
-                                        })).build(),
+                                        }, EntryDisplayer.this.tab)).build(),
                                 Text.builder(EntryDisplayer.this.addMode ? " [Cancel]" : " [Add]")
                                         .color(EntryDisplayer.this.addMode ? TextColors.RED : TextColors.GREEN)
-                                        .onClick(EntryDisplayer.this.tab.execClick(() -> EntryDisplayer.this.addMode = !EntryDisplayer.this.addMode))
+                                        .onClick(ExtraUtils.clickAction(() -> EntryDisplayer.this.addMode = !EntryDisplayer.this.addMode, EntryDisplayer.this.tab))
                                         .build(),
                                 Text.builder(" [Scroll Up]").color(EntryDisplayer.this.scroll.canScrollUp() ? TextColors.WHITE : TextColors.GRAY)
-                                        .onClick(EntryDisplayer.this.tab.execClick(EntryDisplayer.this.scroll::scrollUp))
+                                        .onClick(ExtraUtils.clickAction(EntryDisplayer.this.scroll::scrollUp, EntryDisplayer.this.tab))
                                         .build(),
                                 Text.builder(" [Scroll Down]").color(EntryDisplayer.this.scroll.canScrollDown() ? TextColors.WHITE : TextColors.GRAY)
-                                        .onClick(EntryDisplayer.this.tab.execClick(EntryDisplayer.this.scroll::scrollDown))
+                                        .onClick(ExtraUtils.clickAction(EntryDisplayer.this.scroll::scrollDown, EntryDisplayer.this.tab))
                                         .build())
                         .build(), ctx.forceUnicode);
             }

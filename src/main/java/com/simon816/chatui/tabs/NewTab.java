@@ -1,7 +1,8 @@
 package com.simon816.chatui.tabs;
 
 import com.simon816.chatui.ActivePlayerChatView;
-import com.simon816.chatui.PlayerChatView;
+import com.simon816.chatui.ChatUI;
+import com.simon816.chatui.lib.PlayerChatView;
 import com.simon816.chatui.ui.Button;
 import com.simon816.chatui.ui.FlowPaneUI;
 import org.spongepowered.api.text.Text;
@@ -29,8 +30,9 @@ public class NewTab extends Tab {
 
         @Override
         public final void accept(PlayerChatView view) {
-            if (!(view instanceof ActivePlayerChatView) || !(((ActivePlayerChatView) view).getWindow().getActiveTab() instanceof NewTab)) {
-                return; // Expired link
+            view = ChatUI.unwrapView(view);
+            if (!ChatUI.isTabActive(view, tab -> tab instanceof NewTab)) {
+                return;
             }
             onClick((ActivePlayerChatView) view);
         }

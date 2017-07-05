@@ -3,7 +3,7 @@ package com.simon816.chatui.ui;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.Lists;
-import com.simon816.chatui.PlayerContext;
+import com.simon816.chatui.lib.PlayerContext;
 
 import java.util.Iterator;
 import java.util.List;

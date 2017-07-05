@@ -3,7 +3,6 @@ package com.simon816.chatui.group;
 import com.simon816.chatui.AbstractFeature;
 import com.simon816.chatui.ActivePlayerChatView;
 import com.simon816.chatui.ChatUI;
-import com.simon816.chatui.PlayerChatView;
 import com.simon816.chatui.tabs.NewTab;
 import com.simon816.chatui.ui.AnchorPaneUI;
 import com.simon816.chatui.ui.table.TableModel;
@@ -28,16 +27,13 @@ public class ChatGroupFeature extends AbstractFeature {
     }
 
     @Override
-    protected void onNewPlayerView(PlayerChatView view) {
-        if (!(view instanceof ActivePlayerChatView)) {
-            return;
-        }
-        ((ActivePlayerChatView) view).getNewTab().addButton("Chat Groups",
+    protected void onNewPlayerView(ActivePlayerChatView view) {
+        view.getNewTab().addButton("Chat Groups",
                 new NewTab.LaunchTabAction(() -> new ChatGroupTab(this, view, new AnchorPaneUI())));
     }
 
     @Override
-    protected void onViewClose(PlayerChatView view) {
+    protected void onViewClose(ActivePlayerChatView view) {
         this.groupList.removePlayer(view.getPlayer());
     }
 

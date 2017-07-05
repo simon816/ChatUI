@@ -1,13 +1,13 @@
 package com.simon816.chatui.tabs;
 
 import com.google.common.collect.Lists;
-import com.simon816.chatui.ChatUI;
-import com.simon816.chatui.PlayerContext;
+import com.simon816.chatui.lib.PlayerContext;
 import com.simon816.chatui.ui.AnchorPaneUI;
 import com.simon816.chatui.ui.LineFactory;
 import com.simon816.chatui.ui.UIComponent;
 import com.simon816.chatui.util.TextBuffer;
 import com.simon816.chatui.util.TextUtils;
+import com.simon816.chatui.util.Utils;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
@@ -88,18 +88,18 @@ public abstract class TextBufferTab extends Tab {
             TextBuffer toolbar = new TextBuffer(ctx.forceUnicode);
             Text.Builder scrollUpButton = Text.builder("[Scroll Up]");
             if (this.buffer.canScrollUp()) {
-                scrollUpButton.onClick(ChatUI.execClick(src -> {
+                scrollUpButton.onClick(Utils.execClick(view -> {
                     this.buffer.scrollUp();
-                    ChatUI.getView(src).update();
+                    view.update();
                 }));
             } else {
                 scrollUpButton.color(TextColors.GRAY);
             }
             Text.Builder scrollDownButton = Text.builder(" [Scroll Down]");
             if (this.buffer.canScrollDown()) {
-                scrollDownButton.onClick(ChatUI.execClick(src -> {
+                scrollDownButton.onClick(Utils.execClick(view -> {
                     this.buffer.scrollDown();
-                    ChatUI.getView(src).update();
+                    view.update();
                 }));
             } else {
                 scrollDownButton.color(TextColors.GRAY);

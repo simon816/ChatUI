@@ -1,7 +1,7 @@
 package com.simon816.chatui.ui;
 
-import com.simon816.chatui.ITextDrawable;
-import com.simon816.chatui.PlayerContext;
+import com.simon816.chatui.lib.ITextDrawable;
+import com.simon816.chatui.lib.PlayerContext;
 import org.spongepowered.api.text.Text;
 
 public interface UIComponent extends ITextDrawable {

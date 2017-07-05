@@ -1,22 +1,19 @@
 package com.simon816.chatui.tabs.perm;
 
-import com.simon816.chatui.ActivePlayerChatView;
-import com.simon816.chatui.ChatUI;
-import com.simon816.chatui.PlayerChatView;
-import com.simon816.chatui.PlayerContext;
+import com.simon816.chatui.lib.PlayerChatView;
+import com.simon816.chatui.lib.PlayerContext;
 import com.simon816.chatui.tabs.Tab;
 import com.simon816.chatui.ui.Button;
 import com.simon816.chatui.ui.FlowPaneUI;
 import com.simon816.chatui.ui.UIPane;
+import com.simon816.chatui.util.ExtraUtils;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.service.ProviderRegistration;
 import org.spongepowered.api.service.permission.PermissionService;
 import org.spongepowered.api.service.permission.SubjectCollection;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.action.ClickAction.ExecuteCallback;
 
 import java.util.Map.Entry;
-import java.util.function.Consumer;
 
 public class PermissionsTab extends Tab {
 
@@ -57,28 +54,6 @@ public class PermissionsTab extends Tab {
         return this.actions;
     }
 
-    Consumer<PlayerChatView> onClick(Runnable r) {
-        return onClick(view -> r.run());
-    }
-
-    Consumer<PlayerChatView> onClick(Consumer<PlayerChatView> consumer) {
-        return view -> {
-            if (!(view instanceof ActivePlayerChatView) || ((ActivePlayerChatView) view).getWindow().getActiveTab() != this) {
-                return;
-            }
-            consumer.accept(view);
-            view.update();
-        };
-    }
-
-    ExecuteCallback execClick(Runnable r) {
-        return ChatUI.execClick(src -> onClick(r).accept(ChatUI.getView(src)));
-    }
-
-    ExecuteCallback execClick(Consumer<PlayerChatView> consumer) {
-        return ChatUI.execClick(src -> onClick(consumer).accept(ChatUI.getView(src)));
-    }
-
     private UIPane createDashboard() {
         FlowPaneUI dashboard = new FlowPaneUI(FlowPaneUI.WRAP_HORIZONALLY);
         for (Entry<String, SubjectCollection> subjEntry : this.service.getKnownSubjects().entrySet()) {
@@ -89,10 +64,11 @@ public class PermissionsTab extends Tab {
                     return ctx.width / 2;
                 }
             };
-            button.setClickHandler(onClick(() -> {
+            button.setClickHandler(ExtraUtils.clickHandler(view -> {
                 this.subjListPane.setSubjectList(subjEntry.getValue());
                 this.setRoot(this.subjListPane);
-            }));
+                return true;
+            }, this));
             dashboard.getChildren().add(button);
         }
 

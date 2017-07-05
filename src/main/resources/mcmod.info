@@ -6,9 +6,12 @@
     "url": "https://ore.spongepowered.org/simon816/Chat-UI",
     "authors": ["Simon816"],
     "requiredMods": [
-        "spongeapi@$apiVersionRange"
+        "spongeapi@$apiVersionRange",
+        "chatuilib@$libVersionRange"
     ],
     "dependencies": [
+        "spongeapi@$apiVersionRange",
+        "chatuilib@$libVersionRange"
     ],
     "useDependencyInformation": true
 }]

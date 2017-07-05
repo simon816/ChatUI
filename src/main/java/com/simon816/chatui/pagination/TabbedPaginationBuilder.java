@@ -1,6 +1,6 @@
 package com.simon816.chatui.pagination;
 
-import com.simon816.chatui.Config;
+import com.simon816.chatui.lib.config.PlayerSettings;
 import org.spongepowered.api.service.pagination.PaginationList;
 import org.spongepowered.api.service.pagination.PaginationList.Builder;
 import org.spongepowered.api.service.pagination.PaginationService;
@@ -17,7 +17,7 @@ public class TabbedPaginationBuilder implements PaginationList.Builder {
         this.service = service;
         // This cannot be obtained without a Window object
         this.removedHeight = 2;
-        this.builder.linesPerPage(Config.DEFAULT_BUFFER_HEIGHT - this.removedHeight);
+        this.builder.linesPerPage(PlayerSettings.DEFAULT_BUFFER_HEIGHT_LINES - this.removedHeight);
     }
 
     @Override

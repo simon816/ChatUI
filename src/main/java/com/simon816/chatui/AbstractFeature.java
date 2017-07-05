@@ -17,10 +17,10 @@ public abstract class AbstractFeature {
     protected void onInit() {
     }
 
-    protected void onNewPlayerView(PlayerChatView view) {
+    protected void onNewPlayerView(ActivePlayerChatView view) {
     }
 
-    protected void onViewClose(PlayerChatView view) {
+    protected void onViewClose(ActivePlayerChatView view) {
     }
 
 }

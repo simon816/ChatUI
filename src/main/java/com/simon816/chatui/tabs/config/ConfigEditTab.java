@@ -1,8 +1,9 @@
 package com.simon816.chatui.tabs.config;
 
-import com.simon816.chatui.ChatUI;
-import com.simon816.chatui.PlayerChatView;
-import com.simon816.chatui.PlayerContext;
+import static com.simon816.chatui.util.ExtraUtils.clickAction;
+
+import com.simon816.chatui.lib.PlayerChatView;
+import com.simon816.chatui.lib.PlayerContext;
 import com.simon816.chatui.tabs.Tab;
 import com.simon816.chatui.ui.AnchorPaneUI;
 import com.simon816.chatui.ui.LineFactory;
@@ -11,36 +12,10 @@ import com.simon816.chatui.ui.table.TableScrollHelper;
 import com.simon816.chatui.ui.table.TableUI;
 import com.simon816.chatui.util.TextUtils;
 import ninja.leaping.configurate.ConfigurationNode;
-import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.action.ClickAction;
 import org.spongepowered.api.text.format.TextColors;
 
-import java.util.function.BooleanSupplier;
-
 public class ConfigEditTab extends Tab {
-
-    boolean isTabActive(CommandSource src) {
-        return ChatUI.getActiveView(src).getWindow().getActiveTab() == this;
-    }
-
-    ClickAction<?> clickAction(Runnable action) {
-        return clickAction(() -> {
-            action.run();
-            return true;
-        });
-    }
-
-    ClickAction<?> clickAction(BooleanSupplier action) {
-        return ChatUI.execClick(src -> {
-            if (!isTabActive(src)) {
-                return;
-            }
-            if (action.getAsBoolean()) {
-                ChatUI.getView(src).update();
-            }
-        });
-    }
 
     private class ButtonBar implements UIComponent {
 
@@ -50,21 +25,22 @@ public class ConfigEditTab extends Tab {
         @Override
         public void draw(PlayerContext ctx, LineFactory lineFactory) {
             Text.Builder builder = Text.builder();
-            if (ConfigEditTab.this.control.getActiveEntry() == null) {
-                builder.append(Text.of(clickAction(ConfigEditTab.this.scroll::scrollUp),
-                        ConfigEditTab.this.scroll.canScrollUp() ? TextColors.WHITE : TextColors.DARK_GRAY, "[Scroll Up] "));
-                builder.append(Text.of(clickAction(ConfigEditTab.this.scroll::scrollDown),
-                        ConfigEditTab.this.scroll.canScrollDown() ? TextColors.WHITE : TextColors.DARK_GRAY, "[Scroll Down] "));
-                if (ConfigEditTab.this.control.options.canAdd && !ConfigEditTab.this.control.inDeleteMode()) {
+            ConfigEditTab tab = ConfigEditTab.this;
+            if (tab.control.getActiveEntry() == null) {
+                builder.append(Text.of(clickAction(tab.scroll::scrollUp, tab),
+                        tab.scroll.canScrollUp() ? TextColors.WHITE : TextColors.DARK_GRAY, "[Scroll Up] "));
+                builder.append(Text.of(clickAction(tab.scroll::scrollDown, tab),
+                        tab.scroll.canScrollDown() ? TextColors.WHITE : TextColors.DARK_GRAY, "[Scroll Down] "));
+                if (tab.control.options.canAdd && !tab.control.inDeleteMode()) {
                     builder.append(Text.of(clickAction(() -> {
-                        ConfigEditTab.this.nodeBuilder = NodeBuilder.forNode(ConfigEditTab.this.control.getNode(), ConfigEditTab.this);
-                    }), TextColors.GREEN, "[Add]"));
+                        tab.nodeBuilder = NodeBuilder.forNode(tab.control.getNode(), tab);
+                    }, tab), TextColors.GREEN, "[Add]"));
                 }
             } else {
-                builder.append(Text.of(clickAction(ConfigEditTab.this.control::closeActiveEntry), TextColors.RED, "[Close]"));
+                builder.append(Text.of(clickAction(tab.control::closeActiveEntry, tab), TextColors.RED, "[Close]"));
             }
-            if (ConfigEditTab.this.control.options.canDelete) {
-                builder.append(Text.of(clickAction(ConfigEditTab.this.control::setDeleteModeOrDeleteNode), TextColors.RED, " [Delete]"));
+            if (tab.control.options.canDelete) {
+                builder.append(Text.of(clickAction(tab.control::setDeleteModeOrDeleteNode, tab), TextColors.RED, " [Delete]"));
             }
             lineFactory.appendNewLine(builder.build(), ctx.forceUnicode);
         }
@@ -78,19 +54,20 @@ public class ConfigEditTab extends Tab {
 
         @Override
         public void draw(PlayerContext ctx, LineFactory lineFactory) {
+            ConfigEditTab tab = ConfigEditTab.this;
             Text.Builder builder = Text.builder();
-            Object[] path = ConfigEditTab.this.control.getPath();
+            Object[] path = tab.control.getPath();
             for (int i = 0; i < path.length; i++) {
                 Text.Builder part = Text.builder(path[i].toString());
                 final int distance = path.length - i - 1;
                 part.color(TextColors.BLUE).onClick(clickAction(() -> {
                     int dist = distance;
-                    ConfigurationNode newNode = ConfigEditTab.this.control.getNode();
+                    ConfigurationNode newNode = tab.control.getNode();
                     while (dist-- > 0) {
                         newNode = newNode.getParent();
                     }
-                    ConfigEditTab.this.control.setNode(newNode);
-                }));
+                    tab.control.setNode(newNode);
+                }, tab));
                 builder.append(part.build());
                 if (i < path.length - 1) {
                     builder.append(Text.of("->"));

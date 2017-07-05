@@ -2,6 +2,10 @@ package com.simon816.chatui;
 
 import com.google.common.base.Objects;
 import com.simon816.chatui.impl.ImplementationConfig;
+import com.simon816.chatui.lib.PlayerChatView;
+import com.simon816.chatui.lib.PlayerContext;
+import com.simon816.chatui.lib.config.LibConfig;
+import com.simon816.chatui.lib.config.PlayerSettings;
 import com.simon816.chatui.tabs.GlobalTab;
 import com.simon816.chatui.tabs.NewTab;
 import com.simon816.chatui.tabs.Tab;
@@ -9,6 +13,7 @@ import com.simon816.chatui.tabs.TextBufferTab;
 import com.simon816.chatui.tabs.config.ConfigEditTab;
 import com.simon816.chatui.tabs.perm.PermissionsTab;
 import ninja.leaping.configurate.ConfigurationNode;
+import ninja.leaping.configurate.SimpleConfigurationNode;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.living.player.Player;
@@ -32,16 +37,22 @@ public class ActivePlayerChatView implements PlayerChatView {
 
     private final PlayerList playerList;
 
-    ActivePlayerChatView(Player player, ConfigurationNode settings) {
-        this.playerContext = new PlayerContext(player,
-                settings.getNode("display-width").getInt(),
-                settings.getNode("display-height").getInt(),
-                settings.getNode("force-unicode").getBoolean());
+    ActivePlayerChatView(Player player, PlayerSettings settings) {
+        setContextFromSettings(player, settings);
         this.window = new Window();
         this.window.addTab(this.globalTab = new GlobalTab(), true);
         this.newTab = new NewTab();
         this.playerList = new PlayerList(player);
-        initNewTab(player);
+    }
+
+    public void setContextFromSettings(Player player, PlayerSettings settings) {
+        this.playerContext = new PlayerContext(player, settings.getWidth(), settings.getHeightLines(), settings.getForceUnicode());
+    }
+
+    @Override
+    public void initialize() {
+        initNewTab(getPlayer());
+        ChatUI.instance().getFeatureManager().initFeatures(this);
     }
 
     public PlayerList getPlayerList() {
@@ -72,16 +83,24 @@ public class ActivePlayerChatView implements PlayerChatView {
 
     private Tab createSettingsTab(UUID uuid) {
         ConfigurationNode config = Config.playerConfig(uuid);
+        PlayerSettings playerConfig = LibConfig.playerConfig(uuid);
+        SimpleConfigurationNode virtualConfig = SimpleConfigurationNode.root();
+        virtualConfig.getNode("enabled").setValue(config.getNode("enabled").getValue());
+        virtualConfig.getNode("width").setValue(playerConfig.getWidth());
+        virtualConfig.getNode("height").setValue(playerConfig.getHeight());
+        virtualConfig.getNode("unicode").setValue(playerConfig.getForceUnicode());
         ConfigEditTab.Options opts = new ConfigEditTab.Options(false, true, false, "Settings");
         ConfigEditTab.ActionHandler handler = new ConfigEditTab.ActionHandler() {
 
             @Override
             public void onNodeChanged(ConfigEditTab tab, ConfigurationNode node) {
-                onConfigChange(node);
+                PlayerSettings playerConfig = LibConfig.playerConfig(uuid);
+                onConfigChange(node, playerConfig, config);
+                LibConfig.saveConfig();
                 Config.saveConfig();
             }
         };
-        return new ConfigEditTab(config, Text.of("Settings"), opts, handler);
+        return new ConfigEditTab(virtualConfig, Text.of("Settings"), opts, handler);
     }
 
     @Override
@@ -147,14 +166,15 @@ public class ActivePlayerChatView implements PlayerChatView {
         return true;
     }
 
-    public void onConfigChange(ConfigurationNode node) {
-        if (node.getKey().equals("display-width")) {
-            this.playerContext = this.playerContext.withWidth(node.getInt());
-        } else if (node.getKey().equals("display-height")) {
-            this.playerContext = this.playerContext.withHeight(node.getInt());
-        } else if (node.getKey().equals("force-unicode")) {
-            this.playerContext = this.playerContext.withUnicode(node.getBoolean());
+    public void onConfigChange(ConfigurationNode node, PlayerSettings playerConfig, ConfigurationNode config) {
+        if (node.getKey().equals("width")) {
+            LibConfig.updatePlayer(playerConfig.withWidth(node.getInt()), getPlayer());
+        } else if (node.getKey().equals("height")) {
+            LibConfig.updatePlayer(playerConfig.withHeight(node.getInt()), getPlayer());
+        } else if (node.getKey().equals("unicode")) {
+            LibConfig.updatePlayer(playerConfig.withUnicode(node.getBoolean()), getPlayer());
         } else if (node.getKey().equals("enabled")) {
+            config.getNode("enabled").setValue(node.getValue());
             if (!node.getBoolean()) {
                 disable();
             }
@@ -167,12 +187,13 @@ public class ActivePlayerChatView implements PlayerChatView {
         for (int i = 0; i < this.playerContext.height; i++) {
             this.playerContext.getPlayer().sendMessage(Text.NEW_LINE);
         }
-        ChatUI.instance().initialize(getPlayer());
+        ChatUI.instance().reInit(getPlayer());
         this.isUpdating = false;
     }
 
     @Override
     public void onRemove() {
+        ChatUI.instance().getFeatureManager().removeFeatures(this);
         this.window.onClose();
     }
 

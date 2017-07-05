@@ -1,5 +1,7 @@
 package com.simon816.chatui;
 
+import com.simon816.chatui.lib.PlayerChatView;
+import com.simon816.chatui.lib.TopWindow;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.living.player.Player;
@@ -26,7 +28,11 @@ public class DisabledChatView implements PlayerChatView {
 
     DisabledChatView(Player player) {
         this.playerUuid = player.getUniqueId();
-        player.sendMessage(DISABLED_MESSAGE);
+    }
+
+    @Override
+    public void initialize() {
+        getPlayer().sendMessage(DISABLED_MESSAGE);
     }
 
     @Override
@@ -59,7 +65,7 @@ public class DisabledChatView implements PlayerChatView {
         if (args[0].equals("enable")) {
             Config.playerConfig(this.playerUuid).getNode("enabled").setValue(true);
             Config.saveConfig();
-            ChatUI.instance().initialize(this.getPlayer());
+            ChatUI.instance().reInit(this.getPlayer());
             return true;
         }
         return false;

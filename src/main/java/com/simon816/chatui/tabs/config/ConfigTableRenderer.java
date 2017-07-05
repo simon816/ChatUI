@@ -3,6 +3,7 @@ package com.simon816.chatui.tabs.config;
 import com.simon816.chatui.ui.table.DefaultTableRenderer;
 import com.simon816.chatui.ui.table.TableColumnRenderer;
 import com.simon816.chatui.ui.table.TableScrollHelper;
+import com.simon816.chatui.util.ExtraUtils;
 import com.simon816.chatui.util.TextUtils;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
@@ -51,7 +52,7 @@ class ConfigTableRenderer extends DefaultTableRenderer {
         }
         ConfigEditTab tab = this.control.tab;
         if (this.control.inDeleteMode()) {
-            builder.onClick(tab.clickAction(() -> this.control.deleteNode(entry.key)));
+            builder.onClick(ExtraUtils.clickAction(() -> this.control.deleteNode(entry.key), tab));
         } else if (focus) {
             builder.onClick(entry.value.createClickAction(entry, tab));
         }

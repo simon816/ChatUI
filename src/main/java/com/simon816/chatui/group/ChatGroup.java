@@ -4,6 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
 import com.simon816.chatui.ChatUI;
+import com.simon816.chatui.lib.ChatUILib;
 import com.simon816.chatui.tabs.Tab;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
@@ -27,7 +28,7 @@ class ChatGroup {
     public void onMessage(Text formatted) {
         for (Entry<UUID, ChatBufferTab> entry : this.tabs.entrySet()) {
             entry.getValue().appendMessage(formatted);
-            ChatUI.getView(entry.getKey()).update();
+            ChatUILib.getView(entry.getKey()).update();
         }
         this.messages.add(formatted);
         if (this.messages.size() > 100) {
@@ -47,7 +48,7 @@ class ChatGroup {
         this.ignoreClose = true;
         for (Entry<UUID, ChatBufferTab> entry : this.tabs.entrySet()) {
             ChatUI.getActiveView(entry.getKey()).getWindow().removeTab(entry.getValue());
-            ChatUI.getView(entry.getKey()).update();
+            ChatUILib.getView(entry.getKey()).update();
         }
         this.tabs.clear();
         this.ignoreClose = false;

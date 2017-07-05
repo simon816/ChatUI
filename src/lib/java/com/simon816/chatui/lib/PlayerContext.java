@@ -1,4 +1,4 @@
-package com.simon816.chatui;
+package com.simon816.chatui.lib;
 
 import static com.google.common.base.Preconditions.checkArgument;
 

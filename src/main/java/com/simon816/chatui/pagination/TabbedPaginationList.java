@@ -2,8 +2,9 @@ package com.simon816.chatui.pagination;
 
 import com.simon816.chatui.ActivePlayerChatView;
 import com.simon816.chatui.ChatUI;
-import com.simon816.chatui.PlayerChatView;
 import com.simon816.chatui.impl.ImplementationPagination;
+import com.simon816.chatui.lib.ChatUILib;
+import com.simon816.chatui.lib.PlayerChatView;
 import com.simon816.chatui.util.Utils;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.living.player.Player;
@@ -65,7 +66,7 @@ public class TabbedPaginationList implements PaginationList {
             this.list.sendTo(receiver);
             return;
         }
-        PlayerChatView view = ChatUI.getView(sendTo);
+        PlayerChatView view = ChatUI.unwrapView(ChatUILib.getView(sendTo));
         if (!(view instanceof ActivePlayerChatView)) {
             this.list.sendTo(receiver);
             return;

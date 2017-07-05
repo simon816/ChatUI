@@ -1,6 +1,9 @@
-package com.simon816.chatui;
+package com.simon816.chatui.lib;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.collect.Lists;
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
@@ -9,23 +12,29 @@ import org.spongepowered.api.util.Tuple;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-public class ExternalServiceView implements PlayerChatView {
+public class DefaultChatView implements PlayerChatView {
 
-    private final PlayerContext context;
+    private final UUID playerUUID;
 
+    private PlayerContext context;
     private TopWindow window;
     private boolean isUpdating;
 
     private final List<Tuple<Text, ChatType>> chatBuffer = Lists.newArrayList();
 
-    public ExternalServiceView(Player player) {
-        this.context = new PlayerContext(player, Config.DEFAULT_BUFFER_WIDTH, Config.DEFAULT_BUFFER_HEIGHT, false);
+    public DefaultChatView(Player player) {
+        this.playerUUID = player.getUniqueId();
+    }
+
+    @Override
+    public void initialize() {
     }
 
     @Override
     public Player getPlayer() {
-        return this.context.getPlayer();
+        return Sponge.getServer().getPlayer(this.playerUUID).get();
     }
 
     @Override
@@ -33,14 +42,16 @@ public class ExternalServiceView implements PlayerChatView {
         return this.window;
     }
 
-    public void setWindow(TopWindow window) {
+    public void setWindow(TopWindow window, PlayerContext context) {
         if (this.window != null) {
             this.window.onClose();
         }
         this.window = window;
         if (window != null) {
+            this.context = checkNotNull(context, "context");
             update();
         } else {
+            this.context = null;
             flushBuffer();
         }
     }
@@ -95,6 +106,7 @@ public class ExternalServiceView implements PlayerChatView {
     @Override
     public void onRemove() {
         this.window = null;
+        this.context = null;
         this.chatBuffer.clear();
     }
 

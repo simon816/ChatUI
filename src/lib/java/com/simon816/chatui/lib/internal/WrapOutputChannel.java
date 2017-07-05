@@ -1,5 +1,7 @@
-package com.simon816.chatui;
+package com.simon816.chatui.lib.internal;
 
+import com.simon816.chatui.lib.ChatUILib;
+import com.simon816.chatui.lib.PlayerChatView;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.text.Text;
@@ -31,7 +33,7 @@ public class WrapOutputChannel extends DelegateMessageChannel {
         // This could be useful as a method on ChatType.
         boolean isChatArea = type == ChatTypes.CHAT || type == ChatTypes.SYSTEM;
         if (recipient instanceof Player && isChatArea) {
-            PlayerChatView view = ChatUI.getView((Player) recipient);
+            PlayerChatView view = ChatUILib.getView((Player) recipient);
             CommandSource source = this.causeSource;
             if (sender instanceof CommandSource) {
                 source = (CommandSource) sender;

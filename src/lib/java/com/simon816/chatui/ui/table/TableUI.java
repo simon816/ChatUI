@@ -2,7 +2,7 @@ package com.simon816.chatui.ui.table;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.simon816.chatui.PlayerContext;
+import com.simon816.chatui.lib.PlayerContext;
 import com.simon816.chatui.ui.LineFactory;
 import com.simon816.chatui.ui.UIComponent;
 import com.simon816.chatui.ui.table.TableRenderer.TableViewport;

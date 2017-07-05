@@ -2,6 +2,10 @@ package com.simon816.chatui;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+import com.simon816.chatui.lib.ChatUILib;
+import com.simon816.chatui.lib.PlayerChatView;
+import com.simon816.chatui.lib.PlayerContext;
+import com.simon816.chatui.lib.TopWindow;
 import com.simon816.chatui.tabs.Tab;
 import com.simon816.chatui.tabs.TextBufferTab;
 import com.simon816.chatui.ui.AnchorPaneUI;
@@ -123,7 +127,7 @@ public class Window implements TopWindow {
 
     static final LiteralText newTab = Text.builder("[+]")
             .color(TextColors.GREEN)
-            .onClick(ChatUI.command("newtab"))
+            .onClick(ChatUILib.command("newtab"))
             .onHover(TextActions.showText(Text.of("New Tab")))
             .build();
 
@@ -182,14 +186,14 @@ public class Window implements TopWindow {
             if (tabIndex == getActiveIndex()) {
                 button.style(TextStyles.BOLD);
             } else {
-                button.onClick(ChatUI.command("settab " + tabIndex));
+                button.onClick(ChatUILib.command("settab " + tabIndex));
             }
             return button.build();
         }
 
         private Text createCloseButton(int tabIndex) {
             return Text.builder("[x]").color(TextColors.RED)
-                    .onClick(ChatUI.command("closetab " + tabIndex))
+                    .onClick(ChatUILib.command("closetab " + tabIndex))
                     .onHover(TextActions.showText(Text.of("Close")))
                     .build();
         }

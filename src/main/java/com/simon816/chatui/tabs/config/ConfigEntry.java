@@ -2,6 +2,7 @@ package com.simon816.chatui.tabs.config;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.simon816.chatui.util.ExtraUtils;
 import ninja.leaping.configurate.ConfigurationNode;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.ClickAction;
@@ -57,9 +58,9 @@ class ConfigEntry {
 
         @Override
         protected ClickAction<?> createClickAction(ConfigEntry entry, ConfigEditTab boundTab) {
-            return boundTab.clickAction(() -> {
+            return ExtraUtils.clickAction(() -> {
                 boundTab.control.setNode(this.node);
-            });
+            }, boundTab);
         }
     }
 
@@ -198,9 +199,9 @@ class ConfigEntry {
             if (boundTab.control.hasExplicitFocus(entry)) {
                 return TextActions.suggestCommand(value.toString());
             }
-            return boundTab.clickAction(() -> {
+            return ExtraUtils.clickAction(() -> {
                 this.onClick(entry, boundTab);
-            });
+            }, boundTab);
         }
 
         public abstract Object setValue(Object old, String input);

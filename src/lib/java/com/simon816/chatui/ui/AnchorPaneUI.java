@@ -1,7 +1,7 @@
 package com.simon816.chatui.ui;
 
 import com.google.common.collect.Lists;
-import com.simon816.chatui.PlayerContext;
+import com.simon816.chatui.lib.PlayerContext;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 

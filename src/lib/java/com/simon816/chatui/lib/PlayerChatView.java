@@ -1,4 +1,4 @@
-package com.simon816.chatui;
+package com.simon816.chatui.lib;
 
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.living.player.Player;
@@ -22,5 +22,7 @@ public interface PlayerChatView {
     public boolean handleCommand(String[] args);
 
     public void onRemove();
+
+    public void initialize();
 
 }

@@ -1,13 +1,13 @@
 package com.simon816.chatui.group;
 
-import com.simon816.chatui.ChatUI;
-import com.simon816.chatui.PlayerChatView;
-import com.simon816.chatui.PlayerContext;
+import com.simon816.chatui.lib.PlayerChatView;
+import com.simon816.chatui.lib.PlayerContext;
 import com.simon816.chatui.tabs.Tab;
 import com.simon816.chatui.ui.AnchorPaneUI;
 import com.simon816.chatui.ui.LineFactory;
 import com.simon816.chatui.ui.UIComponent;
 import com.simon816.chatui.ui.table.TableUI;
+import com.simon816.chatui.util.Utils;
 import org.spongepowered.api.text.LiteralText;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
@@ -44,9 +44,9 @@ class ChatGroupTab extends Tab {
             Text.Builder builder = Text.builder();
             LiteralText.Builder createButton = Text.builder("[Create Group]");
             if (ChatGroupTab.this.feature.canCreateGroup(ctx.getPlayer())) {
-                createButton.onClick(ChatUI.execClick(src -> {
+                createButton.onClick(Utils.execClick(view -> {
                     ChatGroupTab.this.createGroup = !ChatGroupTab.this.createGroup;
-                    ChatUI.getView(src).update();
+                    view.update();
                 }));
                 createButton.color(TextColors.GREEN);
                 if (ChatGroupTab.this.createGroup) {

@@ -3,7 +3,7 @@ package com.simon816.chatui.privmsg;
 import com.google.common.collect.Maps;
 import com.simon816.chatui.AbstractFeature;
 import com.simon816.chatui.ActivePlayerChatView;
-import com.simon816.chatui.PlayerChatView;
+import com.simon816.chatui.util.Utils;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColors;
@@ -17,13 +17,9 @@ public class PrivateMessageFeature extends AbstractFeature {
     private final Map<UUID, PlayerPrivateView> privateView = Maps.newHashMap();
 
     @Override
-    protected void onNewPlayerView(PlayerChatView view) {
-        if (!(view instanceof ActivePlayerChatView)) {
-            return;
-        }
-        ActivePlayerChatView activeView = (ActivePlayerChatView) view;
-        this.privateView.put(view.getPlayer().getUniqueId(), new PlayerPrivateView(activeView));
-        installMessageButton(activeView);
+    protected void onNewPlayerView(ActivePlayerChatView view) {
+        this.privateView.put(view.getPlayer().getUniqueId(), new PlayerPrivateView(view));
+        installMessageButton(view);
     }
 
     private void installMessageButton(ActivePlayerChatView view) {
@@ -33,8 +29,7 @@ public class PrivateMessageFeature extends AbstractFeature {
             Text.Builder builder = Text.builder("Message");
             if (!otherId.equals(playerId)) {
                 if (this.privateView.containsKey(otherId)) {
-                    builder.onClick(view.getPlayerList()
-                            .clickAction(() -> newPrivateMessage(playerId, otherId)))
+                    builder.onClick(Utils.execClick(() -> newPrivateMessage(playerId, otherId)))
                             .onHover(TextActions.showText(Text.of("Send a private message")))
                             .color(TextColors.BLUE).style(TextStyles.UNDERLINE);
                 } else {
@@ -51,7 +46,7 @@ public class PrivateMessageFeature extends AbstractFeature {
     }
 
     @Override
-    protected void onViewClose(PlayerChatView view) {
+    protected void onViewClose(ActivePlayerChatView view) {
         PlayerPrivateView privView = this.privateView.remove(view.getPlayer().getUniqueId());
         if (privView == null) {
             return;

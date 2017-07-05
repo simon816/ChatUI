@@ -1,12 +1,11 @@
-package com.simon816.chatui;
+package com.simon816.chatui.lib;
 
 import com.google.common.collect.Lists;
-import com.simon816.chatui.tabs.Tab;
 import com.simon816.chatui.ui.AnchorPaneUI;
 import com.simon816.chatui.ui.LineFactory;
 import com.simon816.chatui.ui.UIComponent;
 import com.simon816.chatui.util.TextUtils;
-import org.spongepowered.api.command.CommandSource;
+import com.simon816.chatui.util.Utils;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.ClickAction;
 import org.spongepowered.api.text.action.TextActions;
@@ -74,8 +73,8 @@ public class TextEditorWindow implements TopWindow {
         return true;
     }
 
-    private Consumer<CommandSource> setActiveLine(int line, boolean scroll) {
-        return src -> {
+    private Consumer<PlayerChatView> setActiveLine(int line, boolean scroll) {
+        return view -> {
             this.activeLine = line;
             while (this.activeLine >= this.lines.size()) {
                 this.lines.add("");
@@ -83,34 +82,13 @@ public class TextEditorWindow implements TopWindow {
                     this.viewOffset++;
                 }
             }
-            ChatUI.getView(src).update();
+            view.update();
         };
     }
 
     @Override
     public Text draw(PlayerContext ctx) {
         return this.pane.draw(ctx);
-    }
-
-    public Tab createTab(Text title) {
-        TextEditorWindow self = this;
-        return new Tab(title, this.pane) {
-
-            @Override
-            public void onClose() {
-                self.onClose();
-            }
-
-            @Override
-            public boolean onCommand(PlayerChatView view, String[] args) {
-                return self.onCommand(view, args);
-            }
-
-            @Override
-            public void onTextInput(PlayerChatView view, Text input) {
-                self.onTextInput(view, input);
-            }
-        };
     }
 
     void drawTextArea(PlayerContext ctx, LineFactory lineFactory) {
@@ -131,7 +109,7 @@ public class TextEditorWindow implements TopWindow {
                 lineClick = TextActions.suggestCommand(line);
                 lineBuilder.style(TextStyles.UNDERLINE);
             } else {
-                lineClick = ChatUI.execClick(setActiveLine(i, false));
+                lineClick = Utils.execClick(setActiveLine(i, false));
 
             }
             lineBuilder.onClick(lineClick);
@@ -163,7 +141,7 @@ public class TextEditorWindow implements TopWindow {
         }
         if (remaining > 0) {
             Text newlineButton = Text.builder("*").color(TextColors.GRAY)
-                    .onClick(ChatUI.execClick(setActiveLine(this.lines.size(), remaining < 2)))
+                    .onClick(Utils.execClick(setActiveLine(this.lines.size(), remaining < 2)))
                     .build();
             lineFactory.appendNewLine(newlineButton, ctx.forceUnicode);
         }
@@ -174,26 +152,26 @@ public class TextEditorWindow implements TopWindow {
 
         Text.Builder insertButton = Text.builder("[Insert Line]");
         if (this.activeLine != -1) {
-            insertButton.onClick(ChatUI.command("editor insert"));
+            insertButton.onClick(ChatUILib.command("editor insert"));
         } else {
             insertButton.color(TextColors.GRAY);
         }
 
         Text.Builder deleteButton = Text.builder(" [Delete Line]");
         if (this.activeLine != -1) {
-            deleteButton.onClick(ChatUI.command("editor delete"));
+            deleteButton.onClick(ChatUILib.command("editor delete"));
         } else {
             deleteButton.color(TextColors.GRAY);
         }
         Text.Builder scrollUpButton = Text.builder(" [Scroll Up]");
         if (this.viewOffset != 0) {
-            scrollUpButton.onClick(ChatUI.command("editor scrUp"));
+            scrollUpButton.onClick(ChatUILib.command("editor scrUp"));
         } else {
             scrollUpButton.color(TextColors.GRAY);
         }
         Text.Builder scrollDownButton = Text.builder(" [Scroll Down]");
         if (this.viewOffset < this.lines.size()) {
-            scrollDownButton.onClick(ChatUI.command("editor scrDown"));
+            scrollDownButton.onClick(ChatUILib.command("editor scrDown"));
         } else {
             scrollDownButton.color(TextColors.GRAY);
         }

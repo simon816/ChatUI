@@ -1,6 +1,6 @@
 package com.simon816.chatui.group;
 
-import com.simon816.chatui.PlayerChatView;
+import com.simon816.chatui.lib.PlayerChatView;
 import com.simon816.chatui.tabs.TextBufferTab;
 import org.spongepowered.api.text.Text;
 

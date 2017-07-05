@@ -2,9 +2,10 @@ package com.simon816.chatui.tabs.config;
 
 import com.google.common.base.Joiner;
 import com.simon816.chatui.ChatUI;
-import com.simon816.chatui.ITextDrawable;
-import com.simon816.chatui.PlayerChatView;
-import com.simon816.chatui.PlayerContext;
+import com.simon816.chatui.lib.ITextDrawable;
+import com.simon816.chatui.lib.PlayerChatView;
+import com.simon816.chatui.lib.PlayerContext;
+import com.simon816.chatui.util.Utils;
 import ninja.leaping.configurate.ConfigurationNode;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.ClickAction;
@@ -112,12 +113,12 @@ class NodeBuilder implements ITextDrawable {
     }
 
     private ClickAction<?> onClick(Runnable callback) {
-        return ChatUI.execClick(src -> {
-            if (!this.tab.isTabActive(src) || this.tab.nodeBuilder != this) {
+        return Utils.execClick(view -> {
+            if (!ChatUI.isTabActive(view, this.tab) || this.tab.nodeBuilder != this) {
                 return;
             }
             callback.run();
-            ChatUI.getView(src).update();
+            view.update();
         });
     }
 

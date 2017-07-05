@@ -1,6 +1,6 @@
 package com.simon816.chatui.ui;
 
-import com.simon816.chatui.PlayerContext;
+import com.simon816.chatui.lib.PlayerContext;
 
 import java.util.List;
 
