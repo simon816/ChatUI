@@ -5,7 +5,6 @@ import com.simon816.chatui.lib.PlayerContext;
 import com.simon816.chatui.lib.TopWindow;
 import com.simon816.chatui.ui.LineFactory;
 import com.simon816.chatui.ui.UIPane;
-import com.simon816.chatui.util.TextUtils;
 import org.spongepowered.api.text.Text;
 
 public class WindowTab extends Tab {
@@ -43,7 +42,7 @@ public class WindowTab extends Tab {
         @Override
         public void draw(PlayerContext ctx, LineFactory lineFactory) {
             Text result = this.window.draw(ctx);
-            lineFactory.addAll(TextUtils.splitLines(result, ctx.width, ctx.forceUnicode), ctx.forceUnicode);
+            lineFactory.addAll(ctx.utils().splitLines(result, ctx.width), ctx);
         }
 
     }

@@ -22,7 +22,7 @@ public class CanvasUI implements UIComponent {
         if (this.context == null) {
             return 0;
         }
-        return this.context.createDrawContext(0, 0).getMinWidth();
+        return this.context.createDrawContext(ctx).getMinWidth();
     }
 
     @SuppressWarnings("unchecked")
@@ -46,12 +46,12 @@ public class CanvasUI implements UIComponent {
         if (this.context == null) {
             return;
         }
-        LineDrawingContext drawContext = this.context.createDrawContext(ctx.width, ctx.height);
+        LineDrawingContext drawContext = this.context.createDrawContext(ctx);
         for (Layer layer : this.context.layers) {
             layer.draw(drawContext);
         }
         Text[] rendered = drawContext.render();
-        lineFactory.addAll(rendered, ctx.forceUnicode);
+        lineFactory.addAll(rendered, ctx);
     }
 
     public enum Context {
@@ -65,9 +65,7 @@ public class CanvasUI implements UIComponent {
 
         public abstract Context getType();
 
-        protected LineDrawingContext createDrawContext(int width, int height) {
-            return new LineDrawingContext(width, height);
-        }
+        protected abstract LineDrawingContext createDrawContext(PlayerContext ctx);
 
         public void addLayer(Layer layer) {
             this.layers.add(layer);

@@ -50,7 +50,7 @@ class ChatGroupTab extends Tab {
                 }));
                 createButton.color(TextColors.GREEN);
                 if (ChatGroupTab.this.createGroup) {
-                    lineFactory.appendNewLine(Text.of("Type group name in chat:"), ctx.forceUnicode);
+                    lineFactory.appendNewLine(Text.of("Type group name in chat:"), ctx);
                     createButton.content("[Cancel]");
                     createButton.color(TextColors.RED);
                 }
@@ -59,7 +59,7 @@ class ChatGroupTab extends Tab {
                 createButton.color(TextColors.GRAY);
             }
             builder.append(createButton.build());
-            lineFactory.appendNewLine(builder.build(), ctx.forceUnicode);
+            lineFactory.appendNewLine(builder.build(), ctx);
         }
     }
 

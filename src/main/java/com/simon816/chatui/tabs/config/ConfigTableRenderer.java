@@ -1,10 +1,10 @@
 package com.simon816.chatui.tabs.config;
 
+import com.simon816.chatui.lib.PlayerContext;
 import com.simon816.chatui.ui.table.DefaultTableRenderer;
 import com.simon816.chatui.ui.table.TableColumnRenderer;
 import com.simon816.chatui.ui.table.TableScrollHelper;
 import com.simon816.chatui.util.ExtraUtils;
-import com.simon816.chatui.util.TextUtils;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
@@ -70,13 +70,13 @@ class ConfigTableRenderer extends DefaultTableRenderer {
         }
 
         @Override
-        public List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode) {
-            int fractionWidth = calculateEqualWidth(tableWidth, 2, forceUnicode);
+        public List<Text> renderCell(Object value, int row, int tableWidth, PlayerContext ctx) {
+            int fractionWidth = calculateEqualWidth(tableWidth, 2, ctx.forceUnicode);
             ConfigEntry entry = ConfigTableRenderer.this.control.getEntries().get(row);
 
             Text keyText = getBuilder(entry).append(Text.of(value)).build();
 
-            return TextUtils.splitLines(keyText, fractionWidth, forceUnicode);
+            return ctx.utils().splitLines(keyText, fractionWidth);
         }
 
         @Override
@@ -92,8 +92,8 @@ class ConfigTableRenderer extends DefaultTableRenderer {
         }
 
         @Override
-        public List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode) {
-            int fractionWidth = calculateEqualWidth(tableWidth, 2, forceUnicode);
+        public List<Text> renderCell(Object value, int row, int tableWidth, PlayerContext ctx) {
+            int fractionWidth = calculateEqualWidth(tableWidth, 2, ctx.forceUnicode);
             ConfigEntry entry = ConfigTableRenderer.this.control.getEntries().get(row);
 
             Text.Builder builder = getBuilder(entry);
@@ -104,7 +104,7 @@ class ConfigTableRenderer extends DefaultTableRenderer {
             }
             builder.append(valueText);
 
-            return TextUtils.splitLines(builder.build(), fractionWidth, forceUnicode);
+            return ctx.utils().splitLines(builder.build(), fractionWidth);
         }
 
         @Override

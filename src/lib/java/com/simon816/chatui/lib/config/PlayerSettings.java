@@ -1,7 +1,10 @@
 package com.simon816.chatui.lib.config;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.base.Objects;
 import com.simon816.chatui.lib.PlayerContext;
+import com.simon816.chatui.util.FontData;
 import ninja.leaping.configurate.objectmapping.Setting;
 import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 import org.spongepowered.api.entity.living.player.Player;
@@ -23,13 +26,17 @@ public class PlayerSettings {
     @Setting("force-unicode")
     private boolean forceUnicode = false;
 
+    @Setting("font-data")
+    private String fontData = null;
+
     public PlayerSettings() {
     }
 
-    public PlayerSettings(int width, int height, boolean forceUnicode) {
+    public PlayerSettings(int width, int height, boolean forceUnicode, String fontData) {
         this.width = width;
         this.height = height;
         this.forceUnicode = forceUnicode;
+        this.fontData = fontData;
     }
 
     public int getWidth() {
@@ -37,7 +44,8 @@ public class PlayerSettings {
     }
 
     public PlayerSettings withWidth(int width) {
-        return new PlayerSettings(width, this.height, this.forceUnicode);
+        checkArgument(width >= 1, "Width must be at least one");
+        return new PlayerSettings(width, this.height, this.forceUnicode, this.fontData);
     }
 
     public int getHeightLines() {
@@ -49,7 +57,8 @@ public class PlayerSettings {
     }
 
     public PlayerSettings withHeight(int height) {
-        return new PlayerSettings(this.width, height, this.forceUnicode);
+        checkArgument(height >= 1, "Height must be at least one");
+        return new PlayerSettings(this.width, height, this.forceUnicode, this.fontData);
     }
 
     public boolean getForceUnicode() {
@@ -57,11 +66,23 @@ public class PlayerSettings {
     }
 
     public PlayerSettings withUnicode(boolean forceUnicode) {
-        return new PlayerSettings(this.width, this.height, forceUnicode);
+        return new PlayerSettings(this.width, this.height, forceUnicode, this.fontData);
+    }
+
+    public String getFontData() {
+        return this.fontData;
+    }
+
+    public PlayerSettings withFontData(String fontData) {
+        FontData.checkValid(fontData);
+        if (fontData != null && fontData.isEmpty()) {
+            fontData = null;
+        }
+        return new PlayerSettings(this.width, this.height, this.forceUnicode, fontData);
     }
 
     public PlayerContext createContext(Player player) {
-        return new PlayerContext(player, getWidth(), getHeightLines(), getForceUnicode());
+        return new PlayerContext(player, getWidth(), getHeightLines(), getForceUnicode(), FontData.fromString(getFontData()));
     }
 
     @Override
@@ -73,7 +94,8 @@ public class PlayerSettings {
             return false;
         }
         PlayerSettings settings = (PlayerSettings) obj;
-        return settings.width == this.width && settings.height == this.height && settings.forceUnicode == this.forceUnicode;
+        return settings.width == this.width && settings.height == this.height && settings.forceUnicode == this.forceUnicode
+                && ((this.fontData == null && settings.fontData == null) || (this.fontData != null && this.fontData.equals(settings.fontData)));
     }
 
     @Override
@@ -82,6 +104,7 @@ public class PlayerSettings {
                 .add("width", this.width)
                 .add("height", this.height)
                 .add("forceUnicode", this.forceUnicode)
+                .add("fontData", this.fontData)
                 .toString();
     }
 }

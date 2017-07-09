@@ -51,13 +51,13 @@ public abstract class TextBufferTab extends Tab {
             int remainingHeight = ctx.height;
             bufferLoop: for (int i = this.viewOffset; i < this.buffer.size(); i++) {
                 Text message = this.buffer.get(i);
-                List<Text> lines = TextUtils.splitLines(message, ctx.width, ctx.getLocale(), ctx.forceUnicode);
+                List<Text> lines = ctx.utils().splitLines(message, ctx.width);
                 for (int j = 0; j < lines.size(); j++) {
                     Text line = lines.get(j);
                     if (--remainingHeight <= 0) {
                         break bufferLoop;
                     }
-                    lineFactory.insertNewLine(j, line, ctx.forceUnicode);
+                    lineFactory.insertNewLine(j, line, ctx);
                 }
             }
         }
@@ -85,7 +85,7 @@ public abstract class TextBufferTab extends Tab {
 
         @Override
         public void draw(PlayerContext ctx, LineFactory lineFactory) {
-            TextBuffer toolbar = new TextBuffer(ctx.forceUnicode);
+            TextBuffer toolbar = new TextBuffer(ctx);
             Text.Builder scrollUpButton = Text.builder("[Scroll Up]");
             if (this.buffer.canScrollUp()) {
                 scrollUpButton.onClick(Utils.execClick(view -> {
@@ -108,7 +108,7 @@ public abstract class TextBufferTab extends Tab {
             toolbar.append(scrollDownButton.build());
             StringBuilder spaces = new StringBuilder();
             TextUtils.padSpaces(spaces, ctx.width - toolbar.getWidth());
-            lineFactory.appendNewLine(Text.builder(spaces.toString()).append(toolbar.getContents()).build(), ctx.forceUnicode);
+            lineFactory.appendNewLine(Text.builder(spaces.toString()).append(toolbar.getContents()).build(), ctx);
         }
     }
 

@@ -14,7 +14,6 @@ import com.simon816.chatui.ui.table.TableModel;
 import com.simon816.chatui.ui.table.TableScrollHelper;
 import com.simon816.chatui.ui.table.TableUI;
 import com.simon816.chatui.util.ExtraUtils;
-import com.simon816.chatui.util.TextUtils;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.entity.living.player.User;
@@ -72,7 +71,7 @@ class SubjectListPane extends AnchorPaneUI {
                                         .color(SubjectListPane.this.tableScroll.canScrollDown() ? TextColors.WHITE : TextColors.GRAY)
                                         .onClick(ExtraUtils.clickAction(SubjectListPane.this.tableScroll::scrollDown, SubjectListPane.this.tab))
                                         .build())
-                        .build(), ctx.forceUnicode);
+                        .build(), ctx);
             }
         };
     }
@@ -138,9 +137,8 @@ class SubjectListPane extends AnchorPaneUI {
                     return new DefaultColumnRenderer() {
 
                         @Override
-                        public List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode) {
-                            return TextUtils.splitLines(renderSubject((Subject) value), tableWidth,
-                                    forceUnicode);
+                        public List<Text> renderCell(Object value, int row, int tableWidth, PlayerContext ctx) {
+                            return ctx.utils().splitLines(renderSubject((Subject) value), tableWidth);
                         }
 
                     };
@@ -149,7 +147,7 @@ class SubjectListPane extends AnchorPaneUI {
                     return new DefaultColumnRenderer() {
 
                         @Override
-                        public List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode) {
+                        public List<Text> renderCell(Object value, int row, int tableWidth, PlayerContext ctx) {
                             return Collections.singletonList(Text.of(TextColors.RED, ExtraUtils.clickAction(view -> {
                                 delete(view.getPlayer(), row);
                             }, SubjectListPane.this.tab), "X"));

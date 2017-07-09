@@ -1,6 +1,6 @@
 package com.simon816.chatui.ui.table;
 
-import com.simon816.chatui.util.TextUtils;
+import com.simon816.chatui.lib.PlayerContext;
 import org.spongepowered.api.text.Text;
 
 import java.util.List;
@@ -8,8 +8,8 @@ import java.util.List;
 public class DefaultColumnRenderer implements TableColumnRenderer {
 
     @Override
-    public List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode) {
-        return TextUtils.splitLines(Text.of(value), getPrefWidth(), forceUnicode);
+    public List<Text> renderCell(Object value, int row, int tableWidth, PlayerContext ctx) {
+        return ctx.utils().splitLines(Text.of(value), getPrefWidth());
     }
 
     @Override

@@ -86,26 +86,37 @@ public class ActivePlayerChatView implements PlayerChatView {
         this.newTab.addButton("Settings", new NewTab.LaunchTabAction(() -> createSettingsTab(uuid)));
     }
 
-    private Tab createSettingsTab(UUID uuid) {
+    static ConfigurationNode createConfigNode(UUID uuid) {
         ConfigurationNode config = Config.playerConfig(uuid);
         PlayerSettings playerConfig = LibConfig.playerConfig(uuid);
-        SimpleConfigurationNode virtualConfig = SimpleConfigurationNode.root();
+        ConfigurationNode virtualConfig = SimpleConfigurationNode.root();
         virtualConfig.getNode("enabled").setValue(config.getNode("enabled").getValue());
         virtualConfig.getNode("width").setValue(playerConfig.getWidth());
         virtualConfig.getNode("height").setValue(playerConfig.getHeight());
         virtualConfig.getNode("unicode").setValue(playerConfig.getForceUnicode());
+        virtualConfig.getNode("font").setValue(playerConfig.getFontData() == null ? "" : playerConfig.getFontData());
+        return virtualConfig;
+    }
+
+    private Tab createSettingsTab(UUID uuid) {
         ConfigEditTab.Options opts = new ConfigEditTab.Options(false, true, false, "Settings");
         ConfigEditTab.ActionHandler handler = new ConfigEditTab.ActionHandler() {
 
             @Override
             public void onNodeChanged(ConfigEditTab tab, ConfigurationNode node) {
                 PlayerSettings playerConfig = LibConfig.playerConfig(uuid);
-                onConfigChange(node, playerConfig, config);
+                ConfigurationNode config = Config.playerConfig(uuid);
+                try {
+                    onConfigChange(node, playerConfig, config);
+                } catch (Exception e) {
+                    tab.reloadRootNode(createConfigNode(uuid));
+                    return;
+                }
                 LibConfig.saveConfig();
                 Config.saveConfig();
             }
         };
-        return new ConfigEditTab(virtualConfig, Text.of("Settings"), opts, handler);
+        return new ConfigEditTab(createConfigNode(uuid), Text.of("Settings"), opts, handler);
     }
 
     @Override
@@ -199,6 +210,8 @@ public class ActivePlayerChatView implements PlayerChatView {
             LibConfig.updatePlayer(playerConfig.withHeight(node.getInt()), getPlayer());
         } else if (node.getKey().equals("unicode")) {
             LibConfig.updatePlayer(playerConfig.withUnicode(node.getBoolean()), getPlayer());
+        } else if (node.getKey().equals("font")) {
+            LibConfig.updatePlayer(playerConfig.withFontData(node.getString()), getPlayer());
         } else if (node.getKey().equals("enabled")) {
             config.getNode("enabled").setValue(node.getValue());
             if (!node.getBoolean()) {

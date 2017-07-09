@@ -96,6 +96,14 @@ public class ChatUILib {
         CommandSpec cmd = CommandSpec.builder()
                 .child(LibConfig.createCommand(), "config")
                 .child(ClickCallback.createCommand(), "exec")
+                .child(CommandSpec.builder()
+                        .executor((src, args) -> {
+                            if (!(src instanceof Player)) {
+                                throw new CommandException(Text.of("source must be a player"));
+                            }
+                            getView(src).handleIncoming(Text.EMPTY);
+                            return CommandResult.success();
+                        }).build(), "empty")
                 .arguments(GenericArguments.remainingRawJoinedStrings(argParam))
                 .executor((src, ctx) -> {
                     if (!(src instanceof Player)) {

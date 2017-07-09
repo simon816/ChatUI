@@ -60,10 +60,21 @@ public class LibConfig {
                             return CommandResult.success();
                         })
                         .build(), "unicode")
+                .child(CommandSpec.builder()
+                        .arguments(GenericArguments.optional(GenericArguments.string(Text.of("font data"))))
+                        .executor((src, args) -> {
+                            updatePlayer(config(src).withFontData(args.<String>getOne("font data").orElse(null)), src);
+                            saveConfig();
+                            src.sendMessage(Text.of("Font Data setting changed"));
+                            return CommandResult.success();
+                        }).build(), "font")
                 .executor((src, args) -> {
                     PlayerSettings settings = config(src);
-                    src.sendMessages(Text.of("Settings:"), Text.of("Width: " + settings.getWidth()), Text.of("Height: " + settings.getHeight()),
-                            Text.of("Force Unicode: " + settings.getForceUnicode()));
+                    src.sendMessages(Text.of("Settings:"),
+                            Text.of("Width: " + settings.getWidth()),
+                            Text.of("Height: " + settings.getHeight()),
+                            Text.of("Force Unicode: " + settings.getForceUnicode()),
+                            Text.of("Font data: " + (settings.getFontData() == null ? "vanilla" : "custom")));
                     return CommandResult.success();
                 })
                 .build();

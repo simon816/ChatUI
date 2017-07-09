@@ -94,13 +94,13 @@ public class TextEditorWindow implements TopWindow {
     void drawTextArea(PlayerContext ctx, LineFactory lineFactory) {
         int remaining = ctx.height;
         int largestLineNum = Math.min(this.lines.size(), this.viewOffset + ctx.height);
-        int largestNumWidth = TextUtils.getStringWidth(String.valueOf(largestLineNum), false, ctx.forceUnicode);
+        int largestNumWidth = ctx.utils().getStringWidth(String.valueOf(largestLineNum), false);
         char sp = ' ';
-        int spWidth = TextUtils.getWidth(sp, false, false);
+        int spWidth = ctx.utils().getWidth(sp, false);
 
         for (int i = this.viewOffset; i < this.lines.size(); i++) {
             String line = this.lines.get(i);
-            List<String> splitLines = TextUtils.splitLines(line, ctx.width - largestNumWidth - spWidth, ctx.forceUnicode);
+            List<String> splitLines = ctx.utils().splitLines(line, ctx.width - largestNumWidth - spWidth);
 
             Text.Builder lineBuilder = Text.builder();
 
@@ -120,7 +120,7 @@ public class TextEditorWindow implements TopWindow {
                 StringBuilder sideLine = new StringBuilder();
                 if (j == 0) {
                     String ourLine = String.valueOf(i + 1); // + 1 for 1-indexed
-                    TextUtils.padSpaces(sideLine, largestNumWidth - TextUtils.getStringWidth(ourLine, false, ctx.forceUnicode));
+                    TextUtils.padSpaces(sideLine, largestNumWidth - ctx.utils().getStringWidth(ourLine, false));
                     sideLine.append(ourLine);
                 } else {
                     TextUtils.padSpaces(sideLine, largestNumWidth);
@@ -128,7 +128,7 @@ public class TextEditorWindow implements TopWindow {
                 sideLine.append(sp);
                 lineBuilder.append(Text.builder(sideLine.toString()).color(TextColors.GRAY).build());
                 lineBuilder.append(Text.of(outputLine));
-                lineFactory.appendNewLine(lineBuilder.build(), ctx.forceUnicode);
+                lineFactory.appendNewLine(lineBuilder.build(), ctx);
                 lineBuilder.removeAll();
                 remaining--;
                 if (remaining == 0) {
@@ -143,7 +143,7 @@ public class TextEditorWindow implements TopWindow {
             Text newlineButton = Text.builder("*").color(TextColors.GRAY)
                     .onClick(Utils.execClick(setActiveLine(this.lines.size(), remaining < 2)))
                     .build();
-            lineFactory.appendNewLine(newlineButton, ctx.forceUnicode);
+            lineFactory.appendNewLine(newlineButton, ctx);
         }
     }
 
@@ -176,7 +176,7 @@ public class TextEditorWindow implements TopWindow {
             scrollDownButton.color(TextColors.GRAY);
         }
         toolbar.append(insertButton.build(), deleteButton.build(), scrollUpButton.build(), scrollDownButton.build());
-        lineFactory.appendNewLine(toolbar.build(), ctx.forceUnicode);
+        lineFactory.appendNewLine(toolbar.build(), ctx);
     }
 
     private class TextArea implements UIComponent {

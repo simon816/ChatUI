@@ -14,7 +14,6 @@ import com.simon816.chatui.ui.table.TableModel;
 import com.simon816.chatui.ui.table.TableScrollHelper;
 import com.simon816.chatui.ui.table.TableUI;
 import com.simon816.chatui.util.ExtraUtils;
-import com.simon816.chatui.util.TextUtils;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.service.context.Context;
 import org.spongepowered.api.service.permission.Subject;
@@ -119,10 +118,10 @@ class SubjectViewer extends AnchorPaneUI {
                     return new DefaultColumnRenderer() {
 
                         @Override
-                        public List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode) {
-                            return TextUtils.splitLines(Text.of(ExtraUtils.clickAction(view -> {
+                        public List<Text> renderCell(Object value, int row, int tableWidth, PlayerContext ctx) {
+                            return ctx.utils().splitLines(Text.of(ExtraUtils.clickAction(view -> {
                                 toggle(view.getPlayer(), row);
-                            }, SubjectViewer.this.tab), value), tableWidth - getPrefWidth(), forceUnicode);
+                            }, SubjectViewer.this.tab), value), tableWidth - getPrefWidth());
                         }
                     };
                 }
@@ -130,12 +129,12 @@ class SubjectViewer extends AnchorPaneUI {
                     return new DefaultColumnRenderer() {
 
                         @Override
-                        public List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode) {
+                        public List<Text> renderCell(Object value, int row, int tableWidth, PlayerContext ctx) {
                             boolean v = (Boolean) value;
                             TextColor color = v ? TextColors.GREEN : TextColors.RED;
-                            return TextUtils.splitLines(Text.of(color, ExtraUtils.clickAction(view -> {
+                            return ctx.utils().splitLines(Text.of(color, ExtraUtils.clickAction(view -> {
                                 toggle(view.getPlayer(), row);
-                            }, SubjectViewer.this.tab), value), getPrefWidth(), forceUnicode);
+                            }, SubjectViewer.this.tab), value), getPrefWidth());
                         }
                     };
                 }
@@ -143,7 +142,7 @@ class SubjectViewer extends AnchorPaneUI {
                     return new DefaultColumnRenderer() {
 
                         @Override
-                        public List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode) {
+                        public List<Text> renderCell(Object value, int row, int tableWidth, PlayerContext ctx) {
                             return Collections.singletonList(Text.of(TextColors.RED, ExtraUtils.clickAction(view -> {
                                 delete(view.getPlayer(), row);
                             }, SubjectViewer.this.tab), "X"));
@@ -180,7 +179,7 @@ class SubjectViewer extends AnchorPaneUI {
             @Override
             public void draw(PlayerContext ctx, LineFactory lineFactory) {
                 if (getPerms().size() == 0) {
-                    lineFactory.appendNewLine(Text.of("No permissions set"), ctx.forceUnicode);
+                    lineFactory.appendNewLine(Text.of("No permissions set"), ctx);
                 }
             }
         };
@@ -204,7 +203,7 @@ class SubjectViewer extends AnchorPaneUI {
 
             @Override
             public void draw(PlayerContext ctx, LineFactory lineFactory) {
-                lineFactory.appendNewLine(Text.of(TextStyles.BOLD, TextColors.RED, SubjectViewer.this.activeSubj.getIdentifier()), ctx.forceUnicode);
+                lineFactory.appendNewLine(Text.of(TextStyles.BOLD, TextColors.RED, SubjectViewer.this.activeSubj.getIdentifier()), ctx);
                 Text.Builder builder = Text.builder("Parents: ");
                 if (SubjectViewer.this.activeSubj.getParents(SubjectViewer.this.activeContext).isEmpty()) {
                     builder.append(Text.of("None"));
@@ -217,7 +216,7 @@ class SubjectViewer extends AnchorPaneUI {
                             .build());
                     builder.append(Text.of(", "));
                 }
-                lineFactory.appendNewLine(builder.build(), ctx.forceUnicode);
+                lineFactory.appendNewLine(builder.build(), ctx);
                 builder = Text.builder("Current Context: ");
                 if (SubjectViewer.this.activeContext.isEmpty()) {
                     builder.append(Text.of("global"));
@@ -225,7 +224,7 @@ class SubjectViewer extends AnchorPaneUI {
                 for (Context context : SubjectViewer.this.activeContext) {
                     builder.append(Text.of(context.getType() + "[" + context.getName() + "], "));
                 }
-                lineFactory.appendNewLine(builder.build(), ctx.forceUnicode);
+                lineFactory.appendNewLine(builder.build(), ctx);
             }
         };
     }
@@ -253,7 +252,7 @@ class SubjectViewer extends AnchorPaneUI {
                                         () -> {
                                             SubjectViewer.this.tableScroll.scrollDown();
                                         }))
-                        .build(), ctx.forceUnicode);
+                        .build(), ctx);
                 lineFactory.appendNewLine(Text.builder()
                         .append(
                                 simpleLink(TextColors.BLUE, "[Return]", () -> {
@@ -272,7 +271,7 @@ class SubjectViewer extends AnchorPaneUI {
                                 simpleLink(TextColors.DARK_AQUA, " Default: " + getDefault().toString(), view -> {
                                     cycleDefault(view.getPlayer());
                                 }))
-                        .build(), ctx.forceUnicode);
+                        .build(), ctx);
             }
 
             private Text simpleLink(TextColor color, String text, Runnable r) {

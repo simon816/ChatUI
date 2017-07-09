@@ -10,7 +10,6 @@ import com.simon816.chatui.ui.LineFactory;
 import com.simon816.chatui.ui.UIComponent;
 import com.simon816.chatui.ui.table.TableScrollHelper;
 import com.simon816.chatui.ui.table.TableUI;
-import com.simon816.chatui.util.TextUtils;
 import ninja.leaping.configurate.ConfigurationNode;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
@@ -42,7 +41,7 @@ public class ConfigEditTab extends Tab {
             if (tab.control.options.canDelete) {
                 builder.append(Text.of(clickAction(tab.control::setDeleteModeOrDeleteNode, tab), TextColors.RED, " [Delete]"));
             }
-            lineFactory.appendNewLine(builder.build(), ctx.forceUnicode);
+            lineFactory.appendNewLine(builder.build(), ctx);
         }
 
     }
@@ -73,7 +72,7 @@ public class ConfigEditTab extends Tab {
                     builder.append(Text.of("->"));
                 }
             }
-            lineFactory.addAll(TextUtils.splitLines(builder.build(), ctx.width, ctx.forceUnicode), ctx.forceUnicode);
+            lineFactory.addAll(ctx.utils().splitLines(builder.build(), ctx.width), ctx);
         }
 
     }
@@ -133,12 +132,11 @@ public class ConfigEditTab extends Tab {
     public void draw(PlayerContext ctx, LineFactory lineFactory) {
         if (this.nodeBuilder != null) {
             Text rendered = this.nodeBuilder.draw(ctx);
-            lineFactory.addAll(TextUtils.splitLines(rendered, ctx.width, ctx.forceUnicode), ctx.forceUnicode);
+            lineFactory.addAll(ctx.utils().splitLines(rendered, ctx.width), ctx);
             return;
         }
         super.draw(ctx, lineFactory);
     }
-
 
     @Override
     public void onTextInput(PlayerChatView view, Text input) {
@@ -158,8 +156,8 @@ public class ConfigEditTab extends Tab {
     }
 
     public void reloadRootNode(ConfigurationNode root) {
-        this.control.reloadRoot(root.getNode(this.control.getNode().getPath()));
+        ConfigurationNode oldNode = this.control.getNode();
+        this.control.reloadRoot(oldNode.getKey() == null && oldNode.getParent() == null ? root : root.getNode(oldNode.getPath()));
     }
-
 
 }

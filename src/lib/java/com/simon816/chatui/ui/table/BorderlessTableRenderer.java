@@ -1,5 +1,6 @@
 package com.simon816.chatui.ui.table;
 
+import com.simon816.chatui.lib.PlayerContext;
 import com.simon816.chatui.util.TextUtils;
 import org.spongepowered.api.text.Text;
 
@@ -13,7 +14,7 @@ public class BorderlessTableRenderer implements TableRenderer {
     }
 
     @Override
-    public Text applySideBorders(int rowIndex, List<Text> line, int[] colMaxWidths, boolean forceUnicode) {
+    public Text applySideBorders(int rowIndex, List<Text> line, int[] colMaxWidths, PlayerContext ctx) {
         Text.Builder builder = Text.builder();
         for (int col = 0; col < colMaxWidths.length; col++) {
             Text part = null;
@@ -22,7 +23,7 @@ public class BorderlessTableRenderer implements TableRenderer {
                 part = line.get(col);
             }
             if (part != null) {
-                partWidth = TextUtils.getWidth(part, forceUnicode);
+                partWidth = ctx.utils().getWidth(part);
             }
             StringBuilder spaces = new StringBuilder();
             TextUtils.padSpaces(spaces, colMaxWidths[col] - partWidth);
@@ -36,7 +37,7 @@ public class BorderlessTableRenderer implements TableRenderer {
     }
 
     @Override
-    public Text createBorder(TableModel model, int rowIndex, int[] colMaxWidths, boolean forceUnicode) {
+    public Text createBorder(TableModel model, int rowIndex, int[] colMaxWidths, PlayerContext ctx) {
         return null;
     }
 

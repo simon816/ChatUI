@@ -6,7 +6,6 @@ import com.simon816.chatui.lib.PlayerContext;
 import com.simon816.chatui.ui.LineFactory;
 import com.simon816.chatui.ui.UIComponent;
 import com.simon816.chatui.ui.table.TableRenderer.TableViewport;
-import com.simon816.chatui.util.TextUtils;
 import org.spongepowered.api.text.Text;
 
 import java.util.Collection;
@@ -79,10 +78,10 @@ public class TableUI implements UIComponent {
                 while (this.columnRenderers.size() <= column) {
                     this.columnRenderers.add(this.renderer.createColumnRenderer(column + cOff++));
                 }
-                List<Text> lines = this.columnRenderers.get(column).renderCell(value, row, ctx.width, ctx.forceUnicode);
+                List<Text> lines = this.columnRenderers.get(column).renderCell(value, row, ctx.width, ctx);
                 for (int i = 0; i < lines.size(); i++) {
                     Text line = lines.get(i);
-                    int width = TextUtils.getWidth(line, ctx.forceUnicode);
+                    int width = ctx.utils().getWidth(line);
                     columnMaxWidths.put(column, Math.max(columnMaxWidths.getOrDefault(column, 0), width));
                     List<Text> correctLine = i < cellLines.size() ? cellLines.get(i) : null;
                     if (correctLine == null) {
@@ -112,23 +111,23 @@ public class TableUI implements UIComponent {
         int[] colMaxWidths = new int[colMaxes.size()];
         int i = 0;
         for (Integer max : colMaxes) {
-            colMaxWidths[i] = this.renderer.modifyMaxWidth(i++, max, ctx.forceUnicode);
+            colMaxWidths[i] = this.renderer.modifyMaxWidth(i++, max, ctx);
         }
-        Text border = this.renderer.createBorder(this.model, viewport.getFirstRowIndex() - 1, colMaxWidths, ctx.forceUnicode);
+        Text border = this.renderer.createBorder(this.model, viewport.getFirstRowIndex() - 1, colMaxWidths, ctx);
         if (border != null) {
-            lineFactory.appendNewLine(border, ctx.forceUnicode);
+            lineFactory.appendNewLine(border, ctx);
         }
         for (Entry<Integer, List<List<Text>>> row : rowLines.entrySet()) {
             int rowIndex = row.getKey();
             List<List<Text>> rowLineList = row.getValue();
             for (List<Text> colGroup : rowLineList) {
-                Text lineSegment = this.renderer.applySideBorders(rowIndex, colGroup, colMaxWidths, ctx.forceUnicode);
-                lineFactory.appendNewLine(lineSegment, ctx.forceUnicode);
+                Text lineSegment = this.renderer.applySideBorders(rowIndex, colGroup, colMaxWidths, ctx);
+                lineFactory.appendNewLine(lineSegment, ctx);
             }
             if (lineFactory.linesRemaining(ctx) > 0) {
-                border = this.renderer.createBorder(this.model, rowIndex, colMaxWidths, ctx.forceUnicode);
+                border = this.renderer.createBorder(this.model, rowIndex, colMaxWidths, ctx);
                 if (border != null) {
-                    lineFactory.appendNewLine(border, ctx.forceUnicode);
+                    lineFactory.appendNewLine(border, ctx);
                 }
             }
         }

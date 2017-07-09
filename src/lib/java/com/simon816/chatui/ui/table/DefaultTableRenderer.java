@@ -1,5 +1,7 @@
 package com.simon816.chatui.ui.table;
 
+import com.simon816.chatui.lib.PlayerContext;
+import com.simon816.chatui.util.FontData;
 import com.simon816.chatui.util.TextUtils;
 import com.simon816.chatui.util.Utils;
 import org.spongepowered.api.text.Text;
@@ -23,10 +25,10 @@ public class DefaultTableRenderer implements TableRenderer {
         }
     };
 
-    protected static final int BORDER_MULTIPLE_A = TextUtils.getWidth('┼', false, false);
-    protected static final int BORDER_SIDE_WIDTH_A = TextUtils.getWidth('│', false, false);
-    protected static final int BORDER_MULTIPLE_U = TextUtils.getWidth('┼', false, true);
-    protected static final int BORDER_SIDE_WIDTH_U = TextUtils.getWidth('│', false, true);
+    protected static final int BORDER_MULTIPLE_A = FontData.VANILLA.getWidthInt('┼', false, false);
+    protected static final int BORDER_SIDE_WIDTH_A = FontData.VANILLA.getWidthInt('│', false, false);
+    protected static final int BORDER_MULTIPLE_U = FontData.VANILLA.getWidthInt('┼', false, true);
+    protected static final int BORDER_SIDE_WIDTH_U = FontData.VANILLA.getWidthInt('│', false, true);
 
     @Override
     public TableViewport getViewport() {
@@ -44,9 +46,9 @@ public class DefaultTableRenderer implements TableRenderer {
     }
 
     @Override
-    public int modifyMaxWidth(int index, int max, boolean forceUnicode) {
-        final int mul = forceUnicode ? BORDER_MULTIPLE_U : BORDER_MULTIPLE_A;
-        final int side = forceUnicode ? BORDER_SIDE_WIDTH_U : BORDER_SIDE_WIDTH_A;
+    public int modifyMaxWidth(int index, int max, PlayerContext ctx) {
+        final int mul = ctx.forceUnicode ? BORDER_MULTIPLE_U : BORDER_MULTIPLE_A;
+        final int side = ctx.forceUnicode ? BORDER_SIDE_WIDTH_U : BORDER_SIDE_WIDTH_A;
         return Utils.ensureMultiple(max + side, mul) - side;
     }
 
@@ -55,7 +57,7 @@ public class DefaultTableRenderer implements TableRenderer {
     }
 
     @Override
-    public Text applySideBorders(int rowIndex, List<Text> line, int[] colMaxWidths, boolean forceUnicode) {
+    public Text applySideBorders(int rowIndex, List<Text> line, int[] colMaxWidths, PlayerContext ctx) {
         Text.Builder builder = Text.builder();
         Text bar = TextUtils.charCache('│');
         for (int i = 0; i < colMaxWidths.length; i++) {
@@ -65,7 +67,7 @@ public class DefaultTableRenderer implements TableRenderer {
                 part = line.get(i);
             }
             if (part != null) {
-                partWidth = TextUtils.getWidth(part, forceUnicode);
+                partWidth = ctx.utils().getWidth(part);
             }
             StringBuilder spaces = new StringBuilder();
             TextUtils.padSpaces(spaces, colMaxWidths[i] - partWidth);
@@ -104,9 +106,9 @@ public class DefaultTableRenderer implements TableRenderer {
     }
 
     @Override
-    public Text createBorder(TableModel model, int rowIndex, int[] colMaxWidths, boolean forceUnicode) {
-        final int mul = forceUnicode ? BORDER_MULTIPLE_U : BORDER_MULTIPLE_A;
-        final int side = forceUnicode ? BORDER_SIDE_WIDTH_U : BORDER_SIDE_WIDTH_A;
+    public Text createBorder(TableModel model, int rowIndex, int[] colMaxWidths, PlayerContext ctx) {
+        final int mul = ctx.forceUnicode ? BORDER_MULTIPLE_U : BORDER_MULTIPLE_A;
+        final int side = ctx.forceUnicode ? BORDER_SIDE_WIDTH_U : BORDER_SIDE_WIDTH_A;
         char left = '├';
         char right = '┤';
         char join = '┼';
@@ -124,11 +126,11 @@ public class DefaultTableRenderer implements TableRenderer {
             int width = colMaxWidths[i] + mul;
             int widest = Utils.ensureMultiple(width + side, mul) - side;
             if (i < colMaxWidths.length - 1) {
-                TextUtils.startAndRepeat(lineBuilder, i == 0 ? left : join, '─', widest, forceUnicode);
+                ctx.utils().startAndRepeat(lineBuilder, i == 0 ? left : join, '─', widest);
             } else {
                 width += mul;
                 widest = Utils.ensureMultiple(width + side, mul) - side;
-                TextUtils.startRepeatTerminate(lineBuilder, i == 0 ? left : join, '─', right, widest, forceUnicode);
+                ctx.utils().startRepeatTerminate(lineBuilder, i == 0 ? left : join, '─', right, widest);
             }
         }
         return lineBuilder.build();

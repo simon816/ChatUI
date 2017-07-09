@@ -13,7 +13,6 @@ import com.simon816.chatui.ui.table.TableModel;
 import com.simon816.chatui.ui.table.TableScrollHelper;
 import com.simon816.chatui.ui.table.TableUI;
 import com.simon816.chatui.util.ExtraUtils;
-import com.simon816.chatui.util.TextUtils;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColor;
 import org.spongepowered.api.text.format.TextColors;
@@ -92,7 +91,7 @@ class EntryDisplayer extends AnchorPaneUI {
                     return new DefaultColumnRenderer() {
 
                         @Override
-                        public List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode) {
+                        public List<Text> renderCell(Object value, int row, int tableWidth, PlayerContext ctx) {
                             return Collections.singletonList(Text.of(TextColors.RED, ExtraUtils.clickAction(() -> {
                                 remove(row);
                             }, EntryDisplayer.this.tab), "X"));
@@ -102,17 +101,17 @@ class EntryDisplayer extends AnchorPaneUI {
                 return new DefaultColumnRenderer() {
 
                     @Override
-                    public List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode) {
+                    public List<Text> renderCell(Object value, int row, int tableWidth, PlayerContext ctx) {
                         TextColor color = TextColors.RESET;
                         if (EntryDisplayer.this.editCol == columnIndex && EntryDisplayer.this.editRow == row) {
                             color = TextColors.GRAY;
                         }
-                        return TextUtils.splitLines(Text.builder((String) value)
+                        return ctx.utils().splitLines(Text.builder((String) value)
                                 .onClick(ExtraUtils.clickAction(() -> {
                                     setEdit(columnIndex, row);
                                 }, EntryDisplayer.this.tab))
                                 .color(color)
-                                .build(), (tableWidth / 2) - 20, forceUnicode);
+                                .build(), (tableWidth / 2) - 20);
                     }
 
                 };
@@ -151,7 +150,8 @@ class EntryDisplayer extends AnchorPaneUI {
                                         }, EntryDisplayer.this.tab)).build(),
                                 Text.builder(EntryDisplayer.this.addMode ? " [Cancel]" : " [Add]")
                                         .color(EntryDisplayer.this.addMode ? TextColors.RED : TextColors.GREEN)
-                                        .onClick(ExtraUtils.clickAction(() -> EntryDisplayer.this.addMode = !EntryDisplayer.this.addMode, EntryDisplayer.this.tab))
+                                        .onClick(ExtraUtils.clickAction(() -> EntryDisplayer.this.addMode = !EntryDisplayer.this.addMode,
+                                                EntryDisplayer.this.tab))
                                         .build(),
                                 Text.builder(" [Scroll Up]").color(EntryDisplayer.this.scroll.canScrollUp() ? TextColors.WHITE : TextColors.GRAY)
                                         .onClick(ExtraUtils.clickAction(EntryDisplayer.this.scroll::scrollUp, EntryDisplayer.this.tab))
@@ -159,7 +159,7 @@ class EntryDisplayer extends AnchorPaneUI {
                                 Text.builder(" [Scroll Down]").color(EntryDisplayer.this.scroll.canScrollDown() ? TextColors.WHITE : TextColors.GRAY)
                                         .onClick(ExtraUtils.clickAction(EntryDisplayer.this.scroll::scrollDown, EntryDisplayer.this.tab))
                                         .build())
-                        .build(), ctx.forceUnicode);
+                        .build(), ctx);
             }
         };
     }

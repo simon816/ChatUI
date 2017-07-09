@@ -51,7 +51,7 @@ public class AnchorPaneUI extends UIPane {
             child.draw(ctx.withHeight(remaining), unrestraint);
             remaining = unrestraint.linesRemaining(ctx);
         }
-        lineFactory.merge(top, ctx.forceUnicode).merge(unrestraint, ctx.forceUnicode).fillThenMerge(ctx, bottom);
+        lineFactory.merge(top, ctx).merge(unrestraint, ctx).fillThenMerge(ctx, bottom);
     }
 
     private static boolean hasFlag(int value, int flag) {

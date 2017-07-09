@@ -4,6 +4,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.simon816.chatui.lib.ChatUILib;
 import com.simon816.chatui.lib.PlayerChatView;
+import org.spongepowered.api.command.CommandException;
 import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
@@ -25,6 +26,9 @@ public class ClickCallback {
                 .executor((src, args) -> {
                     UUID uuid = UUID.fromString(args.<String>getOne("uuid").get());
                     Consumer<PlayerChatView> consumer = callbackCache.getIfPresent(uuid);
+                    if (consumer == null) {
+                        throw new CommandException(Text.of("Callback expired"));
+                    }
                     consumer.accept(ChatUILib.getView(src));
                     return CommandResult.success();
                 }).build();

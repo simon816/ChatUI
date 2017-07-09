@@ -1,17 +1,25 @@
 package com.simon816.chatui.ui.canvas;
 
+import com.simon816.chatui.lib.PlayerContext;
 import com.simon816.chatui.ui.canvas.CanvasUI.Context;
-import com.simon816.chatui.ui.canvas.CanvasUI.Layer;
 import com.simon816.chatui.ui.canvas.CanvasUI.RenderingContext;
 import com.simon816.chatui.ui.canvas.LineDrawingContext.PixelMetadata;
 import com.simon816.chatui.ui.canvas.ShapeFunction.DrawHandler;
 import org.spongepowered.api.text.format.TextColor;
+import org.spongepowered.api.text.format.TextColors;
 
 public class BlockRenderContext extends RenderingContext {
+
+    private static final PixelMetadata EMPTY_DATA = new PixelMetadata(TextColors.BLACK);
 
     @Override
     public Context getType() {
         return Context.BLOCKS;
+    }
+
+    @Override
+    protected LineDrawingContext createDrawContext(PlayerContext ctx) {
+        return new LineDrawingContext(ctx, '\u2063', EMPTY_DATA);
     }
 
     private static final ShapeFunction.DrawHandler DRAW_HANDLER = new DrawHandler() {
@@ -37,34 +45,6 @@ public class BlockRenderContext extends RenderingContext {
 
     public void drawCircle(int x, int y, int r, TextColor color) {
         addLayer(new ShapeFunction.Circle(DRAW_HANDLER, x, y, r, color));
-    }
-
-    public void drawString(String string, int x, int y, TextColor color) {
-        addLayer(new StringLayer(string, x, y, color));
-    }
-
-    private static class StringLayer implements Layer {
-
-        private final char[] chars;
-        private final int x;
-        private final int y;
-        private final TextColor color;
-
-        public StringLayer(String string, int x, int y, TextColor color) {
-            this.chars = string.toCharArray();
-            this.x = x;
-            this.y = y;
-            this.color = color;
-        }
-
-        @Override
-        public void draw(LineDrawingContext ctx) {
-            ctx.data(new PixelMetadata(this.color));
-            for (int i = 0; i < this.chars.length; i++) {
-                ctx.write(this.x + i, this.y, this.chars[i]);
-            }
-        }
-
     }
 
 }

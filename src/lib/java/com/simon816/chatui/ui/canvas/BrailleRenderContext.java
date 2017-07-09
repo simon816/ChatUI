@@ -1,5 +1,6 @@
 package com.simon816.chatui.ui.canvas;
 
+import com.simon816.chatui.lib.PlayerContext;
 import com.simon816.chatui.ui.canvas.CanvasUI.Context;
 import com.simon816.chatui.ui.canvas.CanvasUI.Layer;
 import com.simon816.chatui.ui.canvas.CanvasUI.RenderingContext;
@@ -16,15 +17,7 @@ import java.awt.image.BufferedImage;
  */
 public class BrailleRenderContext extends RenderingContext {
 
-    @Override
-    public Context getType() {
-        return Context.BRAILLE;
-    }
-
-    @Override
-    protected LineDrawingContext createDrawContext(int width, int height) {
-        return new LineDrawingContext(width, height, '\u2800', new PixelMetadata(TextColors.WHITE));
-    }
+    private static final PixelMetadata EMPTY_DATA = new PixelMetadata(TextColors.WHITE);
 
     private static final ShapeFunction.DrawHandler DRAW_HANDLER = new DrawHandler() {
 
@@ -40,6 +33,16 @@ public class BrailleRenderContext extends RenderingContext {
     };
 
     private boolean corrections = false;
+
+    @Override
+    public Context getType() {
+        return Context.BRAILLE;
+    }
+
+    @Override
+    protected LineDrawingContext createDrawContext(PlayerContext ctx) {
+        return new LineDrawingContext(ctx, '\u2800', EMPTY_DATA);
+    }
 
     /**
      * Adjusts the output to look more correct due to the gaps between lines on

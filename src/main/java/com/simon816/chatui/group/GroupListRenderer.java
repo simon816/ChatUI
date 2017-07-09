@@ -2,10 +2,10 @@ package com.simon816.chatui.group;
 
 import com.simon816.chatui.ChatUI;
 import com.simon816.chatui.lib.PlayerChatView;
+import com.simon816.chatui.lib.PlayerContext;
 import com.simon816.chatui.ui.table.DefaultColumnRenderer;
 import com.simon816.chatui.ui.table.DefaultTableRenderer;
 import com.simon816.chatui.ui.table.TableColumnRenderer;
-import com.simon816.chatui.util.TextUtils;
 import com.simon816.chatui.util.Utils;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
@@ -52,12 +52,12 @@ class GroupListRenderer extends DefaultTableRenderer {
         }
 
         @Override
-        public List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode) {
+        public List<Text> renderCell(Object value, int row, int tableWidth, PlayerContext ctx) {
             ChatGroup group = (ChatGroup) value;
-            return TextUtils.splitLines(Text.of(Utils.execClick(view -> {
+            return ctx.utils().splitLines(Text.of(Utils.execClick(view -> {
                 ChatUI.getActiveView(view).getWindow().addTab(group.getTab(view.getPlayer()), true);
                 view.update();
-            }), group.getName()), getPrefWidth(), forceUnicode);
+            }), group.getName()), getPrefWidth());
         }
     }
 
@@ -72,7 +72,7 @@ class GroupListRenderer extends DefaultTableRenderer {
         }
 
         @Override
-        public List<Text> renderCell(Object value, int row, int tableWidth, boolean forceUnicode) {
+        public List<Text> renderCell(Object value, int row, int tableWidth, PlayerContext ctx) {
             ChatGroup group = (ChatGroup) value;
             Text.Builder builder = Text.builder("X");
             builder.onHover(TextActions.showText(Text.of("Delete Group")));

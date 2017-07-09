@@ -1,7 +1,7 @@
 package com.simon816.chatui.ui.canvas;
 
 import com.simon816.chatui.lib.PlayerChatView;
-import com.simon816.chatui.util.TextUtils;
+import com.simon816.chatui.lib.PlayerContext;
 import com.simon816.chatui.util.Utils;
 import it.unimi.dsi.fastutil.ints.Int2CharMap;
 import it.unimi.dsi.fastutil.ints.Int2CharOpenHashMap;
@@ -16,32 +16,24 @@ import java.util.function.Consumer;
 
 public class LineDrawingContext {
 
-    public static final PixelMetadata DEFAULT_DATA = new PixelMetadata(TextColors.BLACK);
-    public static final char DEFAULT_CHAR = '\u2063';
-
-    private static final boolean FORCE_UNICODE = false;
-
     private final Line[] lines;
     private final int width;
     private final char emptyChar;
     private final PixelMetadata emptyData;
+    private final int emptyCharWidth;
 
     private PixelMetadata currentData;
 
-    public LineDrawingContext(int width, int height) {
-        this(width, height, DEFAULT_CHAR, DEFAULT_DATA);
-    }
-
-    public LineDrawingContext(int width, int height, char emptyChar, PixelMetadata emptyData) {
-        this.lines = new Line[height];
-        this.width = width;
+    public LineDrawingContext(PlayerContext ctx, char emptyChar, PixelMetadata emptyData) {
+        this.lines = new Line[ctx.height];
+        this.width = ctx.width;
         this.emptyChar = emptyChar;
         this.currentData = this.emptyData = emptyData;
-
+        this.emptyCharWidth = ctx.utils().getWidth(emptyChar, false);
     }
 
     int getMinWidth() {
-        return TextUtils.getWidth(this.emptyChar, false, FORCE_UNICODE);
+        return this.emptyCharWidth;
     }
 
     Text[] render() {
@@ -77,7 +69,7 @@ public class LineDrawingContext {
             return;
         }
         if (this.lines[y] == null) {
-            this.lines[y] = new Line(this.width, this.emptyChar, this.emptyData);
+            this.lines[y] = new Line(this.width, this.emptyChar, this.emptyCharWidth, this.emptyData);
         }
         this.lines[y].setData(x, c, data);
     }
@@ -146,8 +138,8 @@ public class LineDrawingContext {
         private final int maxIndex;
         private int currentMax;
 
-        public Line(int maxWidth, char emptyChar, PixelMetadata emptyData) {
-            this.cellWidth = (int) TextUtils.getWidth(emptyChar, false, FORCE_UNICODE);
+        public Line(int maxWidth, char emptyChar, int emptyCharWidth, PixelMetadata emptyData) {
+            this.cellWidth = emptyCharWidth;
             this.maxIndex = (maxWidth / this.cellWidth) - 1;
             this.emptyChar = emptyChar;
             this.emptyData = emptyData;
@@ -202,16 +194,6 @@ public class LineDrawingContext {
                     prevData = data;
                 }
                 string.append(c);
-                int w = TextUtils.getWidth(c, false, FORCE_UNICODE);
-                if (w < this.cellWidth) {
-                    rootBuilder.append(prevData.toText(string.toString()));
-                    string = new StringBuilder();
-                    for (int j = w; j < this.cellWidth; j++) {
-                        string.append(TextUtils.PIXEL_CHAR);
-                    }
-                    rootBuilder.append(this.emptyData.toText(string.toString()));
-                    string = new StringBuilder();
-                }
             }
             if (string.length() > 0 && prevData != null) {
                 rootBuilder.append(prevData.toText(string.toString()));

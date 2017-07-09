@@ -5,7 +5,6 @@ import com.simon816.chatui.tabs.Tab;
 import com.simon816.chatui.ui.LineFactory;
 import com.simon816.chatui.ui.UIComponent;
 import com.simon816.chatui.ui.VBoxUI;
-import com.simon816.chatui.util.TextUtils;
 import org.spongepowered.api.text.Text;
 
 import java.util.Arrays;
@@ -28,7 +27,7 @@ public class PaginationTab extends Tab {
         public void draw(PlayerContext ctx, LineFactory lineFactory) {
             if (this.origTextContent != null) {
                 for (Text origLine : this.origTextContent) {
-                    lineFactory.addAll(TextUtils.splitLines(origLine, ctx.width, ctx.forceUnicode), ctx.forceUnicode);
+                    lineFactory.addAll(ctx.utils().splitLines(origLine, ctx.width), ctx);
                 }
             }
         }

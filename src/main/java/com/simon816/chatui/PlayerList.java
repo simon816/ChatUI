@@ -53,7 +53,7 @@ public class PlayerList {
                         scroll.canScrollUp() ? TextColors.WHITE : TextColors.DARK_GRAY, "[Scroll Up] "));
                 builder.append(Text.of(Utils.execClick(scroll::scrollDown),
                         scroll.canScrollDown() ? TextColors.WHITE : TextColors.DARK_GRAY, "[Scroll Down] "));
-                lineFactory.appendNewLine(builder.build(), ctx.forceUnicode);
+                lineFactory.appendNewLine(builder.build(), ctx);
             }
 
             @Override

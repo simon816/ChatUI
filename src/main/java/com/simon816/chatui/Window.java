@@ -140,11 +140,10 @@ public class Window implements TopWindow {
 
         @Override
         public void draw(PlayerContext ctx, LineFactory lineFactory) {
-            boolean forceUnicode = ctx.forceUnicode;
             int maxWidth = ctx.width;
             Text.Builder builder = Text.builder();
             int currentLineWidth = 0;
-            TextBuffer buffer = new TextBuffer(forceUnicode);
+            TextBuffer buffer = new TextBuffer(ctx);
             buffer.append(TextUtils.charCache('╔'));
             this.tabListLines = 1;
             for (int i = 0; i < getTabs().size(); i++) {
@@ -154,24 +153,24 @@ public class Window implements TopWindow {
                     buffer.append(createCloseButton(i));
                 }
                 buffer.append(TextUtils.charCache('═'));
-                currentLineWidth = addTabElement(lineFactory, buffer, builder, currentLineWidth, maxWidth, forceUnicode);
+                currentLineWidth = addTabElement(lineFactory, buffer, builder, currentLineWidth, maxWidth, ctx);
                 buffer.clear();
             }
             buffer.append(newTab);
-            currentLineWidth = addTabElement(lineFactory, buffer, builder, currentLineWidth, maxWidth, forceUnicode);
-            builder.append(TextUtils.repeatAndTerminate('═', this.tabListLines == 1 ? '╗' : '╣', maxWidth - currentLineWidth, forceUnicode));
-            lineFactory.appendNewLine(builder.build(), forceUnicode);
+            currentLineWidth = addTabElement(lineFactory, buffer, builder, currentLineWidth, maxWidth, ctx);
+            builder.append(ctx.utils().repeatAndTerminate('═', this.tabListLines == 1 ? '╗' : '╣', maxWidth - currentLineWidth));
+            lineFactory.appendNewLine(builder.build(), ctx);
         }
 
         private int addTabElement(LineFactory lineFactory, TextBuffer buffer, Text.Builder builder, int currentLineWidth, int maxWidth,
-                boolean forceUnicode) {
+                PlayerContext ctx) {
             if (currentLineWidth + buffer.getWidth() > maxWidth) {
                 // Overspilled - finish this line and move to another one
-                builder.append(TextUtils.repeatAndTerminate('═', this.tabListLines == 1 ? '╗' : '╣', maxWidth - currentLineWidth, forceUnicode));
-                lineFactory.appendNewLine(builder.build(), forceUnicode);
+                builder.append(ctx.utils().repeatAndTerminate('═', this.tabListLines == 1 ? '╗' : '╣', maxWidth - currentLineWidth));
+                lineFactory.appendNewLine(builder.build(), ctx);
                 char startChar = '╠';
                 builder.removeAll();
-                currentLineWidth = TextUtils.getWidth(startChar, false, forceUnicode);
+                currentLineWidth = ctx.utils().getWidth(startChar, false);
                 builder.append(TextUtils.charCache(startChar));
                 this.tabListLines++;
             }
@@ -227,9 +226,9 @@ public class Window implements TopWindow {
         public void draw(PlayerContext ctx, LineFactory lineFactory) {
             Text prefix = Text.of("╚Status: ");
             Text content = getStatusBarContent();
-            int remWidth = ctx.width - TextUtils.getWidth(prefix, ctx.forceUnicode) - TextUtils.getWidth(content, ctx.forceUnicode);
-            Text line = Text.builder().append(prefix, content, TextUtils.repeatAndTerminate('═', '╝', remWidth, ctx.forceUnicode)).build();
-            lineFactory.appendNewLine(line, ctx.forceUnicode);
+            int remWidth = ctx.width - ctx.utils().getWidth(prefix) - ctx.utils().getWidth(content);
+            Text line = Text.builder().append(prefix, content, ctx.utils().repeatAndTerminate('═', '╝', remWidth)).build();
+            lineFactory.appendNewLine(line, ctx);
         }
 
         private Text getStatusBarContent() {
