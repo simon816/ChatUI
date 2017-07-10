@@ -1,9 +1,7 @@
 package com.simon816.chatui.ui.table;
 
 import com.simon816.chatui.lib.PlayerContext;
-import com.simon816.chatui.util.FontData;
 import com.simon816.chatui.util.TextUtils;
-import com.simon816.chatui.util.Utils;
 import org.spongepowered.api.text.Text;
 
 import java.util.List;
@@ -25,19 +23,14 @@ public class DefaultTableRenderer implements TableRenderer {
         }
     };
 
-    protected static final int BORDER_MULTIPLE_A = FontData.VANILLA.getWidthInt('┼', false, false);
-    protected static final int BORDER_SIDE_WIDTH_A = FontData.VANILLA.getWidthInt('│', false, false);
-    protected static final int BORDER_MULTIPLE_U = FontData.VANILLA.getWidthInt('┼', false, true);
-    protected static final int BORDER_SIDE_WIDTH_U = FontData.VANILLA.getWidthInt('│', false, true);
-
     @Override
     public TableViewport getViewport() {
         return DEFAULT_VIEWPORT;
     }
 
     @Override
-    public int getPrefBorderWidth(int columnIndex) {
-        return Math.max(BORDER_MULTIPLE_A, BORDER_MULTIPLE_U);
+    public int getPrefBorderWidth(int columnIndex, int numColumns, PlayerContext ctx) {
+        return ctx.utils().getWidth('─', false);
     }
 
     @Override
@@ -46,10 +39,26 @@ public class DefaultTableRenderer implements TableRenderer {
     }
 
     @Override
-    public int modifyMaxWidth(int index, int max, PlayerContext ctx) {
-        final int mul = ctx.forceUnicode ? BORDER_MULTIPLE_U : BORDER_MULTIPLE_A;
-        final int side = ctx.forceUnicode ? BORDER_SIDE_WIDTH_U : BORDER_SIDE_WIDTH_A;
-        return Utils.ensureMultiple(max + side, mul) - side;
+    public int modifyMaxWidth(int index, int max, int numColumns, PlayerContext ctx) {
+        int barWidth = ctx.utils().getWidth('│', false);
+        int edgeWidth = ctx.utils().getWidth('┼', false);
+        int dashWidth = ctx.utils().getWidth('─', false);
+        int extraPad;
+        // line up so content starts after edge piece
+        if (!ctx.forceUnicode) {
+            extraPad = edgeWidth - barWidth;
+        } else {
+            extraPad = (int) Math.ceil(edgeWidth / 2D) - barWidth;
+        }
+        // Make it a multiple of the dash width
+        int rem = max % dashWidth;
+        extraPad += dashWidth - rem;
+        // Align bar to center of joiner
+        if (ctx.forceUnicode) {
+            extraPad += (int) Math.ceil(edgeWidth / 2D) - barWidth;
+        }
+        extraPad %= dashWidth;
+        return max + extraPad;
     }
 
     protected int getCellAlignment(int row, int column) {
@@ -107,8 +116,6 @@ public class DefaultTableRenderer implements TableRenderer {
 
     @Override
     public Text createBorder(TableModel model, int rowIndex, int[] colMaxWidths, PlayerContext ctx) {
-        final int mul = ctx.forceUnicode ? BORDER_MULTIPLE_U : BORDER_MULTIPLE_A;
-        final int side = ctx.forceUnicode ? BORDER_SIDE_WIDTH_U : BORDER_SIDE_WIDTH_A;
         char left = '├';
         char right = '┤';
         char join = '┼';
@@ -123,14 +130,14 @@ public class DefaultTableRenderer implements TableRenderer {
         }
         Text.Builder lineBuilder = Text.builder();
         for (int i = 0; i < colMaxWidths.length; i++) {
-            int width = colMaxWidths[i] + mul;
-            int widest = Utils.ensureMultiple(width + side, mul) - side;
+            char edge = i == 0 ? left : join;
+            int edgeWidth = ctx.utils().getWidth(left, false);
+            int width = colMaxWidths[i] + edgeWidth;
             if (i < colMaxWidths.length - 1) {
-                ctx.utils().startAndRepeat(lineBuilder, i == 0 ? left : join, '─', widest);
+                ctx.utils().startAndRepeat(lineBuilder, edge, '─', width);
             } else {
-                width += mul;
-                widest = Utils.ensureMultiple(width + side, mul) - side;
-                ctx.utils().startRepeatTerminate(lineBuilder, i == 0 ? left : join, '─', right, widest);
+                width += edgeWidth;
+                ctx.utils().startRepeatTerminate(lineBuilder, edge, '─', right, width);
             }
         }
         return lineBuilder.build();

@@ -153,6 +153,9 @@ public class FontData {
         if (codePoint == '\n') {
             return 0;
         }
+        if (codePoint == ' ') {
+            return 4;
+        }
         int nonUnicodeIdx = forceUnicode ? -1 : ASCII_PNG_CHARS.indexOf(codePoint);
         double width;
         if (codePoint > 0 && nonUnicodeIdx != -1) {

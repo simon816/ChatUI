@@ -37,7 +37,7 @@ public class TableUI implements UIComponent {
         List<TableColumnRenderer> columnRenderers2 = this.columnRenderers;
         for (int i = 0; i < columnRenderers2.size(); i++) {
             width += columnRenderers2.get(i).getPrefWidth();
-            width += this.renderer.getPrefBorderWidth(i);
+            width += this.renderer.getPrefBorderWidth(i, columnRenderers2.size(), ctx);
         }
         return width;
     }
@@ -48,7 +48,7 @@ public class TableUI implements UIComponent {
         List<TableColumnRenderer> columnRenderers2 = this.columnRenderers;
         for (int i = 0; i < columnRenderers2.size(); i++) {
             width += columnRenderers2.get(i).getMinWidth();
-            width += this.renderer.getMinBorderWidth(i);
+            width += this.renderer.getMinBorderWidth(i, columnRenderers2.size(), ctx);
         }
         return width;
     }
@@ -111,7 +111,7 @@ public class TableUI implements UIComponent {
         int[] colMaxWidths = new int[colMaxes.size()];
         int i = 0;
         for (Integer max : colMaxes) {
-            colMaxWidths[i] = this.renderer.modifyMaxWidth(i++, max, ctx);
+            colMaxWidths[i] = this.renderer.modifyMaxWidth(i++, max, colMaxes.size(), ctx);
         }
         Text border = this.renderer.createBorder(this.model, viewport.getFirstRowIndex() - 1, colMaxWidths, ctx);
         if (border != null) {

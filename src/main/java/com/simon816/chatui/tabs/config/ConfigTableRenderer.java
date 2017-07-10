@@ -59,9 +59,8 @@ class ConfigTableRenderer extends DefaultTableRenderer {
         return builder;
     }
 
-    protected int calculateEqualWidth(int tableWidth, int columnCount, boolean forceUnicode) {
-        return (tableWidth / columnCount) - (forceUnicode ? BORDER_MULTIPLE_U : BORDER_MULTIPLE_A)
-                - (forceUnicode ? BORDER_SIDE_WIDTH_U : BORDER_SIDE_WIDTH_A);
+    protected int calculateEqualWidth(int tableWidth, int columnCount, PlayerContext ctx) {
+        return (tableWidth / columnCount) - ctx.utils().getWidth('┼', false) - ctx.utils().getWidth('│', false);
     }
 
     private class KeyColumnRenderer implements TableColumnRenderer {
@@ -71,7 +70,7 @@ class ConfigTableRenderer extends DefaultTableRenderer {
 
         @Override
         public List<Text> renderCell(Object value, int row, int tableWidth, PlayerContext ctx) {
-            int fractionWidth = calculateEqualWidth(tableWidth, 2, ctx.forceUnicode);
+            int fractionWidth = calculateEqualWidth(tableWidth, 2, ctx);
             ConfigEntry entry = ConfigTableRenderer.this.control.getEntries().get(row);
 
             Text keyText = getBuilder(entry).append(Text.of(value)).build();
@@ -93,7 +92,7 @@ class ConfigTableRenderer extends DefaultTableRenderer {
 
         @Override
         public List<Text> renderCell(Object value, int row, int tableWidth, PlayerContext ctx) {
-            int fractionWidth = calculateEqualWidth(tableWidth, 2, ctx.forceUnicode);
+            int fractionWidth = calculateEqualWidth(tableWidth, 2, ctx);
             ConfigEntry entry = ConfigTableRenderer.this.control.getEntries().get(row);
 
             Text.Builder builder = getBuilder(entry);

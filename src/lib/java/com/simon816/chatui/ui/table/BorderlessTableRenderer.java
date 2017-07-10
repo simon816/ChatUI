@@ -47,7 +47,7 @@ public class BorderlessTableRenderer implements TableRenderer {
     }
 
     @Override
-    public int getPrefBorderWidth(int columnIndex) {
+    public int getPrefBorderWidth(int columnIndex, int numColumns, PlayerContext ctx) {
         return 0;
     }
 

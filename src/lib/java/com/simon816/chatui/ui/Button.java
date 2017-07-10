@@ -40,12 +40,16 @@ public class Button implements UIComponent {
         if (this.truncate) {
             return 3;
         }
+        int dashWidth = ctx.utils().getWidth('─', false);
         int desiredWidth = ctx.width;
-        while (desiredWidth % 9 != 0) {
-            desiredWidth -= 1;
-        }
+        desiredWidth -= desiredWidth % dashWidth;
+
         int barWidth = ctx.utils().getWidth('│', false) * 2;
-        return ctx.utils().splitLines(Text.of(this.label), desiredWidth - barWidth - 3).size() + 2;
+        int cornerWidth = ctx.utils().getWidth('┌', false) + ctx.utils().getWidth('┐', false);
+        int trimWidth = (desiredWidth - cornerWidth) % dashWidth;
+        int innerWidth = desiredWidth - barWidth - trimWidth;
+
+        return ctx.utils().splitLines(Text.of(this.label), innerWidth).size() + 2;
     }
 
     @Override
@@ -56,17 +60,16 @@ public class Button implements UIComponent {
     @Override
     public int getMinWidth(PlayerContext ctx) {
         if (this.truncate) {
-            return 6;
+            return ctx.utils().getWidth('.', false) * 3;
         }
         return ctx.utils().getStringWidth(this.label, false);
     }
 
     @Override
     public void draw(PlayerContext ctx, LineFactory lineFactory) {
+        int dashWidth = ctx.utils().getWidth('─', false);
         int desiredWidth = ctx.width;
-        while (desiredWidth % 9 != 0) {
-            desiredWidth -= 1;
-        }
+        desiredWidth -= desiredWidth % dashWidth;
         int barWidth = ctx.utils().getWidth('│', false) * 2;
         HoverAction<?> hover = null;
         ClickAction<?> click = null;
@@ -74,40 +77,42 @@ public class Button implements UIComponent {
             click = Utils.execClick(this.onClick);
         }
 
+        Text.Builder topBar = Text.builder();
+        int trimWidth = ctx.utils().startRepeatTerminate(topBar, '┌', '─', '┐', desiredWidth);
+        lineFactory.appendNewLine(topBar.build(), ctx);
+        int innerWidth = desiredWidth - barWidth - trimWidth;
+
         List<String> labelLines = null;
         String labelPart = this.label;
         int width = ctx.utils().getStringWidth(this.label, false);
-        if (width > desiredWidth - barWidth - 3) {
+        if (width > innerWidth) {
             if (this.truncate) {
+                int dotWidth = ctx.utils().getWidth('.', false) * 3;
                 int tWidth = width;
                 // Trim down
                 String t = labelPart;
-                while (tWidth > desiredWidth - barWidth - 3 && t.length() > 0) {
+                while (tWidth > innerWidth && t.length() > 0) {
                     t = t.substring(0, t.length() - 1);
-                    // 6 is width of '...'
-                    tWidth = ctx.utils().getStringWidth(t, false) + 6;
+                    tWidth = ctx.utils().getStringWidth(t, false) + dotWidth;
                 }
                 labelPart = t + "...";
                 hover = TextActions.showText(Text.of(this.label));
             } else {
-                labelLines = ctx.utils().splitLines(labelPart, desiredWidth - barWidth - 3);
+                labelLines = ctx.utils().splitLines(labelPart, innerWidth);
             }
         }
         if (labelLines == null) {
             labelLines = Lists.newArrayList(labelPart);
         }
 
-        lineFactory.appendNewLine(ctx.utils().startRepeatTerminate('┌', '─', '┐', desiredWidth), ctx);
-
-        for (String line : labelLines) {
-            int tWidth = ctx.utils().getStringWidth(line, false);
-            StringBuilder spaces = new StringBuilder();
-            spaces.append('│');
-            TextUtils.padSpaces(spaces, desiredWidth - tWidth - barWidth - 3);
-            spaces.append('│');
-            String left = spaces.substring(0, spaces.length() / 2);
-            String right = spaces.substring(left.length());
-            lineFactory.appendNewLine(Text.builder(left + line + right).onClick(click).onHover(hover).build(), ctx);
+        for (String lineContent : labelLines) {
+            int lineWidth = ctx.utils().getStringWidth(lineContent, false);
+            StringBuilder line = new StringBuilder();
+            line.append('│');
+            TextUtils.padSpaces(line, innerWidth - lineWidth);
+            line.append('│');
+            line.insert(line.length() / 2, lineContent);
+            lineFactory.appendNewLine(Text.builder(line.toString()).onClick(click).onHover(hover).build(), ctx);
         }
         lineFactory.appendNewLine(ctx.utils().startRepeatTerminate('└', '─', '┘', desiredWidth), ctx);
     }

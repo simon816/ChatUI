@@ -21,14 +21,14 @@ public interface TableRenderer {
 
     Text createBorder(TableModel model, int rowIndex, int[] colMaxWidths, PlayerContext ctx);
 
-    default int modifyMaxWidth(int index, int max, PlayerContext ctx) {
+    default int modifyMaxWidth(int index, int max, int numColumns, PlayerContext ctx) {
         return max;
     }
 
-    int getPrefBorderWidth(int columnIndex);
+    int getPrefBorderWidth(int columnIndex, int numColumns, PlayerContext ctx);
 
-    default int getMinBorderWidth(int columnIndex) {
-        return getPrefBorderWidth(columnIndex);
+    default int getMinBorderWidth(int columnIndex, int numColumns, PlayerContext ctx) {
+        return getPrefBorderWidth(columnIndex, numColumns, ctx);
     }
 
     TableColumnRenderer createColumnRenderer(int columnIndex);

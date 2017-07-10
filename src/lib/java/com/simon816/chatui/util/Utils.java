@@ -18,13 +18,6 @@ public class Utils {
         return source;
     }
 
-    public static int ensureMultiple(int val, int of) {
-        while (val % of != 0) {
-            val++;
-        }
-        return val;
-    }
-
     public static ClickAction<?> execClick(Consumer<PlayerChatView> handler) {
         return TextActions.runCommand(ClickCallback.generateCommand(handler));
     }
