@@ -131,7 +131,7 @@ public class DefaultTableRenderer implements TableRenderer {
         Text.Builder lineBuilder = Text.builder();
         for (int i = 0; i < colMaxWidths.length; i++) {
             char edge = i == 0 ? left : join;
-            int edgeWidth = ctx.utils().getWidth(left, false);
+            int edgeWidth = ctx.utils().getWidth(edge, false);
             int width = colMaxWidths[i] + edgeWidth;
             if (i < colMaxWidths.length - 1) {
                 ctx.utils().startAndRepeat(lineBuilder, edge, '─', width);

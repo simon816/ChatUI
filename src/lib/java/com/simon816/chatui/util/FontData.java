@@ -7,7 +7,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.io.BaseEncoding;
-import scala.actors.threadpool.Arrays;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -154,6 +153,9 @@ public class FontData {
             return 0;
         }
         if (codePoint == ' ') {
+            if (isBold) {
+                return 5;
+            }
             return 4;
         }
         int nonUnicodeIdx = forceUnicode ? -1 : ASCII_PNG_CHARS.indexOf(codePoint);
@@ -189,11 +191,6 @@ public class FontData {
             e.printStackTrace();
             return VANILLA;
         }
-    }
-
-    @Override
-    public String toString() {
-        return Arrays.toString(this.asciiCharWidths);
     }
 
     public static void checkValid(String fontData) throws IllegalArgumentException {

@@ -80,11 +80,12 @@ public class ChatUILib {
     public static ChatUILib getInstance() {
         return instance;
     }
-    /* Plugin event listeners (internal) */
 
     public LanguagePackManager getLanguageManager() {
         return this.languageManager;
     }
+
+    /* Plugin event listeners (internal) */
 
     @Listener
     public void onPreInit(GamePreInitializationEvent event) {

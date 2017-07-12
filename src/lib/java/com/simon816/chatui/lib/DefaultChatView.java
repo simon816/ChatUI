@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.collect.Lists;
 import com.simon816.chatui.lib.config.LibConfig;
+import com.simon816.chatui.util.Utils;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.entity.living.player.Player;
@@ -91,7 +92,7 @@ public class DefaultChatView implements PlayerChatView {
     public void update() {
         if (this.window != null) {
             this.isUpdating = true;
-            getPlayer().sendMessage(this.window.draw(this.context));
+            Utils.sendMessageSplitLarge(this.context, this.window.draw(this.context));
             this.isUpdating = false;
         }
     }

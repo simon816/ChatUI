@@ -12,7 +12,11 @@ public class WindowTab extends Tab {
     private final TopWindow window;
 
     public WindowTab(TopWindow window) {
-        super(Text.of(window.getClass().getSimpleName()), new TopWindowPane(window));
+        this(window, Text.of(window.getClass().getSimpleName()));
+    }
+
+    public WindowTab(TopWindow window, Text title) {
+        super(title, new TopWindowPane(window));
         this.window = window;
     }
 

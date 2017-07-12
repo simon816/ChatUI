@@ -130,11 +130,11 @@ public class PlayerList {
     private void addDefaultAddons(Player player) {
         TextFormat link = TextFormat.of(TextColors.BLUE, TextStyles.UNDERLINE);
         if (player.hasPermission(PERM_KICK)) {
-            addAddon(listPlayer -> Text.builder("Kick").format(link).onClick(Utils.execClick(() -> listPlayer.kick())).build());
+            addAddon(listPlayer -> Text.builder("Kick").format(link).onClick(Utils.execClick(view -> listPlayer.kick())).build());
         }
         if (player.hasPermission(PERM_BAN)) {
             addAddon(listPlayer -> Text.builder("Ban").format(link)
-                    .onClick(Utils.execClick(() -> Sponge.getServiceManager().provideUnchecked(BanService.class).addBan(Ban.of(listPlayer.getProfile()))))
+                    .onClick(Utils.execClick(view -> Sponge.getServiceManager().provideUnchecked(BanService.class).addBan(Ban.of(listPlayer.getProfile()))))
                     .build());
         }
     }

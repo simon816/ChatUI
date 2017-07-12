@@ -16,6 +16,7 @@ import com.simon816.chatui.tabs.TextBufferTab;
 import com.simon816.chatui.tabs.WindowTab;
 import com.simon816.chatui.tabs.config.ConfigEditTab;
 import com.simon816.chatui.tabs.perm.PermissionsTab;
+import com.simon816.chatui.util.Utils;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.SimpleConfigurationNode;
 import org.spongepowered.api.Sponge;
@@ -161,7 +162,7 @@ public class ActivePlayerChatView implements PlayerChatView {
     @Override
     public void update() {
         this.isUpdating = true;
-        this.playerContext.getPlayer().sendMessage(this.window.draw(this.playerContext));
+        Utils.sendMessageSplitLarge(this.playerContext, this.window.draw(this.playerContext));
         this.isUpdating = false;
     }
 
