@@ -3,6 +3,8 @@ package com.simon816.chatui.util;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.simon816.chatui.lib.ChatUILib;
+import com.simon816.chatui.lib.lang.LanguagePackManager;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.TranslatableText;
 import org.spongepowered.api.text.action.ClickAction;
@@ -159,6 +161,10 @@ class TextSplitter {
         Object[] markers = new Object[arguments.size()];
         for (int i = 0; i < markers.length; i++) {
             markers[i] = "$MARKER" + i + "$";
+        }
+        LanguagePackManager langMgr = ChatUILib.getInstance().getLanguageManager();
+        if (!langMgr.isDefault(locale)) {
+            translation = langMgr.forTranslation(translation);
         }
         String patched = translation.get(locale, markers);
 

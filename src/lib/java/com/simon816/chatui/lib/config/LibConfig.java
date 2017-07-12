@@ -31,6 +31,8 @@ public class LibConfig {
 
     private static ObjectMapper<PlayerSettings> settingsMapper;
 
+    private static boolean useLanguagePack;
+
     public static CommandCallable createCommand() {
         return CommandSpec.builder()
                 .child(CommandSpec.builder()
@@ -109,6 +111,15 @@ public class LibConfig {
         } catch (ObjectMappingException e) {
             throw Throwables.propagate(e);
         }
+        CommentedConfigurationNode useLanguagePack = config.getNode("use-language-pack");
+        if (useLanguagePack.isVirtual()) {
+            useLanguagePack.setValue(false);
+        }
+        LibConfig.useLanguagePack = useLanguagePack.getBoolean();
+    }
+
+    public static boolean useLanguagePack() {
+        return useLanguagePack;
     }
 
     public static void saveConfig() {

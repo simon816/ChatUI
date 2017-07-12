@@ -9,6 +9,7 @@ import com.simon816.chatui.lib.event.CreatePlayerViewEvent;
 import com.simon816.chatui.lib.event.PlayerChangeConfigEvent;
 import com.simon816.chatui.lib.internal.ClickCallback;
 import com.simon816.chatui.lib.internal.WrapOutputChannel;
+import com.simon816.chatui.lib.lang.LanguagePackManager;
 import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
@@ -22,6 +23,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.cause.Cause;
+import org.spongepowered.api.event.entity.living.humanoid.player.PlayerChangeClientSettingsEvent;
 import org.spongepowered.api.event.filter.IsCancelled;
 import org.spongepowered.api.event.filter.cause.Root;
 import org.spongepowered.api.event.game.GameReloadEvent;
@@ -40,6 +42,7 @@ import org.spongepowered.api.util.Tristate;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -49,6 +52,8 @@ public class ChatUILib {
     private static ChatUILib instance;
 
     private final Map<UUID, PlayerChatView> playerViewMap = Maps.newHashMap();
+
+    private LanguagePackManager languageManager;
 
     @Inject
     private Logger logger;
@@ -72,7 +77,14 @@ public class ChatUILib {
         return TextActions.runCommand("/chatui " + subcommand);
     }
 
+    public static ChatUILib getInstance() {
+        return instance;
+    }
     /* Plugin event listeners (internal) */
+
+    public LanguagePackManager getLanguageManager() {
+        return this.languageManager;
+    }
 
     @Listener
     public void onPreInit(GamePreInitializationEvent event) {
@@ -91,6 +103,10 @@ public class ChatUILib {
 
         HoconConfigurationLoader confLoader = HoconConfigurationLoader.builder().setPath(confFile).build();
         LibConfig.init(confLoader, this.logger);
+        this.languageManager = new LanguagePackManager(confDir);
+        if (LibConfig.useLanguagePack()) {
+            this.languageManager.fetch(this.logger);
+        }
 
         Text argParam = Text.of("args");
         CommandSpec cmd = CommandSpec.builder()
@@ -128,6 +144,7 @@ public class ChatUILib {
         Sponge.getEventManager().post(createEvent);
         this.playerViewMap.put(player.getUniqueId(), createEvent.getView());
         createEvent.getView().initialize();
+        this.languageManager.incrementLocale(player.getLocale());
     }
 
     @Listener
@@ -143,6 +160,18 @@ public class ChatUILib {
         PlayerChatView view = this.playerViewMap.remove(event.getTargetEntity().getUniqueId());
         view.onRemove();
         LibConfig.saveConfig();
+        this.languageManager.decrementLocale(event.getTargetEntity().getLocale());
+    }
+
+    @Listener
+    public void onPlayerChangeClientSettings(PlayerChangeClientSettingsEvent event) {
+        Locale oldLocale = event.getTargetEntity().getLocale();
+        Locale newLocale = event.getLocale();
+        if (oldLocale.equals(newLocale)) {
+            return;
+        }
+        this.languageManager.decrementLocale(oldLocale);
+        this.languageManager.incrementLocale(newLocale);
     }
 
     // Pretty aggressively captures incoming chat
@@ -173,6 +202,9 @@ public class ChatUILib {
     @Listener
     public void onGameReload(GameReloadEvent event) {
         LibConfig.loadConfig();
+        if (LibConfig.useLanguagePack()) {
+            this.languageManager.fetch(this.logger);
+        }
     }
 
     @Listener
