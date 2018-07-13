@@ -40,11 +40,11 @@ public class PermissionsTab extends Tab {
         ProviderRegistration<PermissionService> reg = Sponge.getServiceManager().getRegistration(PermissionService.class).get();
         if (reg.getPlugin().getId().equals("permissionsex")) {
             // Ensure loaded
-            service.getSubjects(PermissionService.SUBJECTS_COMMAND_BLOCK);
-            service.getSubjects(PermissionService.SUBJECTS_GROUP);
-            service.getSubjects(PermissionService.SUBJECTS_ROLE_TEMPLATE);
-            service.getSubjects(PermissionService.SUBJECTS_SYSTEM);
-            service.getSubjects(PermissionService.SUBJECTS_USER);
+            service.loadCollection(PermissionService.SUBJECTS_COMMAND_BLOCK);
+            service.loadCollection(PermissionService.SUBJECTS_GROUP);
+            service.loadCollection(PermissionService.SUBJECTS_ROLE_TEMPLATE);
+            service.loadCollection(PermissionService.SUBJECTS_SYSTEM);
+            service.loadCollection(PermissionService.SUBJECTS_USER);
             return new PEXActions();
         }
         return new FallbackPermActions();
@@ -56,7 +56,7 @@ public class PermissionsTab extends Tab {
 
     private UIPane createDashboard() {
         FlowPaneUI dashboard = new FlowPaneUI(FlowPaneUI.WRAP_HORIZONALLY);
-        for (Entry<String, SubjectCollection> subjEntry : this.service.getKnownSubjects().entrySet()) {
+        for (Entry<String, SubjectCollection> subjEntry : this.service.getLoadedCollections().entrySet()) {
             Button button = new Button(subjEntry.getKey()) {
 
                 @Override

@@ -57,22 +57,27 @@ public class TabbedPaginationList implements PaginationList {
 
     @Override
     public void sendTo(MessageReceiver receiver) {
+        this.sendTo(receiver, 1);
+    }
+
+    @Override
+    public void sendTo(MessageReceiver receiver, int page) {
         if (!(receiver instanceof CommandSource)) {
-            this.list.sendTo(receiver);
+            this.list.sendTo(receiver, page);
             return;
         }
         CommandSource sendTo = Utils.getRealSource((CommandSource) receiver);
         if (!(sendTo instanceof Player)) {
-            this.list.sendTo(receiver);
+            this.list.sendTo(receiver, page);
             return;
         }
         PlayerChatView view = ChatUI.unwrapView(ChatUILib.getView(sendTo));
         if (!(view instanceof ActivePlayerChatView)) {
-            this.list.sendTo(receiver);
+            this.list.sendTo(receiver, page);
             return;
         }
         CommandSource newReceiver = new PaginationSourceWrapper((ActivePlayerChatView) view, (CommandSource) receiver, getTitle().orElse(null));
-        this.list.sendTo(newReceiver);
+        this.list.sendTo(newReceiver, page);
         ImplementationPagination.modify(this.service, newReceiver, sendTo);
     }
 
