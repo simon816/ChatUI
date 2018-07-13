@@ -1,5 +1,6 @@
 package com.simon816.chatui.tabs.perm;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.simon816.chatui.lib.PlayerChatView;
@@ -14,9 +15,11 @@ import com.simon816.chatui.ui.table.TableModel;
 import com.simon816.chatui.ui.table.TableScrollHelper;
 import com.simon816.chatui.ui.table.TableUI;
 import com.simon816.chatui.util.ExtraUtils;
+import com.simon816.chatui.util.Utils;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.service.context.Context;
 import org.spongepowered.api.service.permission.Subject;
+import org.spongepowered.api.service.permission.SubjectReference;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.TextActions;
 import org.spongepowered.api.text.format.TextColor;
@@ -29,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 import javax.swing.SwingConstants;
@@ -156,21 +161,32 @@ class SubjectViewer extends AnchorPaneUI {
 
     void toggle(Player player, int index) {
         Entry<String, Boolean> entry = getPerms().get(index);
-        if (set(player, index, Tristate.fromBoolean(!entry.getValue()))) {
-            this.permList = null;
-        }
-
+//        if (set(player, index, Tristate.fromBoolean(!entry.getValue()))) {
+//            this.permList = null;
+//        }
+        set(player, index, Tristate.fromBoolean(!entry.getValue())).whenComplete((result, t) -> {
+            if (t != null) throw Throwables.propagate(t);
+            if (result) {
+                Utils.sync(() -> this.permList = null);
+            }
+        });
     }
 
-    private boolean set(Player player, int index, Tristate value) {
+    private CompletableFuture<Boolean> set(Player player, int index, Tristate value) {
         Entry<String, Boolean> entry = getPerms().get(index);
         return this.tab.actions().setPermission(player, this.activeSubj, this.activeContext, entry.getKey(), value);
     }
 
     void delete(Player player, int index) {
-        if (set(player, index, Tristate.UNDEFINED)) {
-            getPerms().remove(index);
-        }
+//        if (set(player, index, Tristate.UNDEFINED)) {
+//            getPerms().remove(index);
+//        }
+        set(player, index, Tristate.UNDEFINED).whenComplete((result, t) -> {
+            if (t != null) throw Throwables.propagate(t);
+            if (result) {
+                Utils.sync(() -> getPerms().remove(index));
+            }
+        });
     }
 
     private UIComponent createEmptyMessage() {
@@ -208,10 +224,11 @@ class SubjectViewer extends AnchorPaneUI {
                 if (SubjectViewer.this.activeSubj.getParents(SubjectViewer.this.activeContext).isEmpty()) {
                     builder.append(Text.of("None"));
                 }
-                for (Subject parent : SubjectViewer.this.activeSubj.getParents(SubjectViewer.this.activeContext)) {
-                    builder.append(hyperlink(parent.getIdentifier(), () -> setActive(parent, false)));
+                for (SubjectReference parent : SubjectViewer.this.activeSubj.getParents(SubjectViewer.this.activeContext)) {
+                    CompletableFuture<Subject> parentFuture = parent.resolve();
+                    builder.append(hyperlink(parent.getSubjectIdentifier(), () -> parentFuture.whenComplete((resolvedParent, t) -> Utils.sync(() -> setActive(resolvedParent, false)))));
                     builder.append(Text.builder("[x]").color(TextColors.RED)
-                            .onClick(ExtraUtils.clickAction((Consumer<PlayerChatView>) view -> removeParent(view.getPlayer(), parent),
+                            .onClick(ExtraUtils.clickAction((Consumer<PlayerChatView>) view -> parentFuture.whenComplete((resolvedParent, t) -> Utils.sync(() -> removeParent(view.getPlayer(), resolvedParent))),
                                     SubjectViewer.this.tab))
                             .build());
                     builder.append(Text.of(", "));
@@ -262,8 +279,20 @@ class SubjectViewer extends AnchorPaneUI {
                                     tab.getEntryDisplayer()
                                             .setData(SubjectViewer.this.activeSubj.getSubjectData()
                                                     .getOptions(SubjectViewer.this.activeContext),
-                                                    (key, value) -> createOption(view.getPlayer(), key, value),
-                                                    key -> removeOption(view.getPlayer(), key),
+                                                    (key, value) -> {
+                                                        try {
+                                                            return createOption(view.getPlayer(), key, value).get();
+                                                        } catch (InterruptedException | ExecutionException e) {
+                                                            throw Throwables.propagate(e);
+                                                        }
+                                                    },
+                                                    key -> {
+                                                        try {
+                                                            return removeOption(view.getPlayer(), key).get();
+                                                        } catch (InterruptedException | ExecutionException e) {
+                                                            throw Throwables.propagate(e);
+                                                        }
+                                                    },
                                                     () -> tab.setRoot(SubjectViewer.this));
 
                                     tab.setRoot(tab.getEntryDisplayer());
@@ -285,14 +314,19 @@ class SubjectViewer extends AnchorPaneUI {
         };
     }
 
-    Map.Entry<String, String> createOption(Player player, String key, String value) {
-        if (this.tab.actions().setOption(player, this.activeSubj, this.activeContext, key, value)) {
-            return Maps.immutableEntry(key, value);
-        }
-        return null;
+    CompletableFuture<Map.Entry<String, String>> createOption(Player player, String key, String value) {
+//        if (this.tab.actions().setOption(player, this.activeSubj, this.activeContext, key, value)) {
+//            return Maps.immutableEntry(key, value);
+//        }
+        return this.tab.actions().setOption(player, this.activeSubj, this.activeContext, key, value).thenApply(result -> {
+            if (result) {
+                return Maps.immutableEntry(key, value);
+            }
+            return null;
+        });
     }
 
-    boolean removeOption(Player player, String option) {
+    CompletableFuture<Boolean> removeOption(Player player, String option) {
         return this.tab.actions().setOption(player, this.activeSubj, this.activeContext, option, null);
     }
 
@@ -350,12 +384,18 @@ class SubjectViewer extends AnchorPaneUI {
         this.tab.actions().removeParent(player, this.activeSubj, this.activeContext, parent);
     }
 
-    private boolean add(Player player, String permission) {
-        if (this.tab.actions().setPermission(player, this.activeSubj, this.activeContext, permission, Tristate.TRUE)) {
-            this.permList = null;
-            return true;
-        }
-        return false;
+    private CompletableFuture<Boolean> add(Player player, String permission) {
+//        if (this.tab.actions().setPermission(player, this.activeSubj, this.activeContext, permission, Tristate.TRUE)) {
+//            this.permList = null;
+//            return true;
+//        }
+//        return false;
+        return this.tab.actions().setPermission(player, this.activeSubj, this.activeContext, permission, Tristate.TRUE).thenApply(result -> {
+            if (result) {
+                Utils.sync(() -> this.permList = null);
+            }
+            return result;
+        });
     }
 
 }

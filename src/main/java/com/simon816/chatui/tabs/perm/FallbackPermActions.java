@@ -7,12 +7,13 @@ import org.spongepowered.api.service.permission.SubjectCollection;
 import org.spongepowered.api.util.Tristate;
 
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 public class FallbackPermActions implements PermissionActions {
 
     @Override
     public Subject addSubjectToCollection(Player player, SubjectCollection collection, String subjIdentifier) {
-        return collection.get(subjIdentifier);
+        return collection.getSubject(subjIdentifier).get();
     }
 
     @Override
@@ -22,12 +23,12 @@ public class FallbackPermActions implements PermissionActions {
     }
 
     @Override
-    public boolean setPermission(Player player, Subject subject, Set<Context> contexts, String permission, Tristate value) {
+    public CompletableFuture<Boolean> setPermission(Player player, Subject subject, Set<Context> contexts, String permission, Tristate value) {
         Boolean perm = subject.getSubjectData().getPermissions(contexts).get(permission);
         if ((perm == null && value == Tristate.UNDEFINED)
                 || (perm == Boolean.TRUE && value == Tristate.TRUE)
                 || (perm == Boolean.FALSE && value == Tristate.FALSE)) {
-            return true;
+            return CompletableFuture.completedFuture(true);
         }
         return subject.getSubjectData().setPermission(contexts, permission, value);
     }
@@ -49,11 +50,11 @@ public class FallbackPermActions implements PermissionActions {
 
     @Override
     public void removeParent(Player player, Subject subject, Set<Context> contexts, Subject parent) {
-        subject.getSubjectData().removeParent(contexts, parent);
+        subject.getSubjectData().removeParent(contexts, parent.asSubjectReference());
     }
 
     @Override
-    public boolean setOption(Player player, Subject subject, Set<Context> contexts, String key, String value) {
+    public CompletableFuture<Boolean> setOption(Player player, Subject subject, Set<Context> contexts, String key, String value) {
         return subject.getSubjectData().setOption(contexts, key, value);
     }
 }

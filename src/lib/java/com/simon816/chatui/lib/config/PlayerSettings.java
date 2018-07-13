@@ -2,7 +2,7 @@ package com.simon816.chatui.lib.config;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.simon816.chatui.lib.PlayerContext;
 import com.simon816.chatui.util.FontData;
 import ninja.leaping.configurate.objectmapping.Setting;
@@ -100,7 +100,7 @@ public class PlayerSettings {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("width", this.width)
                 .add("height", this.height)
                 .add("forceUnicode", this.forceUnicode)
