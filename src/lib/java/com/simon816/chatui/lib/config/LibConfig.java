@@ -1,6 +1,5 @@
 package com.simon816.chatui.lib.config;
 
-import com.google.common.base.Throwables;
 import com.simon816.chatui.lib.event.PlayerChangeConfigEvent;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
@@ -15,7 +14,6 @@ import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.text.Text;
 
 import java.io.IOException;
@@ -109,7 +107,7 @@ public class LibConfig {
         try {
             settingsMapper = ObjectMapper.forClass(PlayerSettings.class);
         } catch (ObjectMappingException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         CommentedConfigurationNode useLanguagePack = config.getNode("use-language-pack");
         if (useLanguagePack.isVirtual()) {
@@ -135,7 +133,7 @@ public class LibConfig {
         try {
             return settingsMapper.bindToNew().populate(settings);
         } catch (ObjectMappingException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -151,9 +149,10 @@ public class LibConfig {
                 return;
             }
             settingsMapper.bind(settings).serialize(config.getNode("player-settings", uuid.toString()));
-            Sponge.getEventManager().post(new PlayerChangeConfigEvent(player, oldSettings, settings, Sponge.getCauseStackManager().getCurrentCause()));
+            Sponge.getEventManager()
+                    .post(new PlayerChangeConfigEvent(player, oldSettings, settings, Sponge.getCauseStackManager().getCurrentCause()));
         } catch (ObjectMappingException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 

@@ -10,6 +10,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.service.context.Context;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.service.permission.SubjectCollection;
+import org.spongepowered.api.service.permission.SubjectReference;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.Tristate;
 
@@ -23,12 +24,12 @@ import java.util.regex.Pattern;
 public class PEXActions implements PermissionActions {
 
     @Override
-    public Subject addSubjectToCollection(Player player, SubjectCollection collection, String subjIdentifier) {
+    public SubjectReference addSubjectToCollection(Player player, SubjectCollection collection, String subjIdentifier) {
         CommandResult res = command(player, new StringBuilder("pex ")
                 .append(collection.getIdentifier()).append(' ')
                 .append(subjIdentifier).append(" info").toString());
         if (res.getSuccessCount().isPresent() && res.getSuccessCount().get() > 0) {
-            return collection.getSubject(subjIdentifier).orElse(null);
+            return collection.newSubjectReference(subjIdentifier);
         }
         return null;
     }
@@ -112,10 +113,10 @@ public class PEXActions implements PermissionActions {
     }
 
     @Override
-    public void removeParent(Player player, Subject subject, Set<Context> contexts, Subject parent) {
+    public void removeParent(Player player, Subject subject, Set<Context> contexts, SubjectReference parent) {
         command(player, subjContext(subject, contexts)
-                .append("parent remove ").append(parent.getContainingCollection().getIdentifier()).append(' ')
-                .append(parent.getIdentifier())
+                .append("parent remove ").append(parent.getCollectionIdentifier()).append(' ')
+                .append(parent.getSubjectIdentifier())
                 .toString());
     }
 

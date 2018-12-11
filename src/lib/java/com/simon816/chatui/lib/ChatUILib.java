@@ -140,7 +140,8 @@ public class ChatUILib {
     @Listener
     public void onPlayerJoin(ClientConnectionEvent.Join event) {
         Player player = event.getTargetEntity();
-        CreatePlayerViewEvent createEvent = new CreatePlayerViewEvent(new DefaultChatView(player), player, Sponge.getCauseStackManager().getCurrentCause());
+        CreatePlayerViewEvent createEvent =
+                new CreatePlayerViewEvent(new DefaultChatView(player), player, Sponge.getCauseStackManager().getCurrentCause());
         Sponge.getEventManager().post(createEvent);
         this.playerViewMap.put(player.getUniqueId(), createEvent.getView());
         createEvent.getView().initialize();

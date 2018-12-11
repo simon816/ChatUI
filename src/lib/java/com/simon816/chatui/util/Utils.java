@@ -1,14 +1,11 @@
 package com.simon816.chatui.util;
 
 import com.google.common.base.Utf8;
-import com.simon816.chatui.lib.ChatUILib;
 import com.simon816.chatui.lib.PlayerChatView;
 import com.simon816.chatui.lib.PlayerContext;
 import com.simon816.chatui.lib.internal.ClickCallback;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.source.ProxySource;
-import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.ClickAction;
 import org.spongepowered.api.text.action.TextActions;
@@ -48,11 +45,4 @@ public class Utils {
         }
     }
 
-    public static void sync(Runnable function) {
-        if (Sponge.getServer().isMainThread()) {
-            function.run();
-        } else {
-            Task.builder().execute(function).submit(ChatUILib.getInstance());
-        }
-    }
 }

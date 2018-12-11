@@ -4,6 +4,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.service.context.Context;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.service.permission.SubjectCollection;
+import org.spongepowered.api.service.permission.SubjectReference;
 import org.spongepowered.api.util.Tristate;
 
 import java.util.Set;
@@ -11,7 +12,7 @@ import java.util.concurrent.CompletableFuture;
 
 interface PermissionActions {
 
-    Subject addSubjectToCollection(Player player, SubjectCollection collection, String subjIdentifier);
+    SubjectReference addSubjectToCollection(Player player, SubjectCollection collection, String subjIdentifier);
 
     CompletableFuture<Boolean> setPermission(Player player, Subject subject, Set<Context> contexts, String permission, Tristate value);
 
@@ -25,6 +26,6 @@ interface PermissionActions {
 
     void addParent(Player player, Subject subject, Set<Context> contexts, String parentIdentifier);
 
-    void removeParent(Player player, Subject subject, Set<Context> contexts, Subject parent);
+    void removeParent(Player player, Subject subject, Set<Context> contexts, SubjectReference parent);
 
 }

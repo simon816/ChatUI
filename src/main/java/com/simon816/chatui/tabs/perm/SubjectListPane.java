@@ -20,6 +20,7 @@ import org.spongepowered.api.entity.living.player.User;
 import org.spongepowered.api.service.permission.PermissionService;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.service.permission.SubjectCollection;
+import org.spongepowered.api.service.permission.SubjectReference;
 import org.spongepowered.api.service.user.UserStorageService;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.action.HoverAction;
@@ -183,9 +184,9 @@ class SubjectListPane extends AnchorPaneUI {
     }
 
     private boolean add(Player player, String identifier) {
-        Subject subject = this.tab.actions().addSubjectToCollection(player, this.collection, identifier);
+        SubjectReference subject = this.tab.actions().addSubjectToCollection(player, this.collection, identifier);
         if (subject != null) {
-            this.subjectList.add(subject);
+            this.subjectList.add(subject.resolve().join());
         }
         return subject != null;
     }

@@ -1,6 +1,5 @@
 package com.simon816.chatui.tabs.perm;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.simon816.chatui.lib.PlayerChatView;
@@ -15,7 +14,6 @@ import com.simon816.chatui.ui.table.TableModel;
 import com.simon816.chatui.ui.table.TableScrollHelper;
 import com.simon816.chatui.ui.table.TableUI;
 import com.simon816.chatui.util.ExtraUtils;
-import com.simon816.chatui.util.Utils;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.service.context.Context;
 import org.spongepowered.api.service.permission.Subject;
@@ -33,7 +31,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 import javax.swing.SwingConstants;
@@ -161,15 +158,9 @@ class SubjectViewer extends AnchorPaneUI {
 
     void toggle(Player player, int index) {
         Entry<String, Boolean> entry = getPerms().get(index);
-//        if (set(player, index, Tristate.fromBoolean(!entry.getValue()))) {
-//            this.permList = null;
-//        }
-        set(player, index, Tristate.fromBoolean(!entry.getValue())).whenComplete((result, t) -> {
-            if (t != null) throw Throwables.propagate(t);
-            if (result) {
-                Utils.sync(() -> this.permList = null);
-            }
-        });
+        if (set(player, index, Tristate.fromBoolean(!entry.getValue())).join()) {
+            this.permList = null;
+        }
     }
 
     private CompletableFuture<Boolean> set(Player player, int index, Tristate value) {
@@ -178,15 +169,9 @@ class SubjectViewer extends AnchorPaneUI {
     }
 
     void delete(Player player, int index) {
-//        if (set(player, index, Tristate.UNDEFINED)) {
-//            getPerms().remove(index);
-//        }
-        set(player, index, Tristate.UNDEFINED).whenComplete((result, t) -> {
-            if (t != null) throw Throwables.propagate(t);
-            if (result) {
-                Utils.sync(() -> getPerms().remove(index));
-            }
-        });
+        if (set(player, index, Tristate.UNDEFINED).join()) {
+            getPerms().remove(index);
+        }
     }
 
     private UIComponent createEmptyMessage() {
@@ -225,10 +210,9 @@ class SubjectViewer extends AnchorPaneUI {
                     builder.append(Text.of("None"));
                 }
                 for (SubjectReference parent : SubjectViewer.this.activeSubj.getParents(SubjectViewer.this.activeContext)) {
-                    CompletableFuture<Subject> parentFuture = parent.resolve();
-                    builder.append(hyperlink(parent.getSubjectIdentifier(), () -> parentFuture.whenComplete((resolvedParent, t) -> Utils.sync(() -> setActive(resolvedParent, false)))));
+                    builder.append(hyperlink(parent.getSubjectIdentifier(), () -> setActive(parent.resolve().join(), false)));
                     builder.append(Text.builder("[x]").color(TextColors.RED)
-                            .onClick(ExtraUtils.clickAction((Consumer<PlayerChatView>) view -> parentFuture.whenComplete((resolvedParent, t) -> Utils.sync(() -> removeParent(view.getPlayer(), resolvedParent))),
+                            .onClick(ExtraUtils.clickAction((Consumer<PlayerChatView>) view -> removeParent(view.getPlayer(), parent),
                                     SubjectViewer.this.tab))
                             .build());
                     builder.append(Text.of(", "));
@@ -279,20 +263,8 @@ class SubjectViewer extends AnchorPaneUI {
                                     tab.getEntryDisplayer()
                                             .setData(SubjectViewer.this.activeSubj.getSubjectData()
                                                     .getOptions(SubjectViewer.this.activeContext),
-                                                    (key, value) -> {
-                                                        try {
-                                                            return createOption(view.getPlayer(), key, value).get();
-                                                        } catch (InterruptedException | ExecutionException e) {
-                                                            throw Throwables.propagate(e);
-                                                        }
-                                                    },
-                                                    key -> {
-                                                        try {
-                                                            return removeOption(view.getPlayer(), key).get();
-                                                        } catch (InterruptedException | ExecutionException e) {
-                                                            throw Throwables.propagate(e);
-                                                        }
-                                                    },
+                                                    (key, value) -> createOption(view.getPlayer(), key, value),
+                                                    key -> removeOption(view.getPlayer(), key),
                                                     () -> tab.setRoot(SubjectViewer.this));
 
                                     tab.setRoot(tab.getEntryDisplayer());
@@ -314,20 +286,15 @@ class SubjectViewer extends AnchorPaneUI {
         };
     }
 
-    CompletableFuture<Map.Entry<String, String>> createOption(Player player, String key, String value) {
-//        if (this.tab.actions().setOption(player, this.activeSubj, this.activeContext, key, value)) {
-//            return Maps.immutableEntry(key, value);
-//        }
-        return this.tab.actions().setOption(player, this.activeSubj, this.activeContext, key, value).thenApply(result -> {
-            if (result) {
-                return Maps.immutableEntry(key, value);
-            }
-            return null;
-        });
+    Map.Entry<String, String> createOption(Player player, String key, String value) {
+        if (this.tab.actions().setOption(player, this.activeSubj, this.activeContext, key, value).join()) {
+            return Maps.immutableEntry(key, value);
+        }
+        return null;
     }
 
-    CompletableFuture<Boolean> removeOption(Player player, String option) {
-        return this.tab.actions().setOption(player, this.activeSubj, this.activeContext, option, null);
+    boolean removeOption(Player player, String option) {
+        return this.tab.actions().setOption(player, this.activeSubj, this.activeContext, option, null).join();
     }
 
     void cycleDefault(Player player) {
@@ -380,22 +347,16 @@ class SubjectViewer extends AnchorPaneUI {
         this.tab.actions().addParent(player, this.activeSubj, this.activeContext, parentIdentifier);
     }
 
-    void removeParent(Player player, Subject parent) {
+    void removeParent(Player player, SubjectReference parent) {
         this.tab.actions().removeParent(player, this.activeSubj, this.activeContext, parent);
     }
 
-    private CompletableFuture<Boolean> add(Player player, String permission) {
-//        if (this.tab.actions().setPermission(player, this.activeSubj, this.activeContext, permission, Tristate.TRUE)) {
-//            this.permList = null;
-//            return true;
-//        }
-//        return false;
-        return this.tab.actions().setPermission(player, this.activeSubj, this.activeContext, permission, Tristate.TRUE).thenApply(result -> {
-            if (result) {
-                Utils.sync(() -> this.permList = null);
-            }
-            return result;
-        });
+    private boolean add(Player player, String permission) {
+        if (this.tab.actions().setPermission(player, this.activeSubj, this.activeContext, permission, Tristate.TRUE).join()) {
+            this.permList = null;
+            return true;
+        }
+        return false;
     }
 
 }

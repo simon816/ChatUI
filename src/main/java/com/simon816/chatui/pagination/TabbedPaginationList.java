@@ -56,11 +56,6 @@ public class TabbedPaginationList implements PaginationList {
     }
 
     @Override
-    public void sendTo(MessageReceiver receiver) {
-        this.sendTo(receiver, 1);
-    }
-
-    @Override
     public void sendTo(MessageReceiver receiver, int page) {
         if (!(receiver instanceof CommandSource)) {
             this.list.sendTo(receiver, page);

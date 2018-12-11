@@ -3,6 +3,7 @@ package com.simon816.chatui.impl;
 import com.simon816.chatui.tabs.config.ConfigEditTab;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
+import org.spongepowered.api.Platform;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.common.SpongeImpl;
@@ -83,7 +84,7 @@ public class ImplementationConfig {
     static {
         SupportedType type = null;
         for (SupportedType testType : SupportedType.values()) {
-            if (Sponge.getPlatform().getImplementation().getId().equals(testType.implId)) {
+            if (Sponge.getPlatform().getContainer(Platform.Component.IMPLEMENTATION).getId().equals(testType.implId)) {
                 type = testType;
                 break;
             }

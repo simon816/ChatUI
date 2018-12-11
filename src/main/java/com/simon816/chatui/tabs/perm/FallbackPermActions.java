@@ -4,6 +4,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.service.context.Context;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.service.permission.SubjectCollection;
+import org.spongepowered.api.service.permission.SubjectReference;
 import org.spongepowered.api.util.Tristate;
 
 import java.util.Set;
@@ -12,8 +13,8 @@ import java.util.concurrent.CompletableFuture;
 public class FallbackPermActions implements PermissionActions {
 
     @Override
-    public Subject addSubjectToCollection(Player player, SubjectCollection collection, String subjIdentifier) {
-        return collection.getSubject(subjIdentifier).get();
+    public SubjectReference addSubjectToCollection(Player player, SubjectCollection collection, String subjIdentifier) {
+        return collection.newSubjectReference(subjIdentifier);
     }
 
     @Override
@@ -49,8 +50,8 @@ public class FallbackPermActions implements PermissionActions {
     }
 
     @Override
-    public void removeParent(Player player, Subject subject, Set<Context> contexts, Subject parent) {
-        subject.getSubjectData().removeParent(contexts, parent.asSubjectReference());
+    public void removeParent(Player player, Subject subject, Set<Context> contexts, SubjectReference parent) {
+        subject.getSubjectData().removeParent(contexts, parent);
     }
 
     @Override

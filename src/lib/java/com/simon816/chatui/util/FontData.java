@@ -2,7 +2,6 @@ package com.simon816.chatui.util;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -54,7 +53,7 @@ public class FontData {
             VANILLA = new FontData(FontData.class.getResourceAsStream("ascii.png"), FontData.class.getResourceAsStream("glyph_sizes.bin"));
             dataCache.put(VANILLA.asciiToBase64(), VANILLA);
         } catch (IOException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -85,7 +84,7 @@ public class FontData {
         try {
             inflater.inflate(data);
         } catch (DataFormatException e) {
-            throw Throwables.propagate(e);
+            throw new RuntimeException(e);
         }
         for (int i = 0; i < data.length; i++) {
             this.asciiCharWidths[i << 1] = (data[i] >>> 4) & 0xF;
