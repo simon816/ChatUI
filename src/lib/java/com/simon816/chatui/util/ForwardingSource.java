@@ -6,6 +6,7 @@ import org.spongepowered.api.service.context.Context;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.service.permission.SubjectCollection;
 import org.spongepowered.api.service.permission.SubjectData;
+import org.spongepowered.api.service.permission.SubjectReference;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.channel.MessageChannel;
 import org.spongepowered.api.util.Tristate;
@@ -88,22 +89,27 @@ public abstract class ForwardingSource implements ProxySource {
     }
 
     @Override
-    public boolean isChildOf(Subject parent) {
+    public boolean isChildOf(SubjectReference parent) {
         return this.actualSource.isChildOf(parent);
     }
 
     @Override
-    public boolean isChildOf(Set<Context> contexts, Subject parent) {
+    public boolean isChildOf(Set<Context> contexts, SubjectReference parent) {
         return this.actualSource.isChildOf(contexts, parent);
     }
 
     @Override
-    public List<Subject> getParents() {
+    public boolean isSubjectDataPersisted() {
+        return actualSource.isSubjectDataPersisted();
+    }
+
+    @Override
+    public List<SubjectReference> getParents() {
         return this.actualSource.getParents();
     }
 
     @Override
-    public List<Subject> getParents(Set<Context> contexts) {
+    public List<SubjectReference> getParents(Set<Context> contexts) {
         return this.actualSource.getParents(contexts);
     }
 
@@ -127,4 +133,8 @@ public abstract class ForwardingSource implements ProxySource {
         return this.actualSource;
     }
 
+    @Override
+    public SubjectReference asSubjectReference() {
+        return new ForwardingReference(this);
+    }
 }

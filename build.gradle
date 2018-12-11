@@ -58,25 +58,27 @@ configurations {
 }
 
 dependencies {
-    libCompile 'org.spongepowered:spongeapi:5.0.0'
+    libCompile 'org.spongepowered:spongeapi:7.0.0'
     fastutil 'it.unimi.dsi:fastutil:7.0.12' // from spongecommon
 
     compile sourceSets.lib.output
-    compile 'org.spongepowered:spongecommon:5.0.0-SNAPSHOT:dev'
+    compile ('org.spongepowered:spongecommon:7.0.0-SNAPSHOT:dev') {
+        exclude group: 'org.spongepowered', module: 'testplugins'
+    }
     shaded 'org.bstats:bstats-sponge-lite:1.1'
 }
 
 processResources {
     from('src/main/resources') {
         include 'mcmod.info'
-        expand(version: project.version, apiVersionRange: '[5.0.0,7.0.0)', libVersionRange: '[1.0.0,2.0.0)')
+        expand(version: project.version, apiVersionRange: '[7.0.0,8.0.0)', libVersionRange: '[1.0.0,2.0.0)')
     }
 }
 
 processLibResources {
     from('src/lib/resources') {
         include 'mcmod.info'
-        expand(version: project.ext.libVersion, apiVersionRange: '[5.0.0,7.0.0)')
+        expand(version: project.ext.libVersion, apiVersionRange: '[7.0.0,8.0.0)')
     }
 }
 

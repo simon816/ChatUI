@@ -22,7 +22,6 @@ import org.spongepowered.api.command.spec.CommandSpec;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
-import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.event.entity.living.humanoid.player.PlayerChangeClientSettingsEvent;
 import org.spongepowered.api.event.filter.IsCancelled;
 import org.spongepowered.api.event.filter.cause.Root;
@@ -141,7 +140,7 @@ public class ChatUILib {
     @Listener
     public void onPlayerJoin(ClientConnectionEvent.Join event) {
         Player player = event.getTargetEntity();
-        CreatePlayerViewEvent createEvent = new CreatePlayerViewEvent(new DefaultChatView(player), player, Cause.source(this).build());
+        CreatePlayerViewEvent createEvent = new CreatePlayerViewEvent(new DefaultChatView(player), player, Sponge.getCauseStackManager().getCurrentCause());
         Sponge.getEventManager().post(createEvent);
         this.playerViewMap.put(player.getUniqueId(), createEvent.getView());
         createEvent.getView().initialize();

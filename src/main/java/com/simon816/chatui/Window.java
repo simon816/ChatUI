@@ -1,6 +1,6 @@
 package com.simon816.chatui;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
 import com.simon816.chatui.lib.ChatUILib;
 import com.simon816.chatui.lib.PlayerChatView;
@@ -251,7 +251,7 @@ public class Window implements TopWindow {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("active", getActiveTab())
                 .add("tabs", this.tabs)
                 .toString();

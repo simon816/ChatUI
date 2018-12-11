@@ -167,7 +167,7 @@ class SubjectListPane extends AnchorPaneUI {
 
     public void setSubjectList(SubjectCollection subjects) {
         this.subjectList.clear();
-        Iterables.addAll(this.subjectList, subjects.getAllSubjects());
+        Iterables.addAll(this.subjectList, subjects.getLoadedSubjects());
         this.collection = subjects;
         this.tableScroll.reset();
     }

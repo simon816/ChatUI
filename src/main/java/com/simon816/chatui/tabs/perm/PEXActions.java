@@ -16,6 +16,7 @@ import org.spongepowered.api.util.Tristate;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,7 +28,7 @@ public class PEXActions implements PermissionActions {
                 .append(collection.getIdentifier()).append(' ')
                 .append(subjIdentifier).append(" info").toString());
         if (res.getSuccessCount().isPresent() && res.getSuccessCount().get() > 0) {
-            return collection.get(subjIdentifier);
+            return collection.getSubject(subjIdentifier).orElse(null);
         }
         return null;
     }
@@ -42,10 +43,10 @@ public class PEXActions implements PermissionActions {
     }
 
     @Override
-    public boolean setPermission(Player player, Subject subject, Set<Context> contexts, String permission, Tristate value) {
+    public CompletableFuture<Boolean> setPermission(Player player, Subject subject, Set<Context> contexts, String permission, Tristate value) {
         CommandResult res = command(player, subjContext(subject, contexts)
                 .append("permission ").append(permission).append(' ').append(tempAsStr(asInt(value))).toString());
-        return res.getSuccessCount().isPresent() && res.getSuccessCount().get() > 0;
+        return CompletableFuture.completedFuture(res.getSuccessCount().isPresent() && res.getSuccessCount().get() > 0);
     }
 
     @Override
@@ -119,11 +120,11 @@ public class PEXActions implements PermissionActions {
     }
 
     @Override
-    public boolean setOption(Player player, Subject subject, Set<Context> contexts, String key, String value) {
+    public CompletableFuture<Boolean> setOption(Player player, Subject subject, Set<Context> contexts, String key, String value) {
         CommandResult res = command(player, subjContext(subject, contexts)
                 .append("options ").append(key).append(' ')
                 .append(value == null ? "" : value).toString());
-        return res.getSuccessCount().isPresent() && res.getSuccessCount().get() > 0;
+        return CompletableFuture.completedFuture(res.getSuccessCount().isPresent() && res.getSuccessCount().get() > 0);
     }
 
     private static int asInt(Tristate tristate) {

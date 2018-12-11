@@ -2,7 +2,7 @@ package com.simon816.chatui.lib;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.simon816.chatui.util.FontData;
 import com.simon816.chatui.util.TextUtils;
 import org.spongepowered.api.Sponge;
@@ -67,7 +67,7 @@ public class PlayerContext {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("player", this.getPlayer())
                 .add("width", this.width)
                 .add("height", this.height)

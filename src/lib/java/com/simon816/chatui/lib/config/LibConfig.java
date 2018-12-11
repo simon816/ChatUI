@@ -151,7 +151,7 @@ public class LibConfig {
                 return;
             }
             settingsMapper.bind(settings).serialize(config.getNode("player-settings", uuid.toString()));
-            Sponge.getEventManager().post(new PlayerChangeConfigEvent(player, oldSettings, settings, Cause.source(player).build()));
+            Sponge.getEventManager().post(new PlayerChangeConfigEvent(player, oldSettings, settings, Sponge.getCauseStackManager().getCurrentCause()));
         } catch (ObjectMappingException e) {
             throw Throwables.propagate(e);
         }

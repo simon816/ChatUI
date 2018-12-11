@@ -7,12 +7,13 @@ import org.spongepowered.api.service.permission.SubjectCollection;
 import org.spongepowered.api.util.Tristate;
 
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 interface PermissionActions {
 
     Subject addSubjectToCollection(Player player, SubjectCollection collection, String subjIdentifier);
 
-    boolean setPermission(Player player, Subject subject, Set<Context> contexts, String permission, Tristate value);
+    CompletableFuture<Boolean> setPermission(Player player, Subject subject, Set<Context> contexts, String permission, Tristate value);
 
     void setDefault(Player player, Subject subject, Set<Context> contexts, Tristate value);
 
@@ -20,7 +21,7 @@ interface PermissionActions {
 
     Tristate getDefault(Subject subject, Set<Context> contexts);
 
-    boolean setOption(Player player, Subject subject, Set<Context> contexts, String key, String value);
+    CompletableFuture<Boolean> setOption(Player player, Subject subject, Set<Context> contexts, String key, String value);
 
     void addParent(Player player, Subject subject, Set<Context> contexts, String parentIdentifier);
 
