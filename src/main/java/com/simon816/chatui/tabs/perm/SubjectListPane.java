@@ -61,7 +61,7 @@ class SubjectListPane extends AnchorPaneUI {
                                 }, SubjectListPane.this.tab)).build(),
                                 Text.builder(SubjectListPane.this.addMode ? " [Cancel]" : " [Add]")
                                         .color(SubjectListPane.this.addMode ? TextColors.RED : TextColors.GREEN)
-                                        .onClick(ExtraUtils.clickAction(() -> SubjectListPane.this.addMode = !SubjectListPane.this.addMode,
+                                        .onClick(ExtraUtils.clickAction((Runnable) () -> SubjectListPane.this.addMode = !SubjectListPane.this.addMode,
                                                 SubjectListPane.this.tab))
                                         .build(),
                                 Text.builder(" [Scroll Up]")

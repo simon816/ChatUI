@@ -2,7 +2,6 @@ package com.simon816.chatui.pagination;
 
 import com.simon816.chatui.lib.config.PlayerSettings;
 import org.spongepowered.api.service.pagination.PaginationList;
-import org.spongepowered.api.service.pagination.PaginationList.Builder;
 import org.spongepowered.api.service.pagination.PaginationService;
 import org.spongepowered.api.text.Text;
 
@@ -22,47 +21,56 @@ public class TabbedPaginationBuilder implements PaginationList.Builder {
 
     @Override
     public PaginationList.Builder contents(Iterable<Text> contents) {
-        return this.builder.contents(contents);
+        this.builder.contents(contents);
+        return this;
     }
 
     @Override
     public PaginationList.Builder contents(Text... contents) {
-        return this.builder.contents(contents);
+        this.builder.contents(contents);
+        return this;
     }
 
     @Override
     public PaginationList.Builder title(Text title) {
-        return this.builder.title(title);
+        this.builder.title(title);
+        return this;
     }
 
     @Override
     public PaginationList.Builder header(Text header) {
-        return this.builder.header(header);
+        this.builder.header(header);
+        return this;
     }
 
     @Override
     public PaginationList.Builder footer(Text footer) {
-        return this.builder.footer(footer);
+        this.builder.footer(footer);
+        return this;
     }
 
     @Override
-    public Builder from(PaginationList value) {
-        return this.builder.from(value);
+    public PaginationList.Builder from(PaginationList value) {
+        this.builder.from(value);
+        return this;
     }
 
     @Override
-    public Builder reset() {
-        return this.builder.reset();
+    public PaginationList.Builder reset() {
+        this.builder.reset();
+        return this;
     }
 
     @Override
-    public Builder padding(Text padding) {
-        return this.builder.padding(padding);
+    public PaginationList.Builder padding(Text padding) {
+         this.builder.padding(padding);
+        return this;
     }
 
     @Override
-    public Builder linesPerPage(int linesPerPage) {
-        return this.builder.linesPerPage(linesPerPage - this.removedHeight);
+    public PaginationList.Builder linesPerPage(int linesPerPage) {
+        this.builder.linesPerPage(linesPerPage - this.removedHeight);
+        return this;
     }
 
     @Override

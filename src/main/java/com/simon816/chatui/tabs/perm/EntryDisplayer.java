@@ -150,7 +150,7 @@ class EntryDisplayer extends AnchorPaneUI {
                                         }, EntryDisplayer.this.tab)).build(),
                                 Text.builder(EntryDisplayer.this.addMode ? " [Cancel]" : " [Add]")
                                         .color(EntryDisplayer.this.addMode ? TextColors.RED : TextColors.GREEN)
-                                        .onClick(ExtraUtils.clickAction(() -> EntryDisplayer.this.addMode = !EntryDisplayer.this.addMode,
+                                        .onClick(ExtraUtils.clickAction((Runnable) () -> EntryDisplayer.this.addMode = !EntryDisplayer.this.addMode,
                                                 EntryDisplayer.this.tab))
                                         .build(),
                                 Text.builder(" [Scroll Up]").color(EntryDisplayer.this.scroll.canScrollUp() ? TextColors.WHITE : TextColors.GRAY)

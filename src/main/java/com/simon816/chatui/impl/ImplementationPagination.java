@@ -1,6 +1,5 @@
 package com.simon816.chatui.impl;
 
-import org.spongepowered.api.Platform;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.service.pagination.PaginationService;
@@ -10,7 +9,7 @@ import org.spongepowered.common.service.pagination.SpongePaginationService;
 public class ImplementationPagination {
 
     public static void modify(PaginationService service, CommandSource oldSource, CommandSource newSource) {
-        if (Sponge.getPlatform().getContainer(Platform.Component.IMPLEMENTATION).getId().equals("sponge")) {
+        if (Sponge.getPlatform().asMap().get("CommonName").equals("Sponge")) {
             if (service instanceof SpongePaginationService) {
                 SpongePaginationAccessor.replaceActivePagination((SpongePaginationService) service, oldSource, newSource);
             }

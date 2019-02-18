@@ -16,7 +16,7 @@ import java.lang.reflect.Field;
 public class ImplementationConfig {
 
     private enum SupportedType {
-        SPONGE("sponge") {
+        SPONGE("Sponge") {
 
             @Override
             protected ConfigEditTab.ActionHandler createHandler() {
@@ -84,7 +84,9 @@ public class ImplementationConfig {
     static {
         SupportedType type = null;
         for (SupportedType testType : SupportedType.values()) {
-            if (Sponge.getPlatform().getContainer(Platform.Component.IMPLEMENTATION).getId().equals(testType.implId)) {
+            if (Sponge.getPlatform().getContainer(Platform.Component.IMPLEMENTATION).getId().equals(testType.implId)
+                    // also check CommonName for spongecommon-based
+                    || testType.implId.equals(Sponge.getPlatform().asMap().get("CommonName"))) {
                 type = testType;
                 break;
             }
