@@ -223,7 +223,7 @@ class SubjectViewer extends AnchorPaneUI {
                     builder.append(Text.of("global"));
                 }
                 for (Context context : SubjectViewer.this.activeContext) {
-                    builder.append(Text.of(context.getType() + "[" + context.getName() + "], "));
+                    builder.append(Text.of(context.getKey() + "[" + context.getValue() + "], "));
                 }
                 lineFactory.appendNewLine(builder.build(), ctx);
             }

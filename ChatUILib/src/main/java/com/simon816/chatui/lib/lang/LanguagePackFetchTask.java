@@ -1,6 +1,7 @@
 package com.simon816.chatui.lib.lang;
 
 import com.google.common.io.ByteStreams;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -42,18 +43,43 @@ class LanguagePackFetchTask implements Runnable {
             this.logger.info("Language pack found, nothing to fetch");
             return;
         }
+        URL versionManifestUrl;
+        try {
+            versionManifestUrl = new URL("https://launchermeta.mojang.com/mc/game/version_manifest.json");
+        } catch (MalformedURLException e) {
+            this.logger.error("Failed to create manifest URL", e);
+            return;
+        }
+        JsonElement manifestJson;
+        try (InputStream manifestJsonStream = versionManifestUrl.openConnection().getInputStream()) {
+            manifestJson = new JsonParser().parse(new InputStreamReader(manifestJsonStream));
+        } catch (IOException e) {
+            this.logger.error("Failed to read manifest JSON", e);
+            return;
+        }
+        JsonArray versionArray = manifestJson.getAsJsonObject().get("versions").getAsJsonArray();
+        String versionUrlString = null;
+        for (JsonElement versionElem : versionArray) {
+            JsonObject version = versionElem.getAsJsonObject();
+            if (version.get("id").getAsString().equals(this.mcVersion)) {
+                versionUrlString = version.get("url").getAsString();
+                break;
+            }
+        }
+        if (versionUrlString == null) {
+            this.logger.error("Could not find version %s from manifest", this.mcVersion);
+            return;
+        }
         URL versionJsonUrl;
         try {
-            versionJsonUrl = new URL("https://s3.amazonaws.com/Minecraft.Download/versions/" + this.mcVersion + "/" + this.mcVersion + ".json");
+            versionJsonUrl = new URL(versionUrlString);
         } catch (MalformedURLException e) {
             this.logger.error("Failed to create version URL", e);
             return;
         }
         JsonElement versionJson;
-        try {
-            InputStream versionJsonStream = versionJsonUrl.openConnection().getInputStream();
+        try (InputStream versionJsonStream = versionJsonUrl.openConnection().getInputStream()) {
             versionJson = new JsonParser().parse(new InputStreamReader(versionJsonStream));
-            versionJsonStream.close();
         } catch (IOException e) {
             this.logger.error("Failed to read version JSON", e);
             return;
@@ -66,10 +92,8 @@ class LanguagePackFetchTask implements Runnable {
             return;
         }
         JsonElement assetJson;
-        try {
-            InputStream assetJsonStream = assetJsonUrl.openConnection().getInputStream();
+        try (InputStream assetJsonStream = assetJsonUrl.openConnection().getInputStream()) {
             assetJson = new JsonParser().parse(new InputStreamReader(assetJsonStream));
-            assetJsonStream.close();
         } catch (IOException e) {
             this.logger.error("Failed to read asset JSON", e);
             return;
@@ -106,20 +130,18 @@ class LanguagePackFetchTask implements Runnable {
     private void fetchAsset(String hash, String filename, ZipOutputStream zip) {
         URL assetUrl;
         try {
-            assetUrl = new URL("http://resources.download.minecraft.net/" + hash.substring(0, 2) + "/" + hash);
+            assetUrl = new URL("https://resources.download.minecraft.net/" + hash.substring(0, 2) + "/" + hash);
         } catch (MalformedURLException e) {
             this.logger.error("Failed to create asset file URL", e);
             return;
         }
-        try {
-            InputStream assetStream = assetUrl.openConnection().getInputStream();
+        try (InputStream assetStream = assetUrl.openConnection().getInputStream()) {
             ZipEntry entry = new ZipEntry(filename);
             entry.setMethod(ZipEntry.DEFLATED);
             synchronized (zip) {
                 zip.putNextEntry(entry);
                 ByteStreams.copy(assetStream, zip);
             }
-            assetStream.close();
         } catch (IOException e) {
             this.logger.error("Failed to copy asset to zip", e);
             return;

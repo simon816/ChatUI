@@ -1,7 +1,7 @@
 [{
     "modid": "chatui",
     "name": "Chat UI",
-    "description": "A User Interface plugin for creating GUIs in the chat box",
+    "description": "A plugin that displays GUIs in the chat box",
     "version": "$version",
     "url": "https://ore.spongepowered.org/simon816/Chat-UI",
     "authors": ["Simon816"],

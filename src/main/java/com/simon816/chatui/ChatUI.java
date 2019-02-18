@@ -3,7 +3,6 @@ package com.simon816.chatui;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.inject.Inject;
-import com.google.inject.Injector;
 import com.simon816.chatui.group.ChatGroupFeature;
 import com.simon816.chatui.lib.ChatUILib;
 import com.simon816.chatui.lib.PlayerChatView;
@@ -45,9 +44,6 @@ public class ChatUI {
     private static ChatUI instance;
 
     private FeatureManager features;
-
-    @Inject
-    private Injector injector;
 
     @Inject
     @DefaultConfig(sharedRoot = false)
