@@ -1,7 +1,7 @@
 [{
     "modid": "chatuilib",
     "name": "Chat UI Library",
-    "description": "Library components for user interfaces in chat",
+    "description": "Library components for user interfaces in the chat box",
     "version": "$version",
     "url": "https://ore.spongepowered.org/simon816/Chat-UI-Library",
     "authors": ["Simon816"],

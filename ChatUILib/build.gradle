@@ -1,0 +1,89 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
+
+version = "1.0.0"
+
+group = "com.simon816.chatui"
+
+archivesBaseName = 'ChatUILib'
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'sponge'
+        url = 'https://repo.spongepowered.org/maven'
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    // Stop AP generating a mcmod.info file
+    options.compilerArgs += '-proc:none'
+}
+
+configurations {
+    fastutil
+    shadow.extendsFrom fastutil
+}
+
+dependencies {
+    shadow 'org.spongepowered:spongeapi:7.0.0'
+    fastutil 'it.unimi.dsi:fastutil:7.0.12' // from spongecommon
+}
+
+processResources {
+    from('src/main/resources') {
+        include 'mcmod.info'
+        expand(version: version, apiVersionRange: apiVersionRange)
+    }
+}
+
+jar {
+    classifier = ''
+    from(zipTree(project.configurations.fastutil.first())) {
+        include 'it/unimi/dsi/fastutil/chars/*Char2ObjectFunction.class'
+        include 'it/unimi/dsi/fastutil/chars/*Char2ObjectFunction$*'
+        include 'it/unimi/dsi/fastutil/chars/*Char2ObjectMap.class'
+        include 'it/unimi/dsi/fastutil/chars/*Char2ObjectMap$*'
+        include 'it/unimi/dsi/fastutil/chars/*Char2ObjectOpenHashMap*'
+        include 'it/unimi/dsi/fastutil/chars/*CharSet.class'
+        include 'it/unimi/dsi/fastutil/chars/*CharSet$*'
+        include 'it/unimi/dsi/fastutil/chars/*CharCollection.class'
+        include 'it/unimi/dsi/fastutil/chars/*CharCollection$*'
+        include 'it/unimi/dsi/fastutil/chars/*CharIterable.class'
+        include 'it/unimi/dsi/fastutil/chars/*CharIterable$*'
+
+        include 'it/unimi/dsi/fastutil/ints/*Int2CharFunction.class'
+        include 'it/unimi/dsi/fastutil/ints/*Int2CharFunction$*'
+        include 'it/unimi/dsi/fastutil/ints/*Int2CharMap.class'
+        include 'it/unimi/dsi/fastutil/ints/*Int2CharMap$*'
+        include 'it/unimi/dsi/fastutil/ints/*Int2CharOpenHashMap*'
+    }
+}
+
+task srcJar(type: Jar, dependsOn: classes) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+assemble.dependsOn = [jar, srcJar]
+
+artifacts {
+    archives jar
+    archives srcJar
+}
+

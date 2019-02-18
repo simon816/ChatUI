@@ -67,9 +67,6 @@ public class LanguagePackManager {
     }
 
     public String translate(Locale locale, String id) {
-        if (!Files.exists(this.langZipFile)) {
-            return id;
-        }
         return this.translationCache.getUnchecked(locale).getOrDefault(id, id);
 
     }
@@ -100,6 +97,9 @@ public class LanguagePackManager {
 
     Map<String, String> loadTranslations(Locale locale) {
         Map<String, String> translations = Maps.newHashMap();
+        if (!Files.exists(langZipFile)) {
+            return translations;
+        }
         try {
             ZipFile zipFile = new ZipFile(this.langZipFile.toFile());
             ZipEntry entry = zipFile.getEntry(locale.toString().toLowerCase() + ".lang");

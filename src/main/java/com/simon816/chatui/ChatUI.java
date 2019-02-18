@@ -17,7 +17,6 @@ import com.simon816.chatui.tabs.Tab;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
-import org.bstats.MetricsLite;
 import org.slf4j.Logger;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.DefaultConfig;
@@ -96,11 +95,6 @@ public class ChatUI {
     @Listener
     public void onPreInit(GamePreInitializationEvent event) {
         instance = this;
-        try {
-            this.injector.getInstance(MetricsLite.class);
-        } catch (ExceptionInInitializerError e) {
-            // in development mode - metrics class is not relocated
-        }
     }
 
     @Listener

@@ -3,7 +3,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
     }
 }
 
@@ -16,11 +16,6 @@ sourceCompatibility = "1.8"
 targetCompatibility = "1.8"
 
 version = "2.0.0"
-project.ext.libVersion = "1.0.0"
-
-sourceSets {
-    lib
-}
 
 group = "com.simon816.chatui"
 
@@ -28,16 +23,12 @@ repositories {
     mavenCentral()
     maven {
         name = 'sponge'
-        url = 'http://repo.spongepowered.org/maven'
+        url = 'https://repo.spongepowered.org/maven'
     }
     // For launcherwrapper needed by mixin
     maven {
         name = 'mojang'
         url = 'https://libraries.minecraft.net/'
-    }
-    maven {
-        name = 'bstats'
-        url = 'http://repo.bstats.org/content/repositories/releases/'
     }
 }
 
@@ -48,37 +39,27 @@ tasks.withType(JavaCompile) {
 }
 
 configurations {
-    fastutil
     shaded
-    libCompile.extendsFrom fastutil
     compile {
         extendsFrom shaded
-        extendsFrom libCompile
     }
 }
 
 dependencies {
-    libCompile 'org.spongepowered:spongeapi:7.0.0'
-    fastutil 'it.unimi.dsi:fastutil:7.0.12' // from spongecommon
+    compile 'org.spongepowered:spongeapi:7.0.0'
 
-    compile sourceSets.lib.output
+    compile project(':ChatUILib')
+
     compile ('org.spongepowered:spongecommon:7.0.0-SNAPSHOT:dev') {
         exclude group: 'org.spongepowered', module: 'testplugins'
     }
-    shaded 'org.bstats:bstats-sponge-lite:1.1'
 }
 
 processResources {
     from('src/main/resources') {
         include 'mcmod.info'
-        expand(version: project.version, apiVersionRange: '[7.0.0,8.0.0)', libVersionRange: '[1.0.0,2.0.0)')
-    }
-}
-
-processLibResources {
-    from('src/lib/resources') {
-        include 'mcmod.info'
-        expand(version: project.ext.libVersion, apiVersionRange: '[7.0.0,8.0.0)')
+        // Version set in gradle.properties
+        expand(version: project.version, apiVersionRange: apiVersionRange, libVersionRange: libVersionRange)
     }
 }
 
@@ -86,52 +67,20 @@ jar {
     classifier = 'dev'
 }
 
+task srcJar(type: Jar, dependsOn: classes) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
 shadowJar {
     configurations = [project.configurations.shaded]
     classifier = ''
     baseName = "ChatUI"
-    relocate 'org.bstats', 'com.simon816.chatui.bstats'
 }
 
-task libJar(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar, dependsOn: shadowJar) {
-    from sourceSets.lib.output
-    from(zipTree(project.configurations.fastutil.first())) {
-        include 'it/unimi/dsi/fastutil/chars/*Char2ObjectFunction.class'
-        include 'it/unimi/dsi/fastutil/chars/*Char2ObjectFunction$*'
-        include 'it/unimi/dsi/fastutil/chars/*Char2ObjectMap.class'
-        include 'it/unimi/dsi/fastutil/chars/*Char2ObjectMap$*'
-        include 'it/unimi/dsi/fastutil/chars/*Char2ObjectOpenHashMap*'
-        include 'it/unimi/dsi/fastutil/chars/*CharSet.class'
-        include 'it/unimi/dsi/fastutil/chars/*CharSet$*'
-        include 'it/unimi/dsi/fastutil/chars/*CharCollection.class'
-        include 'it/unimi/dsi/fastutil/chars/*CharCollection$*'
-        include 'it/unimi/dsi/fastutil/chars/*CharIterable.class'
-        include 'it/unimi/dsi/fastutil/chars/*CharIterable$*'
-
-        include 'it/unimi/dsi/fastutil/ints/*Int2CharFunction.class'
-        include 'it/unimi/dsi/fastutil/ints/*Int2CharFunction$*'
-        include 'it/unimi/dsi/fastutil/ints/*Int2CharMap.class'
-        include 'it/unimi/dsi/fastutil/ints/*Int2CharMap$*'
-        include 'it/unimi/dsi/fastutil/ints/*Int2CharOpenHashMap*'
-    }
-    baseName = "ChatUILib"
-    version = project.ext.libVersion
-}
-
-task libSrcJar(type: Jar, dependsOn: libClasses) {
-    from sourceSets.lib.allSource
-    classifier = 'sources'
-    baseName = "ChatUILib"
-    version = project.ext.libVersion
-}
-
-
-assemble.dependsOn = [shadowJar, libJar, libSrcJar]
+assemble.dependsOn = [jar, srcJar, shadowJar]
 
 artifacts {
-    archives libJar
     archives shadowJar
-
-    archives libSrcJar
 }
 
