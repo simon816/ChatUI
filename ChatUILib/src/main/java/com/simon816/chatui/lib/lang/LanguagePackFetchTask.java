@@ -67,7 +67,7 @@ class LanguagePackFetchTask implements Runnable {
             }
         }
         if (versionUrlString == null) {
-            this.logger.error("Could not find version %s from manifest", this.mcVersion);
+            this.logger.error("Could not find version {} from manifest", this.mcVersion);
             return;
         }
         URL versionJsonUrl;

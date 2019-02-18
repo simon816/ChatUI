@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.IllegalFormatException;
 import java.util.Locale;
 import java.util.Map;
@@ -38,12 +39,12 @@ public class LanguagePackManager {
                 }
             });
 
-    public LanguagePackManager(Path confDir) {
+    public LanguagePackManager(Path confDir, Logger logger) {
         this.langZipFile = confDir.resolve("lang").resolve(getMcVersion() + "-languagepack.zip");
         try {
             Files.createDirectories(this.langZipFile.getParent());
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Failed to create language pack directory {}", this.langZipFile.getParent(), e);
         }
     }
 
@@ -68,7 +69,6 @@ public class LanguagePackManager {
 
     public String translate(Locale locale, String id) {
         return this.translationCache.getUnchecked(locale).getOrDefault(id, id);
-
     }
 
     public void incrementLocale(Locale locale) {
@@ -96,32 +96,29 @@ public class LanguagePackManager {
     }
 
     Map<String, String> loadTranslations(Locale locale) {
-        Map<String, String> translations = Maps.newHashMap();
-        if (!Files.exists(langZipFile)) {
-            return translations;
+        if (!Files.exists(this.langZipFile)) {
+            return Collections.emptyMap();
         }
-        try {
-            ZipFile zipFile = new ZipFile(this.langZipFile.toFile());
+        Map<String, String> translations = Maps.newHashMap();
+        try (ZipFile zipFile = new ZipFile(this.langZipFile.toFile())) {
             ZipEntry entry = zipFile.getEntry(locale.toString().toLowerCase() + ".lang");
             if (entry == null) {
-                zipFile.close();
                 return translations;
             }
-            BufferedReader reader = new BufferedReader(new InputStreamReader(zipFile.getInputStream(entry)));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (!line.isEmpty() && line.charAt(0) != '#') {
-                    int eqPos = line.indexOf('=');
-                    if (eqPos != -1) {
-                        String key = line.substring(0, eqPos);
-                        String value = eqPos == line.length() - 1 ? "" : line.substring(eqPos + 1);
-                        value = NUMERIC_VARIABLE_PATTERN.matcher(value).replaceAll("%$1s");
-                        translations.put(key, value);
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(zipFile.getInputStream(entry)))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (!line.isEmpty() && line.charAt(0) != '#') {
+                        int eqPos = line.indexOf('=');
+                        if (eqPos != -1) {
+                            String key = line.substring(0, eqPos);
+                            String value = eqPos == line.length() - 1 ? "" : line.substring(eqPos + 1);
+                            value = NUMERIC_VARIABLE_PATTERN.matcher(value).replaceAll("%$1s");
+                            translations.put(key, value);
+                        }
                     }
                 }
             }
-            reader.close();
-            zipFile.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

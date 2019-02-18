@@ -19,6 +19,7 @@ import org.spongepowered.api.command.CommandResult;
 import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.command.args.GenericArguments;
 import org.spongepowered.api.command.spec.CommandSpec;
+import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
@@ -48,6 +49,8 @@ import java.util.UUID;
 @Plugin(id = "chatuilib", name = "Chat UI Library")
 public class ChatUILib {
 
+    private static final String COMMAND_NAME = "chatui";
+
     private static ChatUILib instance;
 
     private final Map<UUID, PlayerChatView> playerViewMap = Maps.newHashMap();
@@ -56,6 +59,10 @@ public class ChatUILib {
 
     @Inject
     private Logger logger;
+
+    @Inject
+    @ConfigDir(sharedRoot = false)
+    private Path confDir;
 
     /* Public API utility functions */
 
@@ -73,7 +80,7 @@ public class ChatUILib {
     }
 
     public static ClickAction<?> command(String subcommand) {
-        return TextActions.runCommand("/chatui " + subcommand);
+        return TextActions.runCommand("/" + COMMAND_NAME + " " + subcommand);
     }
 
     public static ChatUILib getInstance() {
@@ -93,17 +100,16 @@ public class ChatUILib {
 
     @Listener
     public void onInit(GameInitializationEvent event) {
-        Path confDir = Sponge.getGame().getConfigManager().getSharedConfig(this).getDirectory().resolve("chatui");
         try {
-            Files.createDirectories(confDir);
+            Files.createDirectories(this.confDir);
         } catch (IOException e) {
-            this.logger.error("Failed to create configuration directory at {}", confDir, e);
+            this.logger.error("Failed to create config directory {}", this.confDir, e);
         }
-        Path confFile = confDir.resolve("preferences.conf");
-
+        Path confFile = this.confDir.resolve("preferences.conf");
         HoconConfigurationLoader confLoader = HoconConfigurationLoader.builder().setPath(confFile).build();
         LibConfig.init(confLoader, this.logger);
-        this.languageManager = new LanguagePackManager(confDir);
+
+        this.languageManager = new LanguagePackManager(this.confDir, this.logger);
         if (LibConfig.useLanguagePack()) {
             this.languageManager.fetch(this.logger);
         }
@@ -134,7 +140,7 @@ public class ChatUILib {
                 })
                 .description(Text.of("Internal Chat UI commands"))
                 .build();
-        Sponge.getGame().getCommandManager().register(this, cmd, "chatui");
+        Sponge.getGame().getCommandManager().register(this, cmd, COMMAND_NAME);
     }
 
     @Listener

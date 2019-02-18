@@ -1,6 +1,7 @@
 package com.simon816.chatui.lib.config;
 
 import com.simon816.chatui.lib.event.PlayerChangeConfigEvent;
+import com.simon816.chatui.util.FontData;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import ninja.leaping.configurate.objectmapping.ObjectMapper;
@@ -26,10 +27,12 @@ public class LibConfig {
 
     private static Logger logger;
     private static CommentedConfigurationNode config;
+    private static boolean dirty;
 
     private static ObjectMapper<PlayerSettings> settingsMapper;
 
     private static boolean useLanguagePack;
+    private static FontData defaultFontData;
 
     public static CommandCallable createCommand() {
         return CommandSpec.builder()
@@ -95,34 +98,64 @@ public class LibConfig {
 
     public static void loadConfig() {
         try {
-            config = confLoader.load();
-        } catch (IOException e) {
-            logger.error("Error while loading config", e);
-            config = confLoader.createEmptyNode();
-        }
-        CommentedConfigurationNode playerSettings = config.getNode("player-settings");
-        if (playerSettings.isVirtual()) {
-            playerSettings.setValue(Collections.emptyMap());
-        }
-        try {
             settingsMapper = ObjectMapper.forClass(PlayerSettings.class);
         } catch (ObjectMappingException e) {
             throw new RuntimeException(e);
         }
+        try {
+            config = confLoader.load();
+        } catch (IOException e) {
+            logger.error("Error while loading config. Resetting to default config.", e);
+            config = confLoader.createEmptyNode();
+        }
+        dirty = false;
+
+        CommentedConfigurationNode playerSettings = config.getNode("player-settings");
+        if (playerSettings.isVirtual()) {
+            playerSettings.setValue(Collections.emptyMap());
+            dirty = true;
+        }
+
         CommentedConfigurationNode useLanguagePack = config.getNode("use-language-pack");
         if (useLanguagePack.isVirtual()) {
             useLanguagePack.setValue(false);
+            dirty = true;
         }
         LibConfig.useLanguagePack = useLanguagePack.getBoolean();
+
+        CommentedConfigurationNode defaultFontNode = config.getNode("default-font");
+        if (defaultFontNode.isVirtual()) {
+            defaultFontNode.setValue("");
+            dirty = true;
+        }
+
+        String defaultFontString = defaultFontNode.getString();
+        try {
+            FontData.checkValid(defaultFontString);
+        } catch (IllegalArgumentException e) {
+            logger.warn("Default font is invalid, falling back to vanilla font", e);
+            defaultFontString = null;
+        }
+        defaultFontData = FontData.fromString(defaultFontString, FontData.VANILLA);
+
+        saveConfig();
     }
 
     public static boolean useLanguagePack() {
         return useLanguagePack;
     }
 
+    public static FontData defaultFontData() {
+        return defaultFontData;
+    }
+
     public static void saveConfig() {
+        if (!dirty) {
+            return;
+        }
         try {
             confLoader.save(config);
+            dirty = false;
         } catch (IOException e) {
             logger.error("Failed to save config", e);
         }
@@ -131,6 +164,8 @@ public class LibConfig {
     public static PlayerSettings playerConfig(UUID uuid) {
         CommentedConfigurationNode settings = config.getNode("player-settings", uuid.toString());
         try {
+            // Save defaults to config file
+            dirty |= settings.isVirtual();
             return settingsMapper.bindToNew().populate(settings);
         } catch (ObjectMappingException e) {
             throw new RuntimeException(e);
@@ -149,6 +184,7 @@ public class LibConfig {
                 return;
             }
             settingsMapper.bind(settings).serialize(config.getNode("player-settings", uuid.toString()));
+            dirty = true;
             Sponge.getEventManager()
                     .post(new PlayerChangeConfigEvent(player, oldSettings, settings, Sponge.getCauseStackManager().getCurrentCause()));
         } catch (ObjectMappingException e) {

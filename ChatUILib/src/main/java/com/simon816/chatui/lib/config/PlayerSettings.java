@@ -82,7 +82,8 @@ public class PlayerSettings {
     }
 
     public PlayerContext createContext(Player player) {
-        return new PlayerContext(player, getWidth(), getHeightLines(), getForceUnicode(), FontData.fromString(getFontData()));
+        return new PlayerContext(player, getWidth(), getHeightLines(), getForceUnicode(),
+                FontData.fromString(getFontData(), LibConfig.defaultFontData()));
     }
 
     @Override

@@ -77,12 +77,17 @@ public class FontData {
         readCompressedAscii(compressedData);
     }
 
-    private void readCompressedAscii(byte[] compressedData) {
+    private static Inflater inflate(byte[] src, byte[] dest) throws DataFormatException {
         Inflater inflater = new Inflater();
-        inflater.setInput(compressedData);
+        inflater.setInput(src);
+        inflater.inflate(dest);
+        return inflater;
+    }
+
+    private void readCompressedAscii(byte[] compressedData) {
         byte[] data = new byte[this.asciiCharWidths.length >>> 1];
         try {
-            inflater.inflate(data);
+            inflate(compressedData, data);
         } catch (DataFormatException e) {
             throw new RuntimeException(e);
         }
@@ -180,15 +185,15 @@ public class FontData {
         return (int) Math.ceil(getWidth(codePoint, isBold, forceUnicode));
     }
 
-    public static FontData fromString(String fontData) {
+    public static FontData fromString(String fontData, FontData fallback) {
         if (fontData == null || fontData.isEmpty()) {
-            return VANILLA;
+            return fallback;
         }
         try {
             return dataCache.getUnchecked(fontData);
         } catch (Exception e) {
             e.printStackTrace();
-            return VANILLA;
+            return fallback;
         }
     }
 
@@ -198,7 +203,15 @@ public class FontData {
         }
         // Throws IllegalArgumentException if invalid
         byte[] data = Base64.getDecoder().decode(fontData);
-        checkArgument(data.length == ASCII_PNG_CHARS.length() >>> 1, "Length of font data not valid");
+        try {
+            int expectLen = ASCII_PNG_CHARS.length() >>> 1;
+            Inflater inflater = inflate(data, new byte[expectLen]);
+            long written = inflater.getBytesWritten();
+            checkArgument(inflater.finished(), "Font data larger than expected, expected %s", expectLen);
+            checkArgument(written == expectLen, "Font data not of expected size, expected %s got %s", expectLen, written);
+        } catch (DataFormatException e) {
+            throw new IllegalArgumentException("Corrupt font data", e);
+        }
     }
 
 }
