@@ -14,20 +14,20 @@ To enhance player user experience on multiplayer by utilizing the chat box. In a
  * Chat groups
  * Per-player settings with ability to disable the interface
  * Expandable - other plugins can hook into the interface and add new features
- * [bStats](https://bstats.org/) (plugin metrics)
 
 For a full description and demonstration of Chat UI's features, please check out the [wiki](https://github.com/simon816/ChatUI/wiki/features).
 
 # Demo
 ![Demo gif](https://i.imgur.com/BFmcx7q.gif)
 
-# UI Library
-Chat UI provides a high-level User Interface library for creating GUIs, it is inspired by JavaFX and Swing.  
-More information can be found on the [wiki](https://github.com/simon816/ChatUI/wiki/component-model).
+# Chat UI Library
+Chat UI depends on the Chat UI Library (also in this repository). The library provides a high-level User Interface component model for creating GUIs, it is inspired by JavaFX and Swing.  
+More information can be found on the [wiki](https://github.com/simon816/ChatUI/wiki/Chat-UI-Library).
 
 # Links
  * [__Downloads__](https://ore.spongepowered.org/simon816/Chat-UI/versions/recommended/download)
  * [Ore Project Page](https://ore.spongepowered.org/simon816/Chat-UI)
+ * [Chat UI Library](https://ore.spongepowered.org/simon816/Chat-UI-Library)
  * [Source Code](https://github.com/simon816/ChatUI)
  * [Issue Tracker](https://github.com/simon816/ChatUI/issues)
  * [Wiki](https://github.com/simon816/ChatUI/wiki)
@@ -37,6 +37,9 @@ More information can be found on the [wiki](https://github.com/simon816/ChatUI/w
 
 
 # Developing
+
+## Using The UI Library
+The UI Library can be used with or without the Chat UI tabbed interface. See the [developer documentation](https://github.com/simon816/ChatUI/wiki/Chat-UI-Library).
 
 ## Utilizing Chat UI in another plugin
 Chat UI provides an API for other plugin developers to use in their plugins.  
@@ -52,4 +55,6 @@ If you've never worked with Sponge API before it may be worthwhile checking out 
 
 ### Building
 Simply run the gradle `build` task (`gradle build` from the command line). The plugin jar file will be written to `./build/libs/`
+
+The ChatUILib subproject also gets built at the same time. Its output is in `./ChatUILib/build/libs/`.
 
