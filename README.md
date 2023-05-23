@@ -18,7 +18,7 @@ To enhance player user experience on multiplayer by utilizing the chat box. In a
 For a full description and demonstration of Chat UI's features, please check out the [wiki](https://github.com/simon816/ChatUI/wiki/features).
 
 # Demo
-![Demo gif](https://i.imgur.com/BFmcx7q.gif)
+![Demo gif](https://raw.githubusercontent.com/simon816/ChatUI/master/doc/chatui.gif)
 
 # Chat UI Library
 Chat UI depends on the Chat UI Library (also in this repository). The library provides a high-level User Interface component model for creating GUIs, it is inspired by JavaFX and Swing.  
